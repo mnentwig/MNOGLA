@@ -1,0 +1,5 @@
+AndroidStudio/.gradle/
+AndroidStudio/.idea/
+AndroidStudio/app/.cxx/
+AndroidStudio/app/build/
+AndroidStudio/local.properties

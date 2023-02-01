@@ -15,7 +15,7 @@ target_include_directories(MNOGLA_userApp PRIVATE "include/glm")
 target_link_libraries(MNOGLA_userApp
         MNOGLA
         EGL
-        GLESv2)
+        GLESv3)
 
 # add lib dependencies
 target_link_libraries(MNOGLA_host
