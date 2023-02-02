@@ -25,8 +25,14 @@ extern void MNOGLA_evtSubmitHostToApp(int32_t key, size_t nArgs, ...);
 // userApp gets event
 extern size_t MNOGLA_evtGetHostToApp(int32_t* dest);
 
-// host calls to render new frame
-extern void MNOGLA_render();
+// host calls to render new video frame (thread 0)
+extern void MNOGLA_videoCbT0();
+
+// host calls to generate audio buffer
+extern void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames);
+
+// host calls to report incoming MIDI event
+extern void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2);
 
 // ############################################################
 // host-to-app events

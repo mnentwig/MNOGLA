@@ -121,7 +121,7 @@ void MNOGLA_init(int w, int h, logFun_t _logI, logFun_t _logE) {
 
 static const GLfloat gTriangleVertices[] = {0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f};
 
-void MNOGLA_render() {
+void MNOGLA_videoCbT0() {
     int32_t buf[16];
     while (true) {
         size_t n = MNOGLA_evtGetHostToApp(buf);
@@ -166,4 +166,27 @@ void MNOGLA_render() {
     checkGlError("glEnableVertexAttribArray");
     glDrawArrays(GL_TRIANGLES, 0, 3);
     checkGlError("glDrawArrays");
+}
+
+float vol = 0;
+float freq = 0;
+void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames){
+  static float phi = 0;
+  float dPhi = freq / 48000.0f * 2.0f * M_PI;
+  for (size_t ix = 0; ix < numFrames; ++ix) {
+    *(audioBuf++) = vol * cos(phi);
+    phi += dPhi;
+  }
+  int n = (int) (phi / (2 * M_PI));
+  phi -= (float) (n * (2 * M_PI));
+}
+#include <cmath>
+void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2){
+  logI("%02x %02x %02x", v0, v1, v2);
+  if ((v0 == 0x90) && (v2 > 0)){
+    vol = 0.1;
+    freq = 440.0f * std::pow(2.0f, (v1-69)/12.0f);
+  } else {
+    vol=0;
+  }
 }

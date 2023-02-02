@@ -65,13 +65,7 @@ class audio {
             void *audioData,
             int32_t numFrames) {
         auto *audioBuf = static_cast<float *>(audioData);
-        static float phi = 0;
-        for (size_t ix = 0; ix < numFrames; ++ix) {
-            *(audioBuf++) = 0.1f * cos(phi);
-            phi += 1000.0f / 48000.0f * 2.0f * M_PI;
-        }
-        int n = phi / (2 * M_PI);
-        phi -= (float) (n * (2 * M_PI));
+        MNOGLA_audioCbT1(audioBuf, numFrames);
         return AAUDIO_CALLBACK_RESULT_CONTINUE;
     }
 
@@ -88,7 +82,6 @@ public:
         const size_t nChan = 1;
         AAudioStreamBuilder *streamBuilder;
         AAudio_createStreamBuilder(&streamBuilder);
-//        auto f = [streamBuilder] { AAudioStreamBuilder_delete(streamBuilder); };
         final_act shutdown([&] { AAudioStreamBuilder_delete(streamBuilder); });
         AAudioStreamBuilder_setFormat(streamBuilder, AAUDIO_FORMAT_PCM_FLOAT);
         AAudioStreamBuilder_setChannelCount(streamBuilder, nChan);
@@ -113,7 +106,8 @@ public:
             return;
         }
 
-        MNOGLA_evtSubmitHostToApp(MNOGLA_eKeyToHost::AUDIO_START, /*nArgs*/2, (int32_t)nChan, (int32_t)sampleRate);
+        MNOGLA_evtSubmitHostToApp(MNOGLA_eKeyToHost::AUDIO_START, /*nArgs*/2, (int32_t) nChan,
+                                  (int32_t) sampleRate);
         host_logI("Audio started (%i samples per second)", sampleRate);
     }
 
@@ -149,26 +143,34 @@ public:
 // =========================================================================================
 // called from Java
 // =========================================================================================
-extern "C" JNIEXPORT void JNICALL Java_com_android_MNOGLAJNI_MNOGLALIB_init(JNIEnv * /*env*/,
-                                                                            jclass,
-                                                                            jint width,
-                                                                            jint height) {
+extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
+Java_com_android_MNOGLAJNI_MNOGLALIB_init(JNIEnv * /*env*/,
+                                          jclass,
+                                          jint width,
+                                          jint height) {
     audio::start();
     MNOGLA_init(width, height, host_logI, host_logE);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_android_MNOGLAJNI_MNOGLALIB_render(JNIEnv *, jclass) {
-    MNOGLA_render();
+extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
+Java_com_android_MNOGLAJNI_MNOGLALIB_render(JNIEnv *, jclass) {
+    MNOGLA_videoCbT0();
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_evt2(JNIEnv *, jclass, int32_t key, int32_t v1, int32_t v2) {
     MNOGLA_evtSubmitHostToApp(key, /*nArgs*/2, v1, v2);
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_evt3(JNIEnv *, jclass, int32_t key, int32_t v1, int32_t v2,
                                           int32_t v3) {
     MNOGLA_evtSubmitHostToApp(key, /*nArgs*/3, v1, v2, v3);
 }
 
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_android_MNOGLAJNI_MNOGLALIB_midiCb(JNIEnv *, jclass, jint v1, jint v2, jint v3) {
+    MNOGLA_midiCbT2(v1, v2, v3);
+}
