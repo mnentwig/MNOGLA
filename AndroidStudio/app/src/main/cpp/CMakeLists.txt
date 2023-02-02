@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(myProject)
+
+#Android host supports audio
+add_compile_definitions(MNOGLA_HASAUDIO)
+
 # now build app's shared lib
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 add_library(MNOGLA_host SHARED
@@ -22,5 +26,6 @@ target_link_libraries(MNOGLA_host
         MNOGLA_userApp
         android
         log
+        aaudio
 )
 

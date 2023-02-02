@@ -47,6 +47,12 @@ extern void MNOGLA_render();
 // SCROLL: Mouse wheel
 // - dx (-1, 0, 1)
 // - dy (-1, 0, 1)
+//
+// AUDIO_START:
+// - nChannels
+// - samplerate, Hz
+//
+// AUDIO_RESTART: (e.g. on bluetooth headset disconnect, no arguments)
 
 class MNOGLA_eKeyToHost {
    public:
@@ -58,6 +64,8 @@ class MNOGLA_eKeyToHost {
         PTR_MOVE = 202,
         BTNDOWN = 300,
         BTNUP = 301,
-        SCROLL = 400
+        SCROLL = 400,
+        AUDIO_START = 10000,
+        AUDIO_RESTART = 10001
     };
 };
