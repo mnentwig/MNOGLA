@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <cmath> //M_PI
 
 #include "../MNOGLA.h"
 #ifdef MNOGLA_WINDOWS
@@ -173,7 +174,7 @@ float freq = 0;
 void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames){
   static float phi = 0;
   float dPhi = freq / 48000.0f * 2.0f * M_PI;
-  for (size_t ix = 0; ix < numFrames; ++ix) {
+  for (size_t ix = 0; ix < (size_t)numFrames; ++ix) {
     *(audioBuf++) = vol * cos(phi);
     phi += dPhi;
   }
