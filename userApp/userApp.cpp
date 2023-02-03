@@ -99,7 +99,7 @@ void MNOGLA_init(int w, int h, logFun_t _logI, logFun_t _logE) {
 
 #ifdef MNOGLA_WINDOWS
     // Windows version uses GLEW to load openGl libraries but this requires initialization
-    // #include <GL/glew.h>
+    // for dynamic loading
     glewExperimental = 1;  // Needed for core profile
     if (glewInit() != GLEW_OK) throw runtime_error("Failed to initialize GLEW");
 #endif
