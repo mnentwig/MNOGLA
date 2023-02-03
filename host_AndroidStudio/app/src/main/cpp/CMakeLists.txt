@@ -4,26 +4,17 @@ project(myProject)
 #Android host supports audio
 add_compile_definitions(MNOGLA_HASAUDIO)
 
-# now build app's shared lib
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 add_library(MNOGLA_host SHARED
-            host.cpp)
-
-add_library(MNOGLA SHARED
-        ../../../../../MNOGLA.cpp)
-
-add_library(MNOGLA_userApp SHARED
-        ../../../../../userApp/userApp.cpp)
-target_include_directories(MNOGLA_userApp PRIVATE "include/glm")
-
-target_link_libraries(MNOGLA_userApp
-        MNOGLA
-        EGL
-        GLESv3)
+            host.cpp
+            ../../../../../userApp/userApp.cpp
+            ../../../../../MNOGLA.cpp
+        )
 
 # add lib dependencies
 target_link_libraries(MNOGLA_host
-        MNOGLA_userApp
+        EGL
+        GLESv3
         android
         log
         aaudio

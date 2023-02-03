@@ -35,7 +35,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
     MNOGLA_evtSubmitHostToApp(key, /*nArgs*/1, button);
 }
 
-void logI(const char* format, ...) {
+void logI_impl(const char* format, ...) {
     va_list args;
     va_start(args, /*start after*/ format);
     printf("I:");
@@ -45,7 +45,7 @@ void logI(const char* format, ...) {
     va_end(args);
 }
 
-void logE(const char* format, ...) {
+void logE_impl(const char* format, ...) {
     va_list args;
     va_start(args, /*start after*/ format);
     printf("E:");
@@ -95,7 +95,7 @@ int main(void) {
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    MNOGLA_init(winWidth, winHeight, logI, logE);
+    MNOGLA_init(winWidth, winHeight, logI_impl, logE_impl);
 
     while (true) {
         glfwPollEvents();

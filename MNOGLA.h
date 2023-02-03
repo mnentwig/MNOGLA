@@ -1,6 +1,6 @@
 #pragma once
+#include <cstddef>  // std::size_t on Android
 #include <cstdint>
-#include <cstddef> // std::size_t on Android
 using std::size_t;
 
 // file has two main roles:
@@ -15,9 +15,13 @@ using std::size_t;
 
 // logging function signature (function to be provided by the host)
 typedef void (*logFun_t)(const char* format, ...);
+extern logFun_t logI;
+extern logFun_t logE;
 
 // host calls to initialize
 extern void MNOGLA_init(int w, int h, logFun_t logI, logFun_t logE);
+// user code implements this
+extern void MNOGLA_userInit(int w, int h);
 
 // host signals an event
 extern void MNOGLA_evtSubmitHostToApp(int32_t key, size_t nArgs, ...);

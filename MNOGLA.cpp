@@ -1,12 +1,17 @@
 #include "MNOGLA.h"
+#include "util/util.hpp"
 #include <vector>
 #include <mutex>
 #include <cassert>
 #include <cstdarg>
+#include <stdexcept>
+using std::runtime_error;
 
 static std::vector<int32_t> evtQueue;
 static std::mutex m;
 static size_t readPtr = 0;
+logFun_t logI = nullptr;
+logFun_t logE = nullptr;
 
 extern void MNOGLA_evtSubmitHostToApp(int32_t key, size_t nArgs, ...){
   va_list args;
@@ -31,4 +36,24 @@ extern size_t MNOGLA_evtGetHostToApp(int32_t* dest){
   for (size_t ix = 1; ix < n; ++ix)
     *(dest++) = evtQueue[readPtr++];
   return n-1;
+}
+
+void MNOGLA_init(int w, int h, logFun_t _logI, logFun_t _logE) {
+    logI = _logI;
+    logE = _logE;
+
+#ifdef MNOGLA_WINDOWS
+    // Windows version uses GLEW to load openGl libraries but this requires initialization
+    // for dynamic loading
+    glewExperimental = 1;  // Needed for core profile
+    if (glewInit() != GLEW_OK) throw runtime_error("Failed to initialize GLEW");
+#endif
+
+    logI("Version", GL_VERSION);
+    logI("Vendor", GL_VENDOR);
+    logI("Renderer", GL_RENDERER);
+    logI("Extensions", GL_EXTENSIONS);
+
+    logI("setupGraphics(%d, %d)", w, h);
+    MNOGLA_userInit(w, h);
 }
