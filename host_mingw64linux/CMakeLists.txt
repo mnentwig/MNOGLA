@@ -4,9 +4,6 @@ project(myProject)
 #host does NOT support audio (yet)
 # add_compile_definitions(MNOGLA_HASAUDIO)
 
-# this CMAKE-file is specifically for a windows build
-add_compile_definitions(MNOGLA_WINDOWS)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic")
 
 # === MNOGLA_core ===
@@ -16,12 +13,21 @@ add_library(MNOGLA_core STATIC
             ../core/MNOGLA_util.cpp
 )
 
-target_link_libraries(MNOGLA_core
-        glew32 
-        glfw3 
-        opengl32 
-        stdc++
-)
+if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MINGW")
+        target_link_libraries(MNOGLA_core
+                glew32 
+                glfw3 
+                opengl32 
+                stdc++
+        )
+        add_compile_definitions(MNOGLA_WINDOWS)
+else()
+        target_link_libraries(MNOGLA_core
+                glfw3 
+                GL
+                stdc++
+        )
+endif()
 
 # === user application ===
 # links to above MNOGLA_core
