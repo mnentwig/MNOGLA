@@ -20,14 +20,13 @@ auto gFragmentShader =
 
 static GLuint gProgram = 0;
 static GLuint gvPositionHandle;
-extern "C" void MNOGLA_userInit(int w, int h) {
+void MNOGLA_userInit(int w, int h) {
     // defer handling the initial size to the resize handler by creating an event
     MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
 
     gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
     gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
     MNOGLA::checkGlError("glGetAttribLocation");
-    MNOGLA::logI("glGetAttribLocation(\"vPosition\") = %d\n", gvPositionHandle);
 }
 
 void eventDispatcher() {
@@ -89,8 +88,10 @@ void MNOGLA_videoCbT0() {
     MNOGLA::checkGlError("glEnableVertexAttribArray");
     glDrawArrays(GL_TRIANGLES, 0, 3);
     MNOGLA::checkGlError("glDrawArrays");
-
-    MNOGLA::filledRect::drawXYXY(0.1, 0.1, 0.3, 0.4);
+    MNOGLA::xy_t ptA = {0.1f, 0.1f};
+    MNOGLA::xy_t ptB = {0.3f, 0.4f};
+    MNOGLA::rgb_t col = {0.0f, 1.0f, 0.0f};
+    MNOGLA::filledRect::draw(ptA, ptB, col);
 }
 
 float vol = 0;

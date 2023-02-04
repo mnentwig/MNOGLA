@@ -30,7 +30,7 @@ GLuint loadShader(GLenum shaderType, const char* pSource) {
         char* buf = (char*)malloc(infoLen);
         assert(buf);
         glGetShaderInfoLog(shader, infoLen, nullptr, buf);
-        string e("Failed to load GL shader (" + to_string(shaderType) + "): " + string(buf));
+        string e("Failed to load GL shader (" + string(shaderType == GL_VERTEX_SHADER ? "vertex" : "fragment") + "): " + string(buf));
         logE("%s", e.c_str());
         free(buf);
         throw std::runtime_error(e);
@@ -69,41 +69,48 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
 namespace filledRect {
 namespace prot {
 static GLuint prog;
-static GLuint pos;
+const GLuint argLoc_coord2d = 0;
+const GLuint argLoc_rgb = 1;
 }  // namespace prot
 using namespace prot;
 void init() {
     auto vShader =
-        "attribute vec4 vPosition;\n"
+        "#version 300 es\n"
+        "layout (location = 0) in vec2 coord2d;\n"
+        "layout (location = 1) in vec3 rgb;\n"
+        "out vec3 rgbv;\n"
         "void main() {\n"
-        "  gl_Position = vPosition;\n"
+        "  gl_Position = vec4(coord2d, 0, 1.0f);\n"
+        "  rgbv = rgb;\n"
         "}\n";
 
     auto fragShader =
+        "#version 300 es\n"
         "precision mediump float;\n"
+        "in vec3 rgbv;\n"
+        "out vec4 fragmentColor;\n"
         "void main() {\n"
-        "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+        "  fragmentColor = vec4(rgbv, 1.0f);\n"
         "}\n";
 
     prog = createProgram(vShader, fragShader);
-    pos = glGetAttribLocation(prog, "vPosition");
-    checkGlError("glGetAttribLocation");
 }
 
-void drawXYXY(float x0, float y0, float x1, float y1) {
+void draw(const xy_t& xyA, const xy_t& xyB, const rgb_t& rgb) {
     glUseProgram(prog);
     checkGlError("glUseProgram");
-    GLfloat vertices[4 * 2] = {x0, y0, x0, y1, x1, y0, x1, y1};
-
-    glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    GLfloat vertices[4 * 2] = {xyA.x, xyA.y, xyA.x, xyB.y, xyB.x, xyA.y, xyB.x, xyB.y};
+    glVertexAttribPointer(argLoc_coord2d, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     checkGlError("glVertexAttribPointer");
-    glEnableVertexAttribArray(pos);
+    glEnableVertexAttribArray(argLoc_coord2d);
     checkGlError("glEnableVertexAttribArray");
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glVertexAttrib3f(argLoc_rgb, rgb.r, rgb.g, rgb.b);
+    checkGlError("glVertexAttrib3f");
+    glDrawArrays(GL_TRIANGLE_STRIP, /*first vertex*/0, /*vertex count*/4);
     checkGlError("glDrawArrays");
 }
 }  // namespace filledRect
-void initUtil(){
+void initUtil() {
     filledRect::init();
 }
-} // NS MNOGLA
+}  // namespace MNOGLA

@@ -4,16 +4,15 @@
 using std::size_t;
 
 // === user code must implement those: ===
-// "extern C" linkage and global namespace to improve compatibility (e.g. userApp may use plain C and build on a different compiler)
 
 //* host calls userApp at startup */
-extern "C" void MNOGLA_userInit(int w, int h);
+void MNOGLA_userInit(int w, int h);
 //* host calls userApp to render new video frame (thread 0) */
-extern "C" void MNOGLA_videoCbT0();
+void MNOGLA_videoCbT0();
 //* host calls userApp to request generation of an audio buffer */
-extern "C" void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames);
+void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames);
 //* host calls userApp to report incoming MIDI event */
-extern "C" void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2);
+void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2);
 
 namespace MNOGLA {
 
