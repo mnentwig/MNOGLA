@@ -14,19 +14,18 @@ add_library(MNOGLA_core STATIC
 )
 
 if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MINGW")
-        target_link_libraries(MNOGLA_core
-                glew32 
-                glfw3 
-                opengl32 
-                stdc++
-        )
-        add_compile_definitions(MNOGLA_WINDOWS)
+  target_link_libraries(MNOGLA_core
+    glew32 
+    glfw3 
+    opengl32 
+    stdc++
+    )
+  add_compile_definitions(MNOGLA_WINDOWS)
 else()
-        target_link_libraries(MNOGLA_core
-                glfw3 
-                GL
-                stdc++
-        )
+  target_link_libraries(MNOGLA_core
+    GL
+    glfw
+    stdc++)
 endif()
 
 # === user application ===
