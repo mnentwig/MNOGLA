@@ -4,4 +4,4 @@
 
 void checkGlError(const char* op);
 GLuint loadShader(GLenum shaderType, const char* pSource, logFun_t logE) ;
-extern GLuint createProgram(const char* pVertexSource, const char* pFragmentSource, logFun_t logE) ;
+GLuint createProgram(const char* pVertexSource, const char* pFragmentSource, logFun_t logE) ;
