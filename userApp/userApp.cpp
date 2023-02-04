@@ -20,24 +20,24 @@ auto gFragmentShader =
 
 static GLuint gProgram = 0;
 static GLuint gvPositionHandle;
-void MNOGLA_userInit(int w, int h) {
+extern "C" void MNOGLA_userInit(int w, int h) {
     // defer handling the initial size to the resize handler by creating an event
-    MNOGLA_evtSubmitHostToApp(MNOGLA_eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
+    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
 
-    gProgram = createProgram(gVertexShader, gFragmentShader, logE);
+    gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
     gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
-    checkGlError("glGetAttribLocation");
-    logI("glGetAttribLocation(\"vPosition\") = %d\n", gvPositionHandle);
+    MNOGLA::checkGlError("glGetAttribLocation");
+    MNOGLA::logI("glGetAttribLocation(\"vPosition\") = %d\n", gvPositionHandle);
 }
 
 void eventDispatcher() {
     int32_t buf[16];
     while (true) {
-        size_t n = MNOGLA_evtGetHostToApp(buf);
+        size_t n = MNOGLA::evtGetHostToApp(buf);
         uint32_t key = buf[0];
         if (!n) break;
         switch (key) {
-            case MNOGLA_eKeyToHost::WINSIZE:
+            case MNOGLA::eKeyToHost::WINSIZE:
                 glViewport(0, 0, buf[1], buf[2]);
                 continue;
             default:
@@ -46,19 +46,19 @@ void eventDispatcher() {
 
         switch (n) {
             case 1:
-                logI("EVT%d\t%d", n, key);
+                MNOGLA::logI("EVT%d\t%d", n, key);
                 break;
             case 2:
-                logI("EVT%d\t%d\t%d", n, key, buf[1]);
+                MNOGLA::logI("EVT%d\t%d\t%d", n, key, buf[1]);
                 break;
             case 3:
-                logI("EVT%d\t%d\t%d\t%d", n, key, buf[1], buf[2]);
+                MNOGLA::logI("EVT%d\t%d\t%d\t%d", n, key, buf[1], buf[2]);
                 break;
             case 4:
-                logI("EVT%d\t%d\t%d\t%d\t%d", n, key, buf[1], buf[2], buf[3]);
+                MNOGLA::logI("EVT%d\t%d\t%d\t%d\t%d", n, key, buf[1], buf[2], buf[3]);
                 break;
             default:
-                logI("EVT%d", n);
+                MNOGLA::logI("EVT%d", n);
                 break;
         }
     }
@@ -75,20 +75,22 @@ void MNOGLA_videoCbT0() {
     grey = 0.0f;
     //}
     glClearColor(grey, grey, grey, 1.0f);
-    checkGlError("glClearColor");
+    MNOGLA::checkGlError("glClearColor");
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    checkGlError("glClear");
+    MNOGLA::checkGlError("glClear");
 
     glUseProgram(gProgram);
-    checkGlError("glUseProgram");
+    MNOGLA::checkGlError("glUseProgram");
 
     glVertexAttribPointer(gvPositionHandle, 2, GL_FLOAT, GL_FALSE, 0,
                           gTriangleVertices);
-    checkGlError("glVertexAttribPointer");
+    MNOGLA::checkGlError("glVertexAttribPointer");
     glEnableVertexAttribArray(gvPositionHandle);
-    checkGlError("glEnableVertexAttribArray");
+    MNOGLA::checkGlError("glEnableVertexAttribArray");
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    checkGlError("glDrawArrays");
+    MNOGLA::checkGlError("glDrawArrays");
+
+    MNOGLA::filledRect::drawXYXY(0.1, 0.1, 0.3, 0.4);
 }
 
 float vol = 0;
@@ -106,7 +108,7 @@ void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames) {
 }
 
 void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2) {
-    logI("%02x %02x %02x", v0, v1, v2);
+    MNOGLA::logI("%02x %02x %02x", v0, v1, v2);
     if ((v0 == 0x90) && (v2 > 0)) {
         vol = 0.1;
         freq = 440.0f * std::pow(2.0f, (v1 - 69) / 12.0f);

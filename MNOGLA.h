@@ -3,40 +3,34 @@
 #include <cstdint>
 using std::size_t;
 
-// file has two main roles:
-//  - platform-independent interface to openGL host
-//      - MNOGLA_xyz functions
-//      - message protocol
-//  - means to load openGL headers
+// === user code must implement those: ===
+// "extern C" linkage and global namespace to improve compatibility (e.g. userApp may use plain C and build on a different compiler)
 
-// ################################################################
-// interface: function prototypes of MNOGLA_xyz()
-// ################################################################
+//* host calls userApp at startup */
+extern "C" void MNOGLA_userInit(int w, int h);
+//* host calls userApp to render new video frame (thread 0) */
+extern "C" void MNOGLA_videoCbT0();
+//* host calls userApp to request generation of an audio buffer */
+extern "C" void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames);
+//* host calls userApp to report incoming MIDI event */
+extern "C" void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2);
+
+namespace MNOGLA {
 
 // logging function signature (function to be provided by the host)
 typedef void (*logFun_t)(const char* format, ...);
+//* host-provided logging functions are accessible in those global variables */
 extern logFun_t logI;
 extern logFun_t logE;
 
 // host calls core to initialize
-extern void MNOGLA_coreInit(logFun_t logI, logFun_t logE);
-// host calls (user code must implement this)
-extern void MNOGLA_userInit(int w, int h);
+void coreInit(logFun_t logI, logFun_t logE);
 
 // host signals an event
-extern void MNOGLA_evtSubmitHostToApp(int32_t key, size_t nArgs, ...);
+void evtSubmitHostToApp(int32_t key, size_t nArgs, ...);
 
 // userApp gets event
-extern size_t MNOGLA_evtGetHostToApp(int32_t* dest);
-
-// host calls to render new video frame (thread 0)
-extern void MNOGLA_videoCbT0();
-
-// host calls to generate audio buffer
-extern void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames);
-
-// host calls to report incoming MIDI event
-extern void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2);
+size_t evtGetHostToApp(int32_t* dest);
 
 // ############################################################
 // host-to-app events
@@ -64,7 +58,7 @@ extern void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2);
 //
 // AUDIO_RESTART: (e.g. on bluetooth headset disconnect, no arguments)
 
-class MNOGLA_eKeyToHost {
+class eKeyToHost {
    public:
     enum {
         INV_NULL = 0,
@@ -79,3 +73,4 @@ class MNOGLA_eKeyToHost {
         AUDIO_RESTART = 10001
     };
 };
+}  // namespace MNOGLA

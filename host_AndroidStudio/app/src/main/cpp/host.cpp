@@ -106,7 +106,7 @@ public:
             return;
         }
 
-        MNOGLA_evtSubmitHostToApp(MNOGLA_eKeyToHost::AUDIO_START, /*nArgs*/2, (int32_t) nChan,
+        evtSubmitHostToApp(MNOGLA::eKeyToHost::AUDIO_START, /*nArgs*/2, (int32_t) nChan,
                                   (int32_t) sampleRate);
         host_logI("Audio started (%i samples per second)", sampleRate);
     }
@@ -124,7 +124,7 @@ public:
         if (restartingLock.try_lock()) {
             stop();
             start();
-            MNOGLA_evtSubmitHostToApp(MNOGLA_eKeyToHost::AUDIO_RESTART, /*nArgs*/0);
+            MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::AUDIO_RESTART, /*nArgs*/0);
             restartingLock.unlock();
         }
     }
@@ -149,7 +149,7 @@ Java_com_android_MNOGLAJNI_MNOGLALIB_init(JNIEnv * /*env*/,
                                           jint width,
                                           jint height) {
     audio::start();
-    MNOGLA_coreInit(host_logI, host_logE);
+    MNOGLA::coreInit(host_logI, host_logE);
     MNOGLA_userInit(width, height);
 }
 
@@ -160,13 +160,13 @@ Java_com_android_MNOGLAJNI_MNOGLALIB_render(JNIEnv *, jclass) {
 
 extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_evt2(JNIEnv *, jclass, int32_t key, int32_t v1, int32_t v2) {
-    MNOGLA_evtSubmitHostToApp(key, /*nArgs*/2, v1, v2);
+    MNOGLA::evtSubmitHostToApp(key, /*nArgs*/2, v1, v2);
 }
 
 extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_evt3(JNIEnv *, jclass, int32_t key, int32_t v1, int32_t v2,
                                           int32_t v3) {
-    MNOGLA_evtSubmitHostToApp(key, /*nArgs*/3, v1, v2, v3);
+    MNOGLA::evtSubmitHostToApp(key, /*nArgs*/3, v1, v2, v3);
 }
 
 
