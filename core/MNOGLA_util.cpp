@@ -1,4 +1,5 @@
 #include "MNOGLA_util.h"
+#include "MNOGLA_utilInternal.h"
 
 #include <stdexcept>
 #include <string>
@@ -17,7 +18,7 @@ void checkGlError(const char* op) {
     throw runtime_error(e);
 }
 
-GLuint loadShader(GLenum shaderType, const char* pSource) {
+static GLuint loadShader(GLenum shaderType, const char* pSource) {
     GLuint shader = glCreateShader(shaderType);
     glShaderSource(shader, 1, &pSource, nullptr);
     glCompileShader(shader);
@@ -112,5 +113,6 @@ void draw(const xy_t& xyA, const xy_t& xyB, const rgb_t& rgb) {
 }  // namespace filledRect
 void initUtil() {
     filledRect::init();
+    instStackLine::init();
 }
 }  // namespace MNOGLA

@@ -52,7 +52,7 @@ void coreInit(logFun_t _logI, logFun_t _logE) {
     glewExperimental = 1;  // Needed for core profile
     if (glewInit() != GLEW_OK) throw runtime_error("Failed to initialize GLEW");
 #endif
+    glfwWindowHint(GLFW_SAMPLES, 4);
     initUtil();
-     
 }
-} // namespace MNOGLA
+}  // namespace MNOGLA

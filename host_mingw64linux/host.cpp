@@ -1,38 +1,36 @@
 // MNOGLA: mn's operating-system independent openGl ES application
 // this file: Windows host, to be used with minGW
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include <cstdarg>
 #include <stdexcept>
 
 #include "../MNOGLA.h"
+#include "../core/MNOGLA_includeGl.h"
 using std::runtime_error;
 
 static void window_size_callback(GLFWwindow* /*window*/, int width, int height) {
-    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, /*nArgs*/2, (int32_t)width, (int32_t)height);
+    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, /*nArgs*/ 2, (int32_t)width, (int32_t)height);
 }
 
 static void cursor_position_callback(GLFWwindow* /*window*/, double xpos, double ypos) {
-    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::PTR_MOVE, /*nArgs*/3, /*ix*/ 0, (int32_t)xpos, (int32_t)ypos);
+    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::PTR_MOVE, /*nArgs*/ 3, /*ix*/ 0, (int32_t)xpos, (int32_t)ypos);
 }
 
 void scroll_callback(GLFWwindow* /*window*/, double xoffset, double yoffset) {
     int32_t dx = xoffset < 0   ? -1
-             : xoffset > 0 ? 1
-                           : 0;
+                 : xoffset > 0 ? 1
+                               : 0;
     int32_t dy = yoffset < 0   ? -1
-             : yoffset > 0 ? 1
-                           : 0;
-    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::SCROLL, /*nArgs*/2, dx, dy);
+                 : yoffset > 0 ? 1
+                               : 0;
+    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::SCROLL, /*nArgs*/ 2, dx, dy);
 }
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     int32_t key = (action == GLFW_PRESS)     ? MNOGLA::eKeyToHost::BTNDOWN
-                   : (action == GLFW_RELEASE) ? MNOGLA::eKeyToHost::BTNUP
-                                              : MNOGLA::eKeyToHost::INV_NULL;
+                  : (action == GLFW_RELEASE) ? MNOGLA::eKeyToHost::BTNUP
+                                             : MNOGLA::eKeyToHost::INV_NULL;
     if (!key) return;
-    MNOGLA::evtSubmitHostToApp(key, /*nArgs*/1, button);
+    MNOGLA::evtSubmitHostToApp(key, /*nArgs*/ 1, button);
 }
 
 void logI_impl(const char* format, ...) {

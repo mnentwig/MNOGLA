@@ -3,6 +3,7 @@
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_util.h"
+#include "../core/MNOGLA_utilInternal.h"
 
 using std::runtime_error;
 
@@ -20,6 +21,9 @@ auto gFragmentShader =
 
 static GLuint gProgram = 0;
 static GLuint gvPositionHandle;
+static instStackLine* is;
+static int appW;
+static int appH;
 void MNOGLA_userInit(int w, int h) {
     // defer handling the initial size to the resize handler by creating an event
     MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
@@ -27,6 +31,18 @@ void MNOGLA_userInit(int w, int h) {
     gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
     gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
     MNOGLA::checkGlError("glGetAttribLocation");
+
+    is = new instStackLine();
+    renderText(is, "Hello World", glm::vec3(0.0f, 1.0f, 0.0f));
+    is->finalize();
+    appW = w;
+    appH = h;
+    glEnable(GL_DEPTH_TEST);
+    MNOGLA::checkGlError("gldepthtest");
+    glEnable(GL_BLEND);
+    MNOGLA::checkGlError("glblend");
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    MNOGLA::checkGlError("glblendfun");
 }
 
 void eventDispatcher() {
@@ -92,6 +108,15 @@ void MNOGLA_videoCbT0() {
     MNOGLA::xy_t ptB = {0.3f, 0.4f};
     MNOGLA::rgb_t col = {0.0f, 1.0f, 0.0f};
     MNOGLA::filledRect::draw(ptA, ptB, col);
+
+    glm::mat4 projText = glm::mat4(1.0f);
+    float textScale = 0.07*3;
+    projText[0].x = textScale;
+    projText[1].y = textScale;
+    projText[2].z = textScale;
+    projText[3].x = -1;
+    projText[3].y = 1;
+    is->run(projText, appW, appH);
 }
 
 float vol = 0;
