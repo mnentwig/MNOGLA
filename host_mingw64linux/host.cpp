@@ -95,7 +95,8 @@ int main(void) {
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    MNOGLA_init(winWidth, winHeight, logI_impl, logE_impl);
+    MNOGLA_coreInit(logI_impl, logE_impl);
+    MNOGLA_userInit(winWidth, winHeight);
 
     while (true) {
         glfwPollEvents();

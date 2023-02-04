@@ -1,7 +1,8 @@
-#include <cmath>  //M_PI
+#include <cmath>
 #include <stdexcept>
 
-#include "../util/util.hpp"
+#include "../MNOGLA.h"
+#include "../core/MNOGLA_util.h"
 
 using std::runtime_error;
 
@@ -93,14 +94,15 @@ void MNOGLA_videoCbT0() {
 float vol = 0;
 float freq = 0;
 void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames) {
+    const float twoPi = 2.0 * 3.14159265358979323846f;
     static float phi = 0;
-    float dPhi = freq / 48000.0f * 2.0f * M_PI;
+    float dPhi = freq / 48000.0f * twoPi;
     for (size_t ix = 0; ix < (size_t)numFrames; ++ix) {
         *(audioBuf++) = vol * cos(phi);
         phi += dPhi;
     }
-    int n = (int)(phi / (2 * M_PI));
-    phi -= (float)(n * (2 * M_PI));
+    int n = (int)(phi / twoPi);
+    phi -= (float)(n * twoPi);
 }
 
 void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2) {

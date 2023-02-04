@@ -18,9 +18,9 @@ typedef void (*logFun_t)(const char* format, ...);
 extern logFun_t logI;
 extern logFun_t logE;
 
-// host calls to initialize
-extern void MNOGLA_init(int w, int h, logFun_t logI, logFun_t logE);
-// user code implements this
+// host calls core to initialize
+extern void MNOGLA_coreInit(logFun_t logI, logFun_t logE);
+// host calls (user code must implement this)
 extern void MNOGLA_userInit(int w, int h);
 
 // host signals an event

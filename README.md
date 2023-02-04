@@ -14,3 +14,5 @@ Folder structure:
 "Host" meaning OS-dependent code to convert e.g. mouse events to messages.
 
 On Android, see https://github.com/android/ndk-samples/blob/main/gles3jni/app/src/main/cpp/CMakeLists.txt for possible improvements e.g. support lower versions (code is based on older gles2ini sample)
+
+![architecture diagram](doc/architecture.png)

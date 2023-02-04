@@ -149,7 +149,8 @@ Java_com_android_MNOGLAJNI_MNOGLALIB_init(JNIEnv * /*env*/,
                                           jint width,
                                           jint height) {
     audio::start();
-    MNOGLA_init(width, height, host_logI, host_logE);
+    MNOGLA_coreInit(host_logI, host_logE);
+    MNOGLA_userInit(width, height);
 }
 
 extern "C" [[maybe_unused]] JNIEXPORT void JNICALL

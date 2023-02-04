@@ -3,5 +3,8 @@ host_AndroidStudio/.idea/
 host_AndroidStudio/app/.cxx/
 host_AndroidStudio/app/build/
 host_AndroidStudio/local.properties
+host_mingw64linux/build/
 *.exe
 *.o
+*.a
+*.so

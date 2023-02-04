@@ -1,5 +1,5 @@
-#include "MNOGLA.h"
-#include "util/util.hpp"
+#include "../MNOGLA.h"
+#include "../core/MNOGLA_includeGl.h"
 #include <vector>
 #include <mutex>
 #include <cassert>
@@ -38,7 +38,7 @@ extern size_t MNOGLA_evtGetHostToApp(int32_t* dest){
   return n-1;
 }
 
-void MNOGLA_init(int w, int h, logFun_t _logI, logFun_t _logE) {
+void MNOGLA_coreInit(logFun_t _logI, logFun_t _logE) {
     logI = _logI;
     logE = _logE;
 
@@ -48,12 +48,4 @@ void MNOGLA_init(int w, int h, logFun_t _logI, logFun_t _logE) {
     glewExperimental = 1;  // Needed for core profile
     if (glewInit() != GLEW_OK) throw runtime_error("Failed to initialize GLEW");
 #endif
-
-    logI("Version", GL_VERSION);
-    logI("Vendor", GL_VENDOR);
-    logI("Renderer", GL_RENDERER);
-    logI("Extensions", GL_EXTENSIONS);
-
-    logI("setupGraphics(%d, %d)", w, h);
-    MNOGLA_userInit(w, h);
 }
