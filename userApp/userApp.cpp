@@ -110,13 +110,19 @@ void MNOGLA_videoCbT0() {
     MNOGLA::filledRect::draw(ptA, ptB, col);
 
     glm::mat4 projText = glm::mat4(1.0f);
-    float textScale = 0.07*3;
-    projText[0].x = textScale;
-    projText[1].y = textScale;
-    projText[2].z = textScale;
-    projText[3].x = -1;
-    projText[3].y = 1;
-    is->run(projText, appW, appH);
+    float textScale = 0.07 * 5;
+    for (int c = 0; c <= 4; ++c) {
+        float oX = (c == 1) ? -1 : (c == 2) ? 1
+                                            : 0;
+        float oY = (c == 3) ? -1 : (c == 4) ? 1
+                                            : 0;
+        projText[0].x = textScale;
+        projText[1].y = textScale;
+        projText[2].z = textScale;
+        projText[3].x = -1 + oX / (appW / 2.0f);
+        projText[3].y = 1 - oY / (appH / 2.0f);
+        is->run(projText);
+    }
 }
 
 float vol = 0;

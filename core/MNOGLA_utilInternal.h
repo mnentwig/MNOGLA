@@ -38,6 +38,6 @@ class instStackLine {
     unsigned int pushVertex(::glm::vec3 xyz, ::glm::vec3 rgb);
     void pushLine(int v1, int v2);
     void finalize();
-    void run(::glm::mat4 proj, float viewportX, float viewportY);
+    void run(::glm::mat4 proj);
 };
 void renderText(instStackLine* is, const char* text, glm::vec3 rgb);

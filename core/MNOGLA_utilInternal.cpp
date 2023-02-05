@@ -6,9 +6,6 @@
 
 #include "MNOGLA_util.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/intersect.hpp>
-
 #define LOCATION_COORD3D 0
 #define LOCATION_RGB 1
 #define LOCATION_MVP_COL0 2
@@ -26,8 +23,6 @@ void instStackLine::init() {
         "layout (location = 3) in vec4 mvp_col1;"
         "layout (location = 4) in vec4 mvp_col2;"
         "layout (location = 5) in vec4 mvp_col3;"
-        "layout (location = 6) in vec2 halfViewport;"
-        "out vec3 scr;"
         "out vec3 rgbv;"
         "void main(void) {"
         "     mat4 mvp2;"
@@ -37,10 +32,6 @@ void instStackLine::init() {
         "     mvp2[3] = mvp_col3;"
         "     vec4 pos = mvp2 * vec4(coord3d, 1.0);"
         "     gl_Position = pos;"
-        "     scr = vec3("
-        "     	pos.x*halfViewport.x + halfViewport.x*pos.w,"
-        "	pos.y*halfViewport.y + halfViewport.y*pos.w,"
-        "	pos.w);"
         "     rgbv = rgb;"
         "}";
     auto fs =
@@ -48,22 +39,10 @@ void instStackLine::init() {
         "precision mediump float;"
         "in vec3 rgbv;"
         "out vec4 fragmentColor;"
-        "in vec3 scr;"
         "void main(void) {"
-        "     vec2 lcxy = scr.xy / scr.z;"
-        "     float d = length(gl_FragCoord.xy - lcxy);"
-        "     float linewidth = 1.5f;"
-        "     d = d / linewidth;"
-        "     float b = 1.0f-d;"
-        "     b = min(b, 1.0f);"
-        "     b = max(b, 0.0f);"
-        "     fragmentColor = vec4(rgbv, b);"
-        "     float fragZ_eyeCoord = gl_FragCoord.z / gl_FragCoord.w;"
-        "     float zmul = 1.0-((fragZ_eyeCoord-8.0f) / 8.0f);"
-        "     zmul = max(zmul, 0.0);"
-        "     zmul = min(zmul, 1.0);"
-        "     fragmentColor.xyz *= zmul;"
+        "   fragmentColor = vec4(rgbv, 1.0f);"
         "}";
+
     prog = MNOGLA::createProgram(vs, fs);
 }
 GLuint instStackLine::prog;
@@ -108,11 +87,11 @@ void instStackLine::finalize() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void instStackLine::run(glm::mat4 proj, float viewportX, float viewportY) {
+void instStackLine::run(glm::mat4 proj) {
     assert(this->isFinalized);
 
-    glLineWidth(5.0);
-    MNOGLA::checkGlError("glLineWidth");
+    //glLineWidth(1.0f);
+    //MNOGLA::checkGlError("glLineWidth");
     glEnableVertexAttribArray(LOCATION_COORD3D);
     MNOGLA::checkGlError("enableVertAttrArr coord3d");
     glEnableVertexAttribArray(LOCATION_RGB);
@@ -136,13 +115,11 @@ void instStackLine::run(glm::mat4 proj, float viewportX, float viewportY) {
     MNOGLA::checkGlError("va4f");
     glVertexAttrib4f(LOCATION_MVP_COL3, proj[3][0], proj[3][1], proj[3][2], proj[3][3]);
     MNOGLA::checkGlError("va4f");
-    glVertexAttrib2f(LOCATION_HALFVIEWPORT, viewportX / 2.0f, viewportY / 2.0f);
-    MNOGLA::checkGlError("va4f");
 
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    MNOGLA::checkGlError("polyOffsetFill");
-    glPolygonOffset(1.0f, 1.0f);
-    MNOGLA::checkGlError("polyOffset");
+    //glEnable(GL_POLYGON_OFFSET_FILL);
+    //MNOGLA::checkGlError("polyOffsetFill");
+    //glPolygonOffset(1.0f, 1.0f);
+    //MNOGLA::checkGlError("polyOffset");
 
     // draw outlines in green
     glUseProgram(this->prog);
