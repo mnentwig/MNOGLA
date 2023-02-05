@@ -1,8 +1,9 @@
 #include "MNOGLA_util.h"
-#include "MNOGLA_utilInternal.h"
 
 #include <stdexcept>
 #include <string>
+
+#include "MNOGLA_utilInternal.h"
 using std::string, std::runtime_error, std::to_string;
 #include "../MNOGLA.h"
 
@@ -107,7 +108,10 @@ void draw(const xy_t& xyA, const xy_t& xyB, const rgb_t& rgb) {
     checkGlError("glEnableVertexAttribArray");
     glVertexAttrib3f(argLoc_rgb, rgb.r, rgb.g, rgb.b);
     checkGlError("glVertexAttrib3f");
-    glDrawArrays(GL_TRIANGLE_STRIP, /*first vertex*/0, /*vertex count*/4);
+    glDisableVertexAttribArray(argLoc_rgb);
+    checkGlError("disVertAttr");
+
+    glDrawArrays(GL_TRIANGLE_STRIP, /*first vertex*/ 0, /*vertex count*/ 4);
     checkGlError("glDrawArrays");
 }
 }  // namespace filledRect
@@ -115,4 +119,15 @@ void initUtil() {
     filledRect::init();
     instStackLine::init();
 }
+
+namespace text2d {
+void draw(const char* text, const glm::vec2& pos, const glm::vec2& screenWH, float fontHeight, const glm::vec3& rgb) {
+    instStackLine is;
+    renderText(&is, "Hello World", rgb);
+    is.finalize();
+    glm::mat4 p = getTextProj2d(pos, screenWH, fontHeight);
+    is.run(p);
+}
+}  // namespace text2d
+
 }  // namespace MNOGLA

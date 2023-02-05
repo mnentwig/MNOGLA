@@ -135,10 +135,11 @@ void instStackLine::run(glm::mat4 proj) {
     MNOGLA::checkGlError("bindBuf 0");
     glDisableVertexAttribArray(LOCATION_COORD3D);
     MNOGLA::checkGlError("disVertAttr");
+    glDisableVertexAttribArray(LOCATION_RGB);
+    MNOGLA::checkGlError("disVertAttr");
     glUseProgram(0);
     MNOGLA::checkGlError("useProg 0");
 }
-
 instStackLine::~instStackLine() {
     if (this->isFinalized) {
         glDeleteBuffers(1, &this->idLine);
@@ -179,7 +180,7 @@ void renderText(instStackLine* is, const char* text, glm::vec3 rgb) {
 
 glm::mat4 getTextProj2d(glm::vec2 pos, glm::vec2 screenWH, float fontHeight) {
     glm::mat4 p = glm::mat4(1.0f);
-    float scale = fontHeight / (2.0f * screenWH.y);
+    float scale = fontHeight / (screenWH.y / 2.0f);
 
     p[0].x = scale;
     p[1].y = scale;

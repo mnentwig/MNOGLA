@@ -41,3 +41,4 @@ class instStackLine {
     void run(::glm::mat4 proj);
 };
 void renderText(instStackLine* is, const char* text, glm::vec3 rgb);
+glm::mat4 getTextProj2d(glm::vec2 pos, glm::vec2 screenWH, float fontHeight);

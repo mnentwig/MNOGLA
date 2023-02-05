@@ -21,7 +21,6 @@ auto gFragmentShader =
 
 static GLuint gProgram = 0;
 static GLuint gvPositionHandle;
-static instStackLine* is;
 static int appW;
 static int appH;
 void MNOGLA_userInit(int w, int h) {
@@ -32,9 +31,6 @@ void MNOGLA_userInit(int w, int h) {
     gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
     MNOGLA::checkGlError("glGetAttribLocation");
 
-    is = new instStackLine();
-    renderText(is, "Hello World", glm::vec3(0.0f, 1.0f, 0.0f));
-    is->finalize();
     appW = w;
     appH = h;
     glEnable(GL_DEPTH_TEST);
@@ -82,6 +78,9 @@ void eventDispatcher() {
 static const GLfloat gTriangleVertices[] = {0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f};
 
 void MNOGLA_videoCbT0() {
+    const bool trace = false;
+    if (trace) MNOGLA::logI("videoCbT0: eventDispatcher");
+
     eventDispatcher();
 
     static float grey;
@@ -89,11 +88,13 @@ void MNOGLA_videoCbT0() {
     // if (grey > 1.0f) {
     grey = 0.0f;
     //}
+    if (trace) MNOGLA::logI("videoCbT0: glClear");
     glClearColor(grey, grey, grey, 1.0f);
     MNOGLA::checkGlError("glClearColor");
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     MNOGLA::checkGlError("glClear");
 
+    if (trace) MNOGLA::logI("videoCbT0: glProg for Tri");
     glUseProgram(gProgram);
     MNOGLA::checkGlError("glUseProgram");
 
@@ -104,27 +105,29 @@ void MNOGLA_videoCbT0() {
     MNOGLA::checkGlError("glEnableVertexAttribArray");
     glDrawArrays(GL_TRIANGLES, 0, 3);
     MNOGLA::checkGlError("glDrawArrays");
+    if (trace) MNOGLA::logI("videoCbT0: filled rect");
     MNOGLA::xy_t ptA = {0.1f, 0.1f};
     MNOGLA::xy_t ptB = {0.3f, 0.4f};
     MNOGLA::rgb_t col = {0.0f, 1.0f, 0.0f};
     MNOGLA::filledRect::draw(ptA, ptB, col);
+    if (trace) MNOGLA::logI("videoCbT0: filled rect done");
 
-    glm::mat4 projText = glm::mat4(1.0f);
-    float textScale = 0.07 * 5;
-    for (int c = 0; c <= 4; ++c) {
-        float oX = (c == 1) ? -1 : (c == 2) ? 1
-                                            : 0;
-        float oY = (c == 3) ? -1 : (c == 4) ? 1
-                                            : 0;
-        projText[0].x = textScale;
-        projText[1].y = textScale;
-        projText[2].z = textScale;
-        projText[3].x = -1 + oX / (appW / 2.0f);
-        projText[3].y = 1 - oY / (appH / 2.0f);
-        is->run(projText);
+    //    for (int c = 0; c <= 4; ++c) {
+    //      float oX = (c == 1) ? -1 : (c == 2) ? 1
+    //                                        : 0;
+    //  float oY = (c == 3) ? -1 : (c == 4) ? 1
+    //                                    : 0;
+    const glm::vec2 screenWH(appW, appH);
+    const glm::vec3 rgb(0.0f, 1.0f, 0.0f);
+    for (float row = 0; row < 10; ++row) {
+        if (trace) MNOGLA::logI("text row %d start", (int)row);
+        float textsize = 20;
+        glm::vec2 pos(textsize, row * textsize);
+        MNOGLA::text2d::draw("Hello world", pos, screenWH, textsize, rgb);
+        if (trace) MNOGLA::logI("text row %d done", (int)row);
     }
+    if (trace) MNOGLA::logI("videoCbT0: frame done");
 }
-
 float vol = 0;
 float freq = 0;
 void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames) {
