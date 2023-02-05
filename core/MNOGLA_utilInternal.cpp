@@ -90,8 +90,8 @@ void instStackLine::finalize() {
 void instStackLine::run(glm::mat4 proj) {
     assert(this->isFinalized);
 
-    //glLineWidth(1.0f);
-    //MNOGLA::checkGlError("glLineWidth");
+    // glLineWidth(1.0f);
+    // MNOGLA::checkGlError("glLineWidth");
     glEnableVertexAttribArray(LOCATION_COORD3D);
     MNOGLA::checkGlError("enableVertAttrArr coord3d");
     glEnableVertexAttribArray(LOCATION_RGB);
@@ -116,10 +116,10 @@ void instStackLine::run(glm::mat4 proj) {
     glVertexAttrib4f(LOCATION_MVP_COL3, proj[3][0], proj[3][1], proj[3][2], proj[3][3]);
     MNOGLA::checkGlError("va4f");
 
-    //glEnable(GL_POLYGON_OFFSET_FILL);
-    //MNOGLA::checkGlError("polyOffsetFill");
-    //glPolygonOffset(1.0f, 1.0f);
-    //MNOGLA::checkGlError("polyOffset");
+    // glEnable(GL_POLYGON_OFFSET_FILL);
+    // MNOGLA::checkGlError("polyOffsetFill");
+    // glPolygonOffset(1.0f, 1.0f);
+    // MNOGLA::checkGlError("polyOffset");
 
     // draw outlines in green
     glUseProgram(this->prog);
@@ -147,32 +147,44 @@ instStackLine::~instStackLine() {
 }
 
 #include "rowmans.h"
-void renderText(instStackLine* is, const char* text, glm::vec3 rgb){
-  float curX = 0;
-  float f = 1.0/(float)rowmans_height;
-  while (*text != 0){
-    int glyphIx = *text - 32;
-    ++text;
-    assert(glyphIx >= 0);
-    assert(glyphIx < rowmans_count);
+void renderText(instStackLine* is, const char* text, glm::vec3 rgb) {
+    float curX = 0;
+    float f = 1.0 / (float)rowmans_height;
+    while (*text != 0) {
+        int glyphIx = *text - 32;
+        ++text;
+        assert(glyphIx >= 0);
+        assert(glyphIx < rowmans_count);
 
-    const char* data = rowmans[glyphIx];
-    char nNums = rowmans_size[glyphIx];
-    float glyphWidth = rowmans_width[glyphIx];
-    for (int ix = 0; ix < nNums; ix += 4){
-      float x1 = (float)data[ix+0];
-      float y1 = -(float)data[ix+1];
-      float x2 = (float)data[ix+2];
-      float y2 = -(float)data[ix+3];
-      
-      x1 += curX;
-      x2 += curX;
+        const char* data = rowmans[glyphIx];
+        char nNums = rowmans_size[glyphIx];
+        float glyphWidth = rowmans_width[glyphIx];
+        for (int ix = 0; ix < nNums; ix += 4) {
+            float x1 = (float)data[ix + 0];
+            float y1 = -(float)data[ix + 1];
+            float x2 = (float)data[ix + 2];
+            float y2 = -(float)data[ix + 3];
 
-      const float z = 0.0f;
-      int v1 = is->pushVertex(glm::vec3(f*x1, f*y1, z), rgb);
-      int v2 = is->pushVertex(glm::vec3(f*x2, f*y2, z), rgb);
-      is->pushLine(v1, v2);
+            x1 += curX;
+            x2 += curX;
+
+            const float z = 0.0f;
+            int v1 = is->pushVertex(glm::vec3(f * x1, f * y1, z), rgb);
+            int v2 = is->pushVertex(glm::vec3(f * x2, f * y2, z), rgb);
+            is->pushLine(v1, v2);
+        }
+        curX += glyphWidth;
     }
-    curX += glyphWidth;
-  }
+}
+
+glm::mat4 getTextProj2d(glm::vec2 pos, glm::vec2 screenWH, float fontHeight) {
+    glm::mat4 p = glm::mat4(1.0f);
+    float scale = fontHeight / (2.0f * screenWH.y);
+
+    p[0].x = scale;
+    p[1].y = scale;
+    p[2].z = scale;
+    p[3].x = -1.0f + pos.x / (screenWH.x / 2.0f);
+    p[3].y = 1.0f - pos.y / (screenWH.y / 2.0f);
+    return p;
 }
