@@ -1,9 +1,10 @@
 #include <cmath>
 #include <stdexcept>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_util.h"
-#include "../core/MNOGLA_utilInternal.h"
 
 using std::runtime_error;
 

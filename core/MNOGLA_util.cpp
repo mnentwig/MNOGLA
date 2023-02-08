@@ -3,9 +3,15 @@
 #include <stdexcept>
 #include <string>
 
-#include "MNOGLA_utilInternal.h"
 using std::string, std::runtime_error, std::to_string;
 #include "../MNOGLA.h"
+
+namespace MNOGLA::filledRect {
+void init();
+}
+namespace MNOGLA::text2d {
+void init();
+}
 
 namespace MNOGLA {
 void checkGlError(const char* op) {
@@ -68,66 +74,11 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
     return program;
 }
 
-namespace filledRect {
-namespace prot {
-static GLuint prog;
-const GLuint argLoc_coord2d = 0;
-const GLuint argLoc_rgb = 1;
-}  // namespace prot
-using namespace prot;
-void init() {
-    auto vShader =
-        "#version 300 es\n"
-        "layout (location = 0) in vec2 coord2d;\n"
-        "layout (location = 1) in vec3 rgb;\n"
-        "out vec3 rgbv;\n"
-        "void main() {\n"
-        "  gl_Position = vec4(coord2d, 0, 1.0f);\n"
-        "  rgbv = rgb;\n"
-        "}\n";
-
-    auto fragShader =
-        "#version 300 es\n"
-        "precision mediump float;\n"
-        "in vec3 rgbv;\n"
-        "out vec4 fragmentColor;\n"
-        "void main() {\n"
-        "  fragmentColor = vec4(rgbv, 1.0f);\n"
-        "}\n";
-
-    prog = createProgram(vShader, fragShader);
-}
-
-void draw(const xy_t& xyA, const xy_t& xyB, const rgb_t& rgb) {
-    glUseProgram(prog);
-    checkGlError("glUseProgram");
-    GLfloat vertices[4 * 2] = {xyA.x, xyA.y, xyA.x, xyB.y, xyB.x, xyA.y, xyB.x, xyB.y};
-    glVertexAttribPointer(argLoc_coord2d, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-    checkGlError("glVertexAttribPointer");
-    glEnableVertexAttribArray(argLoc_coord2d);
-    checkGlError("glEnableVertexAttribArray");
-    glVertexAttrib3f(argLoc_rgb, rgb.r, rgb.g, rgb.b);
-    checkGlError("glVertexAttrib3f");
-    glDisableVertexAttribArray(argLoc_rgb);
-    checkGlError("disVertAttr");
-
-    glDrawArrays(GL_TRIANGLE_STRIP, /*first vertex*/ 0, /*vertex count*/ 4);
-    checkGlError("glDrawArrays");
-}
-}  // namespace filledRect
 void initUtil() {
     filledRect::init();
-    instStackLine::init();
+    text2d::init();
 }
-
-namespace text2d {
-void draw(const char* text, const glm::vec2& pos, const glm::vec2& screenWH, float fontHeight, const glm::vec3& rgb) {
-    instStackLine is;
-    renderText(&is, "Hello World", rgb);
-    is.finalize();
-    glm::mat4 p = getTextProj2d(pos, screenWH, fontHeight);
-    is.run(p);
-}
-}  // namespace text2d
 
 }  // namespace MNOGLA
+#include "util_drawText.cpp"
+#include "util_filledRect.cpp"

@@ -11,7 +11,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic")
 add_library(MNOGLA_core STATIC
             ../core/MNOGLA.cpp
             ../core/MNOGLA_util.cpp
-            ../core/MNOGLA_utilInternal.cpp
 )
 
 if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MINGW")

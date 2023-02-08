@@ -1,10 +1,49 @@
-#include "MNOGLA_utilInternal.h"
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <vector>
 
-#include <string.h>
-
-#include <stdexcept>
-
+#include "MNOGLA_includeGl.h"
 #include "MNOGLA_util.h"
+namespace MNOGLA::text2d::details {
+class instStackLine {
+   public:
+    static void init();
+
+   protected:
+    static GLuint prog;
+    bool isFinalized = false;
+
+    struct myGlLine {
+        GLushort v1;
+        GLushort v2;
+    };
+
+    struct myGlVertex {
+        GLfloat x;
+        GLfloat y;
+        GLfloat z;
+        GLfloat r;
+        GLfloat g;
+        GLfloat b;
+    };
+
+    std::vector<myGlLine> lineList;
+    std::vector<myGlVertex> vertexList;
+
+    // post-finalize
+    GLuint idVertex;
+    GLuint idLine;
+
+   public:
+    instStackLine();
+    ~instStackLine();
+    unsigned int pushVertex(::glm::vec3 xyz, ::glm::vec3 rgb);
+    void pushLine(int v1, int v2);
+    void finalize();
+    void run(::glm::mat4 proj);
+};
+void renderText(instStackLine* is, const char* text, glm::vec3 rgb);
+glm::mat4 getTextProj2d(glm::vec2 pos, glm::vec2 screenWH, float fontHeight);
 
 #define LOCATION_COORD3D 0
 #define LOCATION_RGB 1
@@ -189,3 +228,18 @@ glm::mat4 getTextProj2d(glm::vec2 pos, glm::vec2 screenWH, float fontHeight) {
     p[3].y = 1.0f - pos.y / (screenWH.y / 2.0f);
     return p;
 }
+}  // namespace MNOGLA::text2d::details
+
+namespace MNOGLA::text2d {
+// using ::MNOGLA::text2d::details;
+void draw(const char* text, const glm::vec2& pos, const glm::vec2& screenWH, float fontHeight, const glm::vec3& rgb) {
+    MNOGLA::text2d::details::instStackLine is;
+    renderText(&is, text, rgb);
+    is.finalize();
+    glm::mat4 p = MNOGLA::text2d::details::getTextProj2d(pos, screenWH, fontHeight);
+    is.run(p);
+}
+void init() {
+    MNOGLA::text2d::details::instStackLine::init();
+}
+}  // namespace MNOGLA::text2d
