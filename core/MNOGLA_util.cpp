@@ -74,11 +74,20 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
     return program;
 }
 
+GLint getArgLoc(GLuint prog, const char* argName) {
+    GLint r = glGetAttribLocation(prog, argName);
+    MNOGLA::checkGlError((std::string("glGetAttribLocation:") + argName).c_str());
+    if (r < 0) throw runtime_error(std::string("failed to getAttribLocation ") + argName);
+    return r;
+}
+
 void initUtil() {
     filledRect::init();
     text2d::init();
+    outlinedRect::init();
 }
 
 }  // namespace MNOGLA
+#include "src/outlinedRect.cpp"
 #include "util_drawText.cpp"
 #include "util_filledRect.cpp"

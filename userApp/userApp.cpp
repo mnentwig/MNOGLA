@@ -1,7 +1,7 @@
 #include <cmath>
-#include <stdexcept>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <stdexcept>
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_util.h"
@@ -25,6 +25,8 @@ static GLuint gvPositionHandle;
 static int appW;
 static int appH;
 void MNOGLA_userInit(int w, int h) {
+    appW = -1;
+    appH = -1;  // invalid (used only for sanity check)
     // defer handling the initial size to the resize handler by creating an event
     MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
 
@@ -32,8 +34,6 @@ void MNOGLA_userInit(int w, int h) {
     gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
     MNOGLA::checkGlError("glGetAttribLocation");
 
-    appW = w;
-    appH = h;
     glEnable(GL_DEPTH_TEST);
     MNOGLA::checkGlError("gldepthtest");
     glEnable(GL_BLEND);
@@ -50,7 +50,9 @@ void eventDispatcher() {
         if (!n) break;
         switch (key) {
             case MNOGLA::eKeyToHost::WINSIZE:
-                glViewport(0, 0, buf[1], buf[2]);
+                appW = buf[1];
+                appH = buf[2];
+                glViewport(0, 0, appW, appH);
                 continue;
             default:
                 break;
@@ -83,6 +85,8 @@ void MNOGLA_videoCbT0() {
     if (trace) MNOGLA::logI("videoCbT0: eventDispatcher");
 
     eventDispatcher();
+    if ((appW < 0) || (appH < 0)) throw runtime_error("window size not initialized");
+    const glm::vec2 screenWH(appW, appH);
 
     static float grey;
     grey += 0.01f;
@@ -94,6 +98,7 @@ void MNOGLA_videoCbT0() {
     MNOGLA::checkGlError("glClearColor");
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     MNOGLA::checkGlError("glClear");
+#if 0
 
     if (trace) MNOGLA::logI("videoCbT0: glProg for Tri");
     glUseProgram(gProgram);
@@ -118,7 +123,6 @@ void MNOGLA_videoCbT0() {
     //                                        : 0;
     //  float oY = (c == 3) ? -1 : (c == 4) ? 1
     //                                    : 0;
-    const glm::vec2 screenWH(appW, appH);
     const glm::vec3 rgb(0.0f, 1.0f, 0.0f);
     for (float row = 0; row < 10; ++row) {
         if (trace) MNOGLA::logI("text row %d start", (int)row);
@@ -127,6 +131,14 @@ void MNOGLA_videoCbT0() {
         MNOGLA::text2d::draw("Hello world", pos, screenWH, textsize, rgb);
         if (trace) MNOGLA::logI("text row %d done", (int)row);
     }
+#endif
+    if (trace) MNOGLA::logI("videoCbT0: drawing rect");
+    float w = 10.0f;
+    glm::vec2 ptC(w, w);
+    glm::vec2 ptD(appW - w, appH - w);
+    glm::vec3 rgb2(0.0, 1.0, 1.0);
+    MNOGLA::outlinedRect::draw(ptC, ptD, w, rgb2, screenWH);
+
     if (trace) MNOGLA::logI("videoCbT0: frame done");
 }
 float vol = 0;
