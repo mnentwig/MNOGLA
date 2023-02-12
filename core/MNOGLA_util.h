@@ -1,13 +1,24 @@
 #pragma once
 #include <glm/fwd.hpp>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_includeGl.h"
 using std::vector;
 
+#define GLCHK(expr)                                       \
+    {                                                     \
+        (expr);                                           \
+        MNOGLA::haltIfGlError(#expr, __FILE__, __LINE__); \
+    }
+
 namespace MNOGLA {
-typedef struct {
+
+void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourceline);
+
+typedef struct {  // use glm instead
     float r;
     float g;
     float b;
@@ -23,6 +34,7 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource);
 GLint getArgLoc(GLuint prog, const char* argName);
 
 void initUtil();
+void deinitUtil();
 namespace filledRect {
 void draw(const xy_t& xyA, const xy_t& xyB, const rgb_t& rgb);
 }  // namespace filledRect

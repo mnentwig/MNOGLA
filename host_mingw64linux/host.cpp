@@ -91,12 +91,12 @@ int main(void) {
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
-//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     MNOGLA::coreInit(logI_impl, logE_impl);
     MNOGLA_userInit(winWidth, winHeight);
 
-    while (true) {
+    while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         if (glfwWindowShouldClose(window))
             break;
@@ -109,6 +109,8 @@ int main(void) {
         glfwSwapBuffers(window);
 #endif
     }
+    MNOGLA::coreDeinit();
+
     glfwTerminate();
 
     return 0;

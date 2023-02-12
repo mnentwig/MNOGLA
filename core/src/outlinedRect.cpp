@@ -25,15 +25,31 @@ namespace MNOGLA {
 
     prog = MNOGLA::createProgram(vs, fs);
 
+    // === argument locations ===
     argLoc_coord2d = MNOGLA::getArgLoc(prog, "coord2d");
     argLoc_rgb = MNOGLA::getArgLoc(prog, "rgb");
     argLoc_scale = MNOGLA::getArgLoc(prog, "scale");
     argLoc_offset = MNOGLA::getArgLoc(prog, "offset");
+
+    // === buffers ===
+    GLCHK(glGenBuffers(1, &vertexBuf));
+    GLCHK(glGenBuffers(1, &indexBuf));
+
+    // triangle strip point indices
+    const GLushort vertexIndex[] = {0, 4, 1, 5, 3, 7, 2, 6, 0, 4};
+    nVertexIndices = sizeof(vertexIndex) / sizeof(vertexIndex[0]);
+
+    GLCHK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuf));
+    GLCHK(glBufferData(GL_ELEMENT_ARRAY_BUFFER, /*nBytes*/ sizeof(vertexIndex), /*ptr*/ &vertexIndex[0], GL_STATIC_DRAW));
+}
+
+/*static!*/ void outlinedRect::deinit() {
+    GLCHK(glDeleteBuffers(1, &vertexBuf));
+    GLCHK(glDeleteBuffers(1, &indexBuf));
 }
 
 /*static!*/ void outlinedRect::draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
-    glUseProgram(prog);
-    MNOGLA::checkGlError("glUseProgram");
+    GLCHK(glUseProgram(prog));
 
     // (a)0.........1...
     // ..(c)4.....5.....
@@ -53,84 +69,45 @@ namespace MNOGLA {
         ::glm::vec2(c.x, d.y),   // 6
         ::glm::vec2(d.x, d.y)};  // 7
 
-    // triangle strip point indices
-    const GLushort vertexIndex[] = {0, 4, 1, 5, 3, 7, 2, 6, 0, 4};
-    const size_t nVertexIndices = sizeof(vertexIndex) / sizeof(vertexIndex[0]);
-
-    // === buffers ===
-    GLuint vertexBuf;
-    GLuint indexBuf;
-    glGenBuffers(1, &vertexBuf);
-    MNOGLA::checkGlError("genBuf vertex");
-    glGenBuffers(1, &indexBuf);
-    MNOGLA::checkGlError("genBuf index");
-
-    glDisable(GL_DEPTH_TEST);
-    MNOGLA::checkGlError("depthtest");
-
-    glUseProgram(prog);
-    MNOGLA::checkGlError("glUseProgram");
+    GLCHK(glDisable(GL_DEPTH_TEST));
 
     // == vertex locations ===
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuf);
-    MNOGLA::checkGlError("bindBuf vertex");
+    GLCHK(glBindBuffer(GL_ARRAY_BUFFER, vertexBuf));
+    GLCHK(glVertexAttribPointer(argLoc_coord2d, /*xy*/ 2, GL_FLOAT, GL_FALSE, 0, NULL));
+    GLCHK(glEnableVertexAttribArray(argLoc_coord2d));
 
-    glVertexAttribPointer(argLoc_coord2d, /*xy*/ 2, GL_FLOAT, GL_FALSE, 0, NULL);
-    MNOGLA::checkGlError("glVertexAttribPointer");
-
-    glEnableVertexAttribArray(argLoc_coord2d);
-    MNOGLA::checkGlError("glEnableVertexAttribArray");
-
-    glBufferData(GL_ARRAY_BUFFER, /*nBytes*/ sizeof(vertexLocation), /*ptr*/ &vertexLocation[0], GL_STATIC_DRAW);
-    MNOGLA::checkGlError("bufData vertexLocation");
-
-    glVertexAttribDivisor(argLoc_coord2d, 0);
-    MNOGLA::checkGlError("vertexAttribDiv");
+    GLCHK(glBufferData(GL_ARRAY_BUFFER, /*nBytes*/ sizeof(vertexLocation), /*ptr*/ &vertexLocation[0], GL_STATIC_DRAW));
+    GLCHK(glVertexAttribDivisor(argLoc_coord2d, 0));
 
     // === index list ===
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuf);
-    MNOGLA::checkGlError("bindBuf index");
-
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, /*nBytes*/ sizeof(vertexIndex), /*ptr*/ &vertexIndex[0], GL_STATIC_DRAW);
-    MNOGLA::checkGlError("bufData line");
+    GLCHK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuf));
 
     // === color ===
-    glVertexAttrib3f(argLoc_rgb, rgb.r, rgb.g, rgb.b);
-    MNOGLA::checkGlError("glVertexAttrib3f");
-    glDisableVertexAttribArray(argLoc_rgb);
-    MNOGLA::checkGlError("disVertAttr");
-    glVertexAttribDivisor(argLoc_rgb, 0);
-    MNOGLA::checkGlError("vaDiv rgb");
+    GLCHK(glVertexAttrib3f(argLoc_rgb, rgb.r, rgb.g, rgb.b));
+    GLCHK(glDisableVertexAttribArray(argLoc_rgb));
+    GLCHK(glVertexAttribDivisor(argLoc_rgb, 0));
 
-    // === matrix ===
-    glVertexAttrib2f(argLoc_scale, 2.0f / screen.x, 2.0f / screen.y);
-    MNOGLA::checkGlError("va2f");
-    glVertexAttrib2f(argLoc_offset, -1.0f, -1.0f);
-    MNOGLA::checkGlError("va2f");
+    // === mapping ===
+    GLCHK(glVertexAttrib2f(argLoc_scale, 2.0f / screen.x, 2.0f / screen.y));
+    GLCHK(glVertexAttrib2f(argLoc_offset, -1.0f, -1.0f));
 
     // === draw ===
-    glDrawElements(GL_TRIANGLE_STRIP, nVertexIndices, GL_UNSIGNED_SHORT, 0);
-    MNOGLA::checkGlError("glDrawArrays");
+    GLCHK(glDrawElements(GL_TRIANGLE_STRIP, nVertexIndices, GL_UNSIGNED_SHORT, 0));
 
     // === clean up ===
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    MNOGLA::checkGlError("bindBuf 0");
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    MNOGLA::checkGlError("bindBuf 0");
-    glDisableVertexAttribArray(argLoc_coord2d);
-    MNOGLA::checkGlError("disVertAttr");
-    glUseProgram(0);
-    MNOGLA::checkGlError("useProg 0");
-    glDeleteBuffers(1, &vertexBuf);
-    MNOGLA::checkGlError("delBuf");
-    glDeleteBuffers(1, &indexBuf);
-    MNOGLA::checkGlError("delBuf");
+    GLCHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCHK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    GLCHK(glDisableVertexAttribArray(argLoc_coord2d));
+    GLCHK(glUseProgram(0));
 }
 }  // namespace MNOGLA
 namespace MNOGLA_internal {
+GLuint outlinedRectInternal::vertexBuf;
+GLuint outlinedRectInternal::indexBuf;
 GLuint outlinedRectInternal::prog;
 GLint outlinedRectInternal::argLoc_coord2d;
 GLint outlinedRectInternal::argLoc_rgb;
 GLint outlinedRectInternal::argLoc_scale;
 GLint outlinedRectInternal::argLoc_offset;
+size_t outlinedRectInternal::nVertexIndices;
 }  // namespace MNOGLA_internal

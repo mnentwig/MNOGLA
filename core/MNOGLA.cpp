@@ -55,4 +55,7 @@ void coreInit(logFun_t _logI, logFun_t _logE) {
     glfwWindowHint(GLFW_SAMPLES, 4);
     initUtil();
 }
+void coreDeinit() {
+    deinitUtil();
+}
 }  // namespace MNOGLA

@@ -24,6 +24,7 @@ extern logFun_t logE;
 
 // host calls core to initialize
 void coreInit(logFun_t logI, logFun_t logE);
+void coreDeinit();
 
 // host signals an event
 void evtSubmitHostToApp(int32_t key, size_t nArgs, ...);
