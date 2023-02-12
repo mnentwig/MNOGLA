@@ -1,5 +1,4 @@
 #include "../MNOGLA_util.h"
-#include "../util_outlinedRect.h"
 
 namespace MNOGLA {
 /*static!*/ void outlinedRect::init() {
@@ -23,13 +22,13 @@ namespace MNOGLA {
         "   fragmentColor = vec4(rgbv, 1.0f);"
         "}";
 
-    prog = MNOGLA::createProgram(vs, fs);
+    prog = createProgram(vs, fs);
 
     // === argument locations ===
-    argLoc_coord2d = MNOGLA::getArgLoc(prog, "coord2d");
-    argLoc_rgb = MNOGLA::getArgLoc(prog, "rgb");
-    argLoc_scale = MNOGLA::getArgLoc(prog, "scale");
-    argLoc_offset = MNOGLA::getArgLoc(prog, "offset");
+    argLoc_coord2d = getArgLoc(prog, "coord2d");
+    argLoc_rgb = getArgLoc(prog, "rgb");
+    argLoc_scale = getArgLoc(prog, "scale");
+    argLoc_offset = getArgLoc(prog, "offset");
 
     // === buffers ===
     GLCHK(glGenBuffers(1, &vertexBuf));
@@ -88,8 +87,10 @@ namespace MNOGLA {
     GLCHK(glVertexAttribDivisor(argLoc_rgb, 0));
 
     // === mapping ===
-    GLCHK(glVertexAttrib2f(argLoc_scale, 2.0f / screen.x, 2.0f / screen.y));
-    GLCHK(glVertexAttrib2f(argLoc_offset, -1.0f, -1.0f));
+    GLCHK(glVertexAttrib2f(argLoc_scale, 2.0f / screen.x, -2.0f / screen.y));
+    GLCHK(glDisableVertexAttribArray(argLoc_scale));
+    GLCHK(glVertexAttrib2f(argLoc_offset, -1.0f, 1.0f));
+    GLCHK(glDisableVertexAttribArray(argLoc_offset));
 
     // === draw ===
     GLCHK(glDrawElements(GL_TRIANGLE_STRIP, nVertexIndices, GL_UNSIGNED_SHORT, 0));

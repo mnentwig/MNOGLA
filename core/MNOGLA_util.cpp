@@ -4,11 +4,7 @@
 #include <string>
 
 using std::string, std::runtime_error, std::to_string;
-#include "../MNOGLA.h"
 
-namespace MNOGLA::filledRect {
-void init();
-}
 namespace MNOGLA::text2d {
 void init();
 }
@@ -76,7 +72,7 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
 
 GLint getArgLoc(GLuint prog, const char* argName) {
     GLint r = glGetAttribLocation(prog, argName);
-    MNOGLA::checkGlError((std::string("glGetAttribLocation:") + argName).c_str());
+    checkGlError((std::string("glGetAttribLocation:") + argName).c_str());
     if (r < 0) throw runtime_error(std::string("failed to getAttribLocation ") + argName);
     return r;
 }
@@ -115,11 +111,15 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
         else
             r = r + ";" + s;
     r = "glError: " + r + " at " + std::string(sourcefile) + " (line " + std::to_string(sourceline) + "): " + std::string(sourceExpr);
-    MNOGLA::logE("%s", r.c_str());
+    ::MNOGLA::logE("%s", r.c_str());
     throw std::runtime_error(r);
 }
 
 }  // namespace MNOGLA
+
+// === pull in various source files per include ===
+// - keeps CMAKE input file simple
+// - enables additional optimizations over independent object files
 #include "src/outlinedRect.cpp"
 #include "util_drawText.cpp"
-#include "util_filledRect.cpp"
+#include "src/filledRect.cpp"

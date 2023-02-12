@@ -98,6 +98,13 @@ void MNOGLA_videoCbT0() {
     MNOGLA::checkGlError("glClearColor");
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     MNOGLA::checkGlError("glClear");
+
+    if (trace) MNOGLA::logI("videoCbT0: filled rect");
+    ::glm::vec2 ptA(400, 100);
+    ::glm::vec2 ptB(500, 150);
+    ::glm::vec3 col(0.0f, 1.0f, 0.0f);
+    MNOGLA::filledRect::draw(ptA, ptB, col, screenWH);
+
 #if 0
 
     if (trace) MNOGLA::logI("videoCbT0: glProg for Tri");
@@ -111,11 +118,6 @@ void MNOGLA_videoCbT0() {
     MNOGLA::checkGlError("glEnableVertexAttribArray");
     glDrawArrays(GL_TRIANGLES, 0, 3);
     MNOGLA::checkGlError("glDrawArrays");
-    if (trace) MNOGLA::logI("videoCbT0: filled rect");
-    MNOGLA::xy_t ptA = {0.1f, 0.1f};
-    MNOGLA::xy_t ptB = {0.3f, 0.4f};
-    MNOGLA::rgb_t col = {0.0f, 1.0f, 0.0f};
-    MNOGLA::filledRect::draw(ptA, ptB, col);
     if (trace) MNOGLA::logI("videoCbT0: filled rect done");
 
     //    for (int c = 0; c <= 4; ++c) {
