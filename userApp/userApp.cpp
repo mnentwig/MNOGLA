@@ -103,7 +103,7 @@ void MNOGLA_videoCbT0() {
     ::glm::vec2 ptA(400, 100);
     ::glm::vec2 ptB(500, 150);
     ::glm::vec3 col(0.0f, 1.0f, 0.0f);
-    MNOGLA::filledRect::draw(ptA, ptB, col, screenWH);
+    MNOGLA::draw_filledRect(ptA, ptB, col, screenWH);
 
 #if 0
 
@@ -139,7 +139,7 @@ void MNOGLA_videoCbT0() {
     glm::vec2 ptC(w, w);
     glm::vec2 ptD(appW - w, appH - w);
     glm::vec3 rgb2(0.0, 1.0, 1.0);
-    MNOGLA::outlinedRect::draw(ptC, ptD, w, rgb2, screenWH);
+    MNOGLA::draw_outlinedRect(ptC, ptD, w, rgb2, screenWH);
 
     if (trace) MNOGLA::logI("videoCbT0: frame done");
 }

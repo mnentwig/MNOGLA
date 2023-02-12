@@ -6,11 +6,12 @@
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_includeGl.h"
+
 using std::vector;
 
-#define GLCHK(expr)                                       \
-    {                                                     \
-        (expr);                                           \
+#define GLCHK(expr)                                         \
+    {                                                       \
+        (expr);                                             \
         ::MNOGLA::haltIfGlError(#expr, __FILE__, __LINE__); \
     }
 
@@ -28,5 +29,9 @@ void deinitUtil();
 namespace MNOGLA::text2d {
 void draw(const char* text, const glm::vec2& pos, const glm::vec2& screenWH, float fontHeight, const glm::vec3& rgb);
 }  // namespace MNOGLA::text2d
-#include "../core/util_filledRect.h"
-#include "../core/util_outlinedRect.h"
+
+namespace MNOGLA {
+void draw_filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screen);
+void draw_outlinedRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, float w, const ::glm::vec3& rgb, const ::glm::vec2& screen);
+
+}  // namespace MNOGLA

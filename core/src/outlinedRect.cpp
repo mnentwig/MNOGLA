@@ -1,7 +1,24 @@
 #include "../MNOGLA_util.h"
 
 namespace MNOGLA {
-/*static!*/ void outlinedRect::init() {
+class outlinedRect {
+   public:
+    static void init();
+    static void deinit();
+    static void draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screen);
+
+   protected:
+    static GLuint vertexBuf;
+    static GLuint indexBuf;
+    static GLuint prog;
+    static GLint argLoc_coord2d;
+    static GLint argLoc_rgb;
+    static GLint argLoc_scale;
+    static GLint argLoc_offset;
+    static size_t nVertexIndices;
+};
+/*static!*/ void
+outlinedRect::init() {
     auto vs =
         "#version 300 es\n"
         "layout (location = 0) in vec2 coord2d;"
@@ -101,14 +118,22 @@ namespace MNOGLA {
     GLCHK(glDisableVertexAttribArray(argLoc_coord2d));
     GLCHK(glUseProgram(0));
 }
+GLuint outlinedRect::vertexBuf;
+GLuint outlinedRect::indexBuf;
+GLuint outlinedRect::prog;
+GLint outlinedRect::argLoc_coord2d;
+GLint outlinedRect::argLoc_rgb;
+GLint outlinedRect::argLoc_scale;
+GLint outlinedRect::argLoc_offset;
+size_t outlinedRect::nVertexIndices;
+
+void draw_outlinedRect(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
+    outlinedRect::draw(a, b, w, rgb, screen);
+}
+void init_outlinedRect(){
+    outlinedRect::init();
+}
+void deinit_outlinedRect(){
+    outlinedRect::deinit();
+}
 }  // namespace MNOGLA
-namespace MNOGLA_internal {
-GLuint outlinedRectInternal::vertexBuf;
-GLuint outlinedRectInternal::indexBuf;
-GLuint outlinedRectInternal::prog;
-GLint outlinedRectInternal::argLoc_coord2d;
-GLint outlinedRectInternal::argLoc_rgb;
-GLint outlinedRectInternal::argLoc_scale;
-GLint outlinedRectInternal::argLoc_offset;
-size_t outlinedRectInternal::nVertexIndices;
-}  // namespace MNOGLA_internal

@@ -77,13 +77,17 @@ GLint getArgLoc(GLuint prog, const char* argName) {
     return r;
 }
 
+// we don't create an internal header file to only include those few scattered function => declare here
+void init_filledRect();
+void init_outlinedRect();
+void deinit_outlinedRect();
 void initUtil() {
-    filledRect::init();
+    init_filledRect();
     text2d::init();
-    outlinedRect::init();
+    init_outlinedRect();
 }
 void deinitUtil() {
-    outlinedRect::deinit();
+    deinit_outlinedRect();
 }
 
 void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourceline) {
@@ -120,6 +124,6 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
 // === pull in various source files per include ===
 // - keeps CMAKE input file simple
 // - enables additional optimizations over independent object files
+#include "src/filledRect.cpp"
 #include "src/outlinedRect.cpp"
 #include "util_drawText.cpp"
-#include "src/filledRect.cpp"

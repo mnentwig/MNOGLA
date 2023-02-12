@@ -1,7 +1,21 @@
 #include "../MNOGLA_util.h"
-
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 namespace MNOGLA {
-/*static!*/ void filledRect::init() {
+class filledRect {
+   public:
+    static void init();
+
+   protected:
+    static GLuint prog;
+    static GLint argLoc_coord2d;
+    static GLint argLoc_rgb;
+    static GLint argLoc_scale;
+    static GLint argLoc_offset;
+    friend void draw_filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screen);
+};
+
+void filledRect::init() {
     auto vShader =
         "#version 300 es\n"
         "layout (location = 0) in vec2 coord2d;\n"
@@ -30,6 +44,7 @@ namespace MNOGLA {
     argLoc_offset = getArgLoc(prog, "offset");
 }
 
+#if 0
 void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
     GLCHK(glUseProgram(prog));
     GLfloat vertices[4 * 2] = {pt1.x, pt1.y, pt1.x, pt2.y, pt2.x, pt1.y, pt2.x, pt2.y};
@@ -46,11 +61,31 @@ void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::gl
 
     GLCHK(glDrawArrays(GL_TRIANGLE_STRIP, /*first vertex*/ 0, /*vertex count*/ 4));
 }
+#endif
+
+GLuint filledRect::prog;
+GLint filledRect::argLoc_coord2d;
+GLint filledRect::argLoc_rgb;
+GLint filledRect::argLoc_scale;
+GLint filledRect::argLoc_offset;
+
+void draw_filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
+    GLCHK(glUseProgram(filledRect::prog));
+    GLfloat vertices[4 * 2] = {pt1.x, pt1.y, pt1.x, pt2.y, pt2.x, pt1.y, pt2.x, pt2.y};
+    GLCHK(glVertexAttribPointer(filledRect::argLoc_coord2d, 2, GL_FLOAT, GL_FALSE, 0, vertices));
+    GLCHK(glEnableVertexAttribArray(filledRect::argLoc_coord2d));
+    GLCHK(glVertexAttrib3f(filledRect::argLoc_rgb, rgb.r, rgb.g, rgb.b));
+    GLCHK(glDisableVertexAttribArray(filledRect::argLoc_rgb));
+
+    // === mapping ===
+    GLCHK(glVertexAttrib2f(filledRect::argLoc_scale, 2.0f / screen.x, -2.0f / screen.y));
+    GLCHK(glDisableVertexAttribArray(filledRect::argLoc_scale));
+    GLCHK(glVertexAttrib2f(filledRect::argLoc_offset, -1.0f, 1.0f));
+    GLCHK(glDisableVertexAttribArray(filledRect::argLoc_offset));
+
+    GLCHK(glDrawArrays(GL_TRIANGLE_STRIP, /*firstk vertex*/ 0, /*vertex count*/ 4));
+}
+void init_filledRect(){
+    filledRect::init();
+}
 }  // namespace MNOGLA
-namespace MNOGLA_internal {
-GLuint filledRectInternal::prog;
-GLint filledRectInternal::argLoc_coord2d;
-GLint filledRectInternal::argLoc_rgb;
-GLint filledRectInternal::argLoc_scale;
-GLint filledRectInternal::argLoc_offset;
-}  // namespace MNOGLA_internal
