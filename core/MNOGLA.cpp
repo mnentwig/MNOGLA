@@ -1,6 +1,7 @@
 #include "../MNOGLA.h"
 
 #include <cassert>
+#include <chrono>
 #include <cstdarg>
 #include <mutex>
 #include <stdexcept>
@@ -16,8 +17,7 @@ static std::mutex m;
 static size_t readPtr = 0;
 logFun_t logI = nullptr;
 logFun_t logE = nullptr;
-std::chrono::_V2::system_clock::time_point appStartTime;
-
+std::chrono::time_point<std::chrono::high_resolution_clock> appStartTime;
 typedef union {
     uint64_t timestamp;
     struct {
@@ -38,7 +38,7 @@ void evtSubmitHostToApp(int32_t key, size_t nArgs, ...) {
 }
 
 void evtTimestampedSubmitHostToApp(int32_t key, size_t nArgs, ...) {
-    ::std::chrono::_V2::system_clock::time_point now = ::std::chrono::high_resolution_clock::now();
+    ::std::chrono::high_resolution_clock::time_point now = ::std::chrono::high_resolution_clock::now();
 
     timestamp_t ts;
     ts.timestamp = (uint64_t)::std::chrono::duration_cast<std::chrono::nanoseconds>(now - appStartTime).count();
@@ -62,7 +62,7 @@ void evtTimestampedSubmitHostToApp(int32_t key, size_t nArgs, ...) {
 }
 
 void timestampSubmitHostToApp() {
-    ::std::chrono::_V2::system_clock::time_point now = ::std::chrono::high_resolution_clock::now();
+    ::std::chrono::high_resolution_clock::time_point now = ::std::chrono::high_resolution_clock::now();
 
     timestamp_t ts;
     ts.timestamp = (uint64_t)::std::chrono::duration_cast<std::chrono::nanoseconds>(now - appStartTime).count();
@@ -116,8 +116,8 @@ void coreInit(logFun_t _logI, logFun_t _logE) {
     // for dynamic loading
     glewExperimental = 1;  // Needed for core profile
     if (glewInit() != GLEW_OK) throw runtime_error("Failed to initialize GLEW");
-#endif
     glfwWindowHint(GLFW_SAMPLES, 4);
+#endif
     initUtil();
 
     // clock starts after initialization is done

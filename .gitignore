@@ -8,3 +8,4 @@ host_mingw64linux/build/
 *.o
 *.a
 *.so
+host_AndroidStudio/app/src/main/cpp/glm/

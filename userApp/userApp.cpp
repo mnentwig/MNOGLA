@@ -130,7 +130,7 @@ void MNOGLA_videoCbT0() {
     const glm::vec3 rgb(0.0f, 1.0f, 0.0f);
     for (float row = 0; row < 10; ++row) {
         if (trace) MNOGLA::logI("text row %d start", (int)row);
-        float textsize = 20;
+        float textsize = 60;
         glm::vec2 pos(textsize, row * textsize);
         MNOGLA::draw_vectorText(pos, "Hello world", textsize, rgb, screenWH);
         if (trace) MNOGLA::logI("text row %d done", (int)row);

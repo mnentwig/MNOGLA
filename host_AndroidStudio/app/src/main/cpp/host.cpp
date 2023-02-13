@@ -161,13 +161,13 @@ Java_com_android_MNOGLAJNI_MNOGLALIB_render(JNIEnv *, jclass) {
 
 extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_evt2(JNIEnv *, jclass, int32_t key, int32_t v1, int32_t v2) {
-    MNOGLA::evtSubmitHostToApp(key, /*nArgs*/2, v1, v2);
+    MNOGLA::evtTimestampedSubmitHostToApp(key, /*nArgs*/2, v1, v2);
 }
 
 extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_evt3(JNIEnv *, jclass, int32_t key, int32_t v1, int32_t v2,
                                           int32_t v3) {
-    MNOGLA::evtSubmitHostToApp(key, /*nArgs*/3, v1, v2, v3);
+    MNOGLA::evtTimestampedSubmitHostToApp(key, /*nArgs*/3, v1, v2, v3);
 }
 
 

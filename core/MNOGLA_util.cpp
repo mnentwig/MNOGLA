@@ -100,9 +100,9 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
                               : (err == GL_INVALID_OPERATION)                 ? "INVALID_OPERATION"
                               : (err == GL_INVALID_FRAMEBUFFER_OPERATION)     ? "INVALID_FRAMEBUFFER_OPERATION"
                               : (err == GL_OUT_OF_MEMORY)                     ? "OUT_OF_MEMORY"
-                              : (err == GL_STACK_UNDERFLOW)                   ? "STACK_UNDERFLOW"
-                              : (err == GL_STACK_OVERFLOW)                    ? "STACK_OVERFLOW"
-                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION_EXT) ? "INVALID_FRAMEBUFFER_OPERATION"
+//                              : (err == GL_STACK_UNDERFLOW)                   ? "STACK_UNDERFLOW"
+//                              : (err == GL_STACK_OVERFLOW)                    ? "STACK_OVERFLOW"
+//                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION_EXT) ? "INVALID_FRAMEBUFFER_OPERATION"
                                                                               : "unknown") +
                           " (glGetError()==" + std::to_string(err) + ")");
         err = glGetError();

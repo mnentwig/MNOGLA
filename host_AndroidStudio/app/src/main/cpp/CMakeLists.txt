@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(myProject)
 
+include_directories(SYSTEM .)
+
 #Android host supports audio
 add_compile_definitions(MNOGLA_HASAUDIO)
 
