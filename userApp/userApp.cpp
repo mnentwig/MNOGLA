@@ -105,7 +105,7 @@ void MNOGLA_videoCbT0() {
     ::glm::vec3 col(0.0f, 1.0f, 0.0f);
     MNOGLA::draw_filledRect(ptA, ptB, col, screenWH);
 
-#if 0
+#if 1
 
     if (trace) MNOGLA::logI("videoCbT0: glProg for Tri");
     glUseProgram(gProgram);
@@ -130,7 +130,7 @@ void MNOGLA_videoCbT0() {
         if (trace) MNOGLA::logI("text row %d start", (int)row);
         float textsize = 20;
         glm::vec2 pos(textsize, row * textsize);
-        MNOGLA::text2d::draw("Hello world", pos, screenWH, textsize, rgb);
+        MNOGLA::draw_vectorText(pos, "Hello world", textsize, rgb, screenWH);
         if (trace) MNOGLA::logI("text row %d done", (int)row);
     }
 #endif

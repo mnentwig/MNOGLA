@@ -5,10 +5,6 @@
 
 using std::string, std::runtime_error, std::to_string;
 
-namespace MNOGLA::text2d {
-void init();
-}
-
 namespace MNOGLA {
 void checkGlError(const char* op) {
     GLenum error = glGetError();
@@ -80,14 +76,17 @@ GLint getArgLoc(GLuint prog, const char* argName) {
 // we don't create an internal header file to only include those few scattered function => declare here
 void init_filledRect();
 void init_outlinedRect();
+void init_vectorText();
+void deinit_vectorText();
 void deinit_outlinedRect();
 void initUtil() {
     init_filledRect();
-    text2d::init();
+    init_vectorText();
     init_outlinedRect();
 }
 void deinitUtil() {
     deinit_outlinedRect();
+    deinit_vectorText();
 }
 
 void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourceline) {
@@ -126,4 +125,4 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
 // - enables additional optimizations over independent object files
 #include "src/filledRect.cpp"
 #include "src/outlinedRect.cpp"
-#include "util_drawText.cpp"
+#include "src/vectorText.cpp"
