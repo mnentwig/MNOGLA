@@ -101,6 +101,7 @@ int main(void) {
         if (glfwWindowShouldClose(window))
             break;
 
+        MNOGLA::timestampSubmitHostToApp();
         MNOGLA_videoCbT0();
         // === show new image ===
 #ifdef SINGLE_BUFFER

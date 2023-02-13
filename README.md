@@ -27,3 +27,11 @@ to be updated (use CMakeLists.txt, replace glew32, glfw3, opengl32 library depen
 On Android, see https://github.com/android/ndk-samples/blob/main/gles3jni/app/src/main/cpp/CMakeLists.txt for possible improvements e.g. support lower versions (code is based on older gles2ini sample)
 
 ![architecture diagram](doc/architecture.png)
+
+### Time stamps
+A time stamp is delivered for selected events (Mouse / pointer / keyboard, screen redraw. NOT audio / midi callback functions. 
+TBD: Provide host function to request time from any thread)
+
+Time is reported as 64-bit value in units of nanoseconds after application start (the actual clock resolution may be worse, depending on the host / OS). The timer has sufficient bits so it will never overflow.
+
+Time stamps are handled internally and not visible via evtGetHostToApp(). Instead, the last received timestamp (which will be the timestamp associated with an eligible event) can be read from uint64_t MNOGLA::lastTimestamp_nanosecs.

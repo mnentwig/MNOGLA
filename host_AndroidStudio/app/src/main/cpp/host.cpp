@@ -155,6 +155,7 @@ Java_com_android_MNOGLAJNI_MNOGLALIB_init(JNIEnv * /*env*/,
 
 extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_render(JNIEnv *, jclass) {
+    MNOGLA::timestampSubmitHostToApp();
     MNOGLA_videoCbT0();
 }
 

@@ -58,6 +58,8 @@ void eventDispatcher() {
                 break;
         }
 
+        MNOGLA::logI("%llu", MNOGLA::lastTimestamp_nanosecs);
+
         switch (n) {
             case 1:
                 MNOGLA::logI("EVT%d\t%d", n, key);

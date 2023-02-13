@@ -29,8 +29,17 @@ void coreDeinit();
 // host signals an event
 void evtSubmitHostToApp(int32_t key, size_t nArgs, ...);
 
+// host signals an event to be sent with a timestamp
+void evtTimestampedSubmitHostToApp(int32_t key, size_t nArgs, ...);
+
+// host sends timestamp before MNOGLA_videoCbT0()
+void timestampSubmitHostToApp();
+
 // userApp gets event
 size_t evtGetHostToApp(int32_t* dest);
+
+// last timestamp received in the event queue
+extern uint64_t lastTimestamp_nanosecs;
 
 // ############################################################
 // host-to-app events
@@ -57,18 +66,23 @@ size_t evtGetHostToApp(int32_t* dest);
 // - samplerate, Hz
 //
 // AUDIO_RESTART: (e.g. on bluetooth headset disconnect, no arguments)
-
+//
+// TIMESTAMP:
+// the number of nanoseconds since application start
+// - first half of the uint64_t value
+// - second half of the uint64_t value (note: endianness is left to implementation)
 class eKeyToHost {
    public:
     enum {
         INV_NULL = 0,
-        WINSIZE = 1000,
         PTR_DOWN = 200,
         PTR_UP = 201,
         PTR_MOVE = 202,
         BTNDOWN = 300,
         BTNUP = 301,
         SCROLL = 400,
+        WINSIZE = 1000,
+        TIMESTAMP = 2000,
         AUDIO_START = 10000,
         AUDIO_RESTART = 10001
     };
