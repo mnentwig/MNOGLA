@@ -75,10 +75,14 @@ GLint getArgLoc(GLuint prog, const char* argName) {
 
 // we don't create an internal header file to only include those few scattered function => declare here
 void init_filledRect();
+void deinit_filledRect();
+
 void init_outlinedRect();
+void deinit_outlinedRect();
+
 void init_vectorText();
 void deinit_vectorText();
-void deinit_outlinedRect();
+
 void initUtil() {
     init_filledRect();
     init_vectorText();
@@ -87,6 +91,7 @@ void initUtil() {
 void deinitUtil() {
     deinit_outlinedRect();
     deinit_vectorText();
+    deinit_filledRect();
 }
 
 void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourceline) {
@@ -100,9 +105,9 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
                               : (err == GL_INVALID_OPERATION)                 ? "INVALID_OPERATION"
                               : (err == GL_INVALID_FRAMEBUFFER_OPERATION)     ? "INVALID_FRAMEBUFFER_OPERATION"
                               : (err == GL_OUT_OF_MEMORY)                     ? "OUT_OF_MEMORY"
-//                              : (err == GL_STACK_UNDERFLOW)                   ? "STACK_UNDERFLOW"
-//                              : (err == GL_STACK_OVERFLOW)                    ? "STACK_OVERFLOW"
-//                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION_EXT) ? "INVALID_FRAMEBUFFER_OPERATION"
+//                              : (err == GL_STACK_UNDERFLOW)                   ? "STACK_UNDERFLOW"                 // higher GL version
+//                              : (err == GL_STACK_OVERFLOW)                    ? "STACK_OVERFLOW"                  // higher GL version
+//                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION_EXT) ? "INVALID_FRAMEBUFFER_OPERATION"   // higher GL version
                                                                               : "unknown") +
                           " (glGetError()==" + std::to_string(err) + ")");
         err = glGetError();
@@ -123,6 +128,7 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
 // === pull in various source files per include ===
 // - keeps CMAKE input file simple
 // - enables additional optimizations over independent object files
+#include "src/twoDShape.cpp"
 #include "src/filledRect.cpp"
 #include "src/outlinedRect.cpp"
 #include "src/vectorText.cpp"

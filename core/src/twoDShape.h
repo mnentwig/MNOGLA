@@ -1,0 +1,18 @@
+#pragma once
+#include "../MNOGLA_util.h"
+namespace MNOGLA {
+class twoDShape {
+   public:
+    static void init();
+    static void deinit();
+    static GLuint p0;
+    static GLint p0_coord2d;
+    static GLint p0_rgb;
+    static GLint p0_scale;
+    static GLint p0_offset;
+
+   private:
+    // twoDShape is used by many classes. Initialize for the first, deinitialize for the last.
+    static size_t initCount;
+};
+}  // namespace MNOGLA

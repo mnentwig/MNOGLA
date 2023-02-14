@@ -1,7 +1,9 @@
-#include "../MNOGLA_util.h"
+#include "twoDShape.h"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 namespace MNOGLA {
-class outlinedRect {
+class outlinedRect : protected twoDShape {
    public:
     static void init();
     static void deinit();
@@ -10,42 +12,11 @@ class outlinedRect {
    protected:
     static GLuint vertexBuf;
     static GLuint indexBuf;
-    static GLuint prog;
-    static GLint argLoc_coord2d;
-    static GLint argLoc_rgb;
-    static GLint argLoc_scale;
-    static GLint argLoc_offset;
     static size_t nVertexIndices;
 };
 /*static!*/ void
 outlinedRect::init() {
-    auto vs =
-        "#version 300 es\n"
-        "layout (location = 0) in vec2 coord2d;"
-        "layout (location = 1) in vec3 rgb;"
-        "layout (location = 2) in vec2 scale;"
-        "layout (location = 3) in vec2 offset;"
-        "out vec3 rgbv;"
-        "void main(void) {"
-        "     gl_Position = vec4(coord2d.x * scale.x + offset.x, coord2d.y * scale.y + offset.y, 0.0, 1.0);"
-        "     rgbv = rgb;"
-        "}";
-    auto fs =
-        "#version 300 es\n"
-        "precision mediump float;"
-        "in vec3 rgbv;"
-        "out vec4 fragmentColor;"
-        "void main(void) {"
-        "   fragmentColor = vec4(rgbv, 1.0f);"
-        "}";
-
-    prog = createProgram(vs, fs);
-
-    // === argument locations ===
-    argLoc_coord2d = getArgLoc(prog, "coord2d");
-    argLoc_rgb = getArgLoc(prog, "rgb");
-    argLoc_scale = getArgLoc(prog, "scale");
-    argLoc_offset = getArgLoc(prog, "offset");
+    twoDShape::init();
 
     // === buffers ===
     GLCHK(glGenBuffers(1, &vertexBuf));
@@ -65,7 +36,7 @@ outlinedRect::init() {
 }
 
 /*static!*/ void outlinedRect::draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
-    GLCHK(glUseProgram(prog));
+    GLCHK(glUseProgram(p0));
 
     // (a)0.........1...
     // ..(c)4.....5.....
@@ -89,25 +60,25 @@ outlinedRect::init() {
 
     // == vertex locations ===
     GLCHK(glBindBuffer(GL_ARRAY_BUFFER, vertexBuf));
-    GLCHK(glVertexAttribPointer(argLoc_coord2d, /*xy*/ 2, GL_FLOAT, GL_FALSE, 0, NULL));
-    GLCHK(glEnableVertexAttribArray(argLoc_coord2d));
+    GLCHK(glVertexAttribPointer(p0_coord2d, /*xy*/ 2, GL_FLOAT, GL_FALSE, 0, NULL));
+    GLCHK(glEnableVertexAttribArray(p0_coord2d));
 
     GLCHK(glBufferData(GL_ARRAY_BUFFER, /*nBytes*/ sizeof(vertexLocation), /*ptr*/ &vertexLocation[0], GL_STATIC_DRAW));
-    GLCHK(glVertexAttribDivisor(argLoc_coord2d, 0));
+    GLCHK(glVertexAttribDivisor(p0_coord2d, 0)); // remove
 
     // === index list ===
     GLCHK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuf));
 
     // === color ===
-    GLCHK(glVertexAttrib3f(argLoc_rgb, rgb.r, rgb.g, rgb.b));
-    GLCHK(glDisableVertexAttribArray(argLoc_rgb));
-    GLCHK(glVertexAttribDivisor(argLoc_rgb, 0));
+    GLCHK(glVertexAttrib3f(p0_rgb, rgb.r, rgb.g, rgb.b));
+    GLCHK(glDisableVertexAttribArray(p0_rgb));
+    GLCHK(glVertexAttribDivisor(p0_rgb, 0));
 
     // === mapping ===
-    GLCHK(glVertexAttrib2f(argLoc_scale, 2.0f / screen.x, -2.0f / screen.y));
-    GLCHK(glDisableVertexAttribArray(argLoc_scale));
-    GLCHK(glVertexAttrib2f(argLoc_offset, -1.0f, 1.0f));
-    GLCHK(glDisableVertexAttribArray(argLoc_offset));
+    GLCHK(glVertexAttrib2f(p0_scale, 2.0f / screen.x, -2.0f / screen.y));
+    GLCHK(glDisableVertexAttribArray(p0_scale));
+    GLCHK(glVertexAttrib2f(p0_offset, -1.0f, 1.0f));
+    GLCHK(glDisableVertexAttribArray(p0_offset));
 
     // === draw ===
     GLCHK(glDrawElements(GL_TRIANGLE_STRIP, nVertexIndices, GL_UNSIGNED_SHORT, 0));
@@ -115,25 +86,20 @@ outlinedRect::init() {
     // === clean up ===
     GLCHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
     GLCHK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-    GLCHK(glDisableVertexAttribArray(argLoc_coord2d));
+    GLCHK(glDisableVertexAttribArray(p0_coord2d));
     GLCHK(glUseProgram(0));
 }
 GLuint outlinedRect::vertexBuf;
 GLuint outlinedRect::indexBuf;
-GLuint outlinedRect::prog;
-GLint outlinedRect::argLoc_coord2d;
-GLint outlinedRect::argLoc_rgb;
-GLint outlinedRect::argLoc_scale;
-GLint outlinedRect::argLoc_offset;
 size_t outlinedRect::nVertexIndices;
 
 void draw_outlinedRect(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
     outlinedRect::draw(a, b, w, rgb, screen);
 }
-void init_outlinedRect(){
+void init_outlinedRect() {
     outlinedRect::init();
 }
-void deinit_outlinedRect(){
+void deinit_outlinedRect() {
     outlinedRect::deinit();
 }
 }  // namespace MNOGLA
