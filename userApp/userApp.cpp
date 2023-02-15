@@ -105,7 +105,10 @@ void MNOGLA_videoCbT0() {
     ::glm::vec2 ptA(400, 100);
     ::glm::vec2 ptB(500, 150);
     ::glm::vec3 col(0.0f, 1.0f, 0.0f);
-    MNOGLA::draw_filledRect(ptA, ptB, col, screenWH);
+    glm::vec2 screenTopLeft(0, 0);
+    glm::vec2 sa = screenTopLeft;
+    glm::vec2 sb = screenWH;
+    MNOGLA::draw_filledRect(ptA, ptB, col, sa, sb);
 
 #if 1
 

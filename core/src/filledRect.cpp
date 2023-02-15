@@ -7,7 +7,7 @@ class filledRect : protected twoDShape {
    public:
     static void init();
     static void deinit();
-    static void draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screen);
+    static void draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screenTopLeft, const ::glm::vec2& screenBottomRight);
 };
 
 void filledRect::init() {
@@ -18,7 +18,7 @@ void filledRect::deinit() {
     twoDShape::deinit();
 }
 
-void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
+void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screenTopLeft, const ::glm::vec2& screenBottomRight) {
     GLCHK(glUseProgram(p0));
     GLfloat vertices[4 * 2] = {pt1.x, pt1.y, pt1.x, pt2.y, pt2.x, pt1.y, pt2.x, pt2.y};
     GLCHK(glVertexAttribPointer(p0_coord2d, 2, GL_FLOAT, GL_FALSE, 0, vertices));
@@ -27,16 +27,18 @@ void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::gl
     GLCHK(glDisableVertexAttribArray(p0_rgb));
 
     // === mapping ===
+    setOffsetScale(screenTopLeft, screenBottomRight);
+#if false
     GLCHK(glVertexAttrib2f(p0_scale, 2.0f / screen.x, -2.0f / screen.y));
     GLCHK(glDisableVertexAttribArray(p0_scale));
     GLCHK(glVertexAttrib2f(p0_offset, -1.0f, 1.0f));
     GLCHK(glDisableVertexAttribArray(p0_offset));
-
+#endif
     GLCHK(glDrawArrays(GL_TRIANGLE_STRIP, /*first vertex*/ 0, /*vertex count*/ 4));
 }
 
-void draw_filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
-    filledRect::draw(pt1, pt2, rgb, screen);
+void draw_filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screenTopLeft, const ::glm::vec2& screenBottomRight) {
+    filledRect::draw(pt1, pt2, rgb, screenTopLeft, screenBottomRight);
 }
 void init_filledRect() {
     filledRect::init();

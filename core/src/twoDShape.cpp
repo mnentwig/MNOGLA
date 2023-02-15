@@ -1,4 +1,5 @@
 #include "twoDShape.h"
+#include <glm/vec2.hpp>
 namespace MNOGLA {
 size_t twoDShape::initCount = 0;
 void twoDShape::init() {
@@ -32,6 +33,27 @@ void twoDShape::init() {
     }
     ++initCount;
 }
+
+void twoDShape::setOffsetScale(const glm::vec2& topLeft, const glm::vec2& bottomRight) {
+    // Maxima CAS:
+    // string(linsolve([sx*x1+ox = -1, sx*x2+ox = 1, sy*y1+oy = 1, sy * y2 + oy = -1], [sx, ox, sy, oy]));
+    // "[sx = -2/(x1-x2),ox = (x2+x1)/(x1-x2),sy = 2/(y1-y2),oy = -(y2+y1)/(y1-y2)]"
+  float x1 = topLeft.x;
+  float x2 = bottomRight.x;
+  float y1 = topLeft.y;
+  float y2 = bottomRight.y;
+  
+  float sx = -2.0f/(x1-x2);
+  float ox = (x2+x1)/(x1-x2);
+  float sy = 2.0f/(y1-y2);
+  float oy = -(y2+y1)/(y1-y2);
+ 
+    GLCHK(glVertexAttrib2f(p0_scale, sx, sy));
+    GLCHK(glDisableVertexAttribArray(p0_scale));
+    GLCHK(glVertexAttrib2f(p0_offset, ox, oy));
+    GLCHK(glDisableVertexAttribArray(p0_offset));
+}
+
 void twoDShape::deinit() {
     if (initCount == 0) throw ::std::runtime_error("twoDShape: more deinit() than init()");
     --initCount;
