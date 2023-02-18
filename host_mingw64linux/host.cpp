@@ -22,7 +22,7 @@ void scroll_callback(GLFWwindow* /*window*/, double xoffset, double yoffset) {
     int32_t dy = yoffset < 0   ? -1
                  : yoffset > 0 ? 1
                                : 0;
-    MNOGLA::evtTimestampedSubmitHostToApp(MNOGLA::eKeyToHost::SCROLL, /*nArgs*/ 2, dx, dy);
+    MNOGLA::evtTimestampedSubmitHostToApp(MNOGLA::eKeyToHost::MOUSE_SCROLL, /*nArgs*/ 2, dx, dy);
 }
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {

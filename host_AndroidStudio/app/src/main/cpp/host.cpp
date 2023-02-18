@@ -47,7 +47,6 @@ void host_logE(const char *format, ...) {
     va_end(args);
 }
 
-//#define MNOGLA_HASAUDIO
 #ifdef MNOGLA_HASAUDIO
 // =========================================================================================
 // Audio

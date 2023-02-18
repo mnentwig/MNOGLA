@@ -6,6 +6,10 @@
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_util.h"
+#include "../uiEvtListener/ptrEvtListener.h"
+#include "../uiEvtListener/src/ptrEvtListener.cpp"
+#include "../uiEvtListener/src/rawMouseEvtListener.cpp"
+#include "../uiEvtListener/src/rawTouchEvtListener.cpp"
 
 using std::runtime_error;
 
@@ -26,61 +30,16 @@ static GLuint gvPositionHandle;
 static int appW;
 static int appH;
 
-// consumes GUI-related events (mouse/pointer down, movement, scroll etc) and triggers callback functions
-// implementation overrides callbacks of interest, returning true if event was consumed
-class uiListener {
-   public:
-    uiListener() {}
-    // offer event. Returns true if handled.
-    bool feedEvt(size_t n, int32_t* buf);
-    // called on mouse button down (not touchscreen pointer!)
-    virtual bool evtRaw_mouseDown(int32_t bnum) { return false; }
-    // called on mouse button up (not touchscreen pointer!)
-    virtual bool evtRaw_mouseUp(int32_t bnum) { return false; }
-    // called on mouse movement (not touchscreen pointer!)
-    virtual bool evtRaw_mouseMove(int32_t x, int32_t y) { return false; }
+class myPtrEvtListener : public ptrEvtListener {
+    void evtPtr_preClick(int32_t x, int32_t y) { MNOGLA::logI("pre-click %d %d", x, y); };
 };
 
-class basicUiListener : public uiListener {
-    bool evtRaw_mouseDown(int32_t bnum) final;
-    bool evtRaw_mouseUp(int32_t bnum) final;
-    bool evtRaw_mouseMove(int32_t x, int32_t y) final;
-
-    // "down" action leading to a potential click
-    virtual bool evtClick_down(int32_t xDown, int32_t yDown) { return false; }
-    // "up" action that qualifies for a click with the previous "down" action
-    virtual bool evtClick_confirm(int32_t xUp, int32_t yUp) { return false; }
-    // "up" action that does not qualify for a click with the previous "down" action (e.g. moved too far)
-    virtual bool evtClick_cancel(int32_t xUp, int32_t yUp) { return false; }
-};
-
-bool basicUiListener::evtRaw_mouseDown(int32_t bnum) { return false; }          // TBD
-bool basicUiListener::evtRaw_mouseUp(int32_t bnum) { return false; }            // TBD
-bool basicUiListener::evtRaw_mouseMove(int32_t x, int32_t y) { return false; }  // TBD
-
-bool uiListener::feedEvt(size_t n, int32_t* buf) {
-    uint32_t key = buf[0];
-    if (!n) return false;
-    switch (key) {
-        case MNOGLA::eKeyToHost::MOUSE_DOWN:
-            assert(n == 2);
-            return evtRaw_mouseDown(/*bnum*/ buf[1]);
-        case MNOGLA::eKeyToHost::MOUSE_UP:
-            assert(n == 2);
-            return evtRaw_mouseUp(/*bnum*/ buf[1]);
-        case MNOGLA::eKeyToHost::MOUSE_MOVE:
-            assert(n == 3);
-            return evtRaw_mouseMove(/*x*/ buf[1], /*y*/ buf[2]);
-        default:
-            return false;
-    }
-}
-
-class myBasicUiListener : public basicUiListener {
-};
-
+std::shared_ptr<myPtrEvtListener> evtListener(nullptr);
 void MNOGLA_userInit(int w, int h) {
-    std::shared_ptr<uiListener> l = std::make_shared<myBasicUiListener>();
+    MNOGLA::logI("user init");
+    evtListener = std::make_shared<myPtrEvtListener>();
+    assert(evtListener);
+    //    std::shared_ptr<uiListener> l = std::make_shared<myBasicUiListener>();
     appW = -1;
     appH = -1;  // invalid (used only for sanity check)
     // defer handling the initial size to the resize handler by creating an event
@@ -103,6 +62,9 @@ void eventDispatcher() {
     while (true) {
         size_t n = MNOGLA::evtGetHostToApp(buf);
         if (!n) break;
+        assert(evtListener);
+        if (evtListener->feedEvtPtr(n, buf)) continue;
+
         uint32_t key = buf[0];
         switch (key) {
             case MNOGLA::eKeyToHost::WINSIZE:
