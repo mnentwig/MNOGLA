@@ -37,9 +37,6 @@ void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::gl
     GLCHK(glDrawArrays(GL_TRIANGLE_STRIP, /*first vertex*/ 0, /*vertex count*/ 4));
 }
 
-void draw_filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::vec2& screenTopLeft, const ::glm::vec2& screenBottomRight) {
-    filledRect::draw(pt1, pt2, rgb, screenTopLeft, screenBottomRight);
-}
 void init_filledRect() {
     filledRect::init();
 }

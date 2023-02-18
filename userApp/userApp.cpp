@@ -89,7 +89,7 @@ void MNOGLA_videoCbT0() {
     eventDispatcher();
     if ((appW < 0) || (appH < 0)) throw runtime_error("window size not initialized");
     const glm::vec2 screenWH(appW, appH);
-
+    MNOGLA::twoDView v(0, 0, appW, appH, /*absolutePt2*/true);
     static float grey;
     grey += 0.01f;
     // if (grey > 1.0f) {
@@ -106,9 +106,7 @@ void MNOGLA_videoCbT0() {
     ::glm::vec2 ptB(500, 150);
     ::glm::vec3 col(0.0f, 1.0f, 0.0f);
     glm::vec2 screenTopLeft(0, 0);
-    glm::vec2 sa = screenTopLeft;
-    glm::vec2 sb = screenWH;
-    MNOGLA::draw_filledRect(ptA, ptB, col, sa, sb);
+    v.filledRect(ptA, ptB, col);
 
 #if 1
 
@@ -135,7 +133,7 @@ void MNOGLA_videoCbT0() {
         if (trace) MNOGLA::logI("text row %d start", (int)row);
         float textsize = 60;
         glm::vec2 pos(textsize, row * textsize);
-        MNOGLA::draw_vectorText(pos, "Hello world", textsize, rgb, screenWH);
+        v.vectorText(pos, "Hello world", textsize, rgb);
         if (trace) MNOGLA::logI("text row %d done", (int)row);
     }
 #endif
@@ -144,7 +142,7 @@ void MNOGLA_videoCbT0() {
     glm::vec2 ptC(w, w);
     glm::vec2 ptD(appW - w, appH - w);
     glm::vec3 rgb2(0.0, 1.0, 1.0);
-    MNOGLA::draw_outlinedRect(ptC, ptD, w, rgb2, screenWH);
+    v.outlinedRect(ptC, ptD, w, rgb2);
 
     if (trace) MNOGLA::logI("videoCbT0: frame done");
 }

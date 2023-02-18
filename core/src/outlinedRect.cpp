@@ -7,7 +7,7 @@ class outlinedRect : protected twoDShape {
    public:
     static void init();
     static void deinit();
-    static void draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screen);
+    static void draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screenTopLeft, const ::glm::vec2& screenBottomRight);
 
    protected:
     static GLuint vertexBuf;
@@ -35,7 +35,7 @@ outlinedRect::init() {
     GLCHK(glDeleteBuffers(1, &indexBuf));
 }
 
-/*static!*/ void outlinedRect::draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
+/*static!*/ void outlinedRect::draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screenTopLeft, const ::glm::vec2& screenBottomRight) {
     GLCHK(glUseProgram(p0));
 
     // (a)0.........1...
@@ -75,10 +75,7 @@ outlinedRect::init() {
     GLCHK(glVertexAttribDivisor(p0_rgb, 0));
 
     // === mapping ===
-    GLCHK(glVertexAttrib2f(p0_scale, 2.0f / screen.x, -2.0f / screen.y));
-    GLCHK(glDisableVertexAttribArray(p0_scale));
-    GLCHK(glVertexAttrib2f(p0_offset, -1.0f, 1.0f));
-    GLCHK(glDisableVertexAttribArray(p0_offset));
+    setOffsetScale(screenTopLeft, screenBottomRight);
 
     // === draw ===
     GLCHK(glDrawElements(GL_TRIANGLE_STRIP, nVertexIndices, GL_UNSIGNED_SHORT, 0));
@@ -93,9 +90,6 @@ GLuint outlinedRect::vertexBuf;
 GLuint outlinedRect::indexBuf;
 size_t outlinedRect::nVertexIndices;
 
-void draw_outlinedRect(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screen) {
-    outlinedRect::draw(a, b, w, rgb, screen);
-}
 void init_outlinedRect() {
     outlinedRect::init();
 }

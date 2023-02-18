@@ -100,15 +100,15 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
     std::vector<std::string> errList;
     while (err && (errList.size() < 20)) {
         errList.push_back(std::string(
-                              (err == GL_INVALID_ENUM)                        ? "INVALID_ENUM"
-                              : (err == GL_INVALID_VALUE)                     ? "INVALID_VALUE"
-                              : (err == GL_INVALID_OPERATION)                 ? "INVALID_OPERATION"
-                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION)     ? "INVALID_FRAMEBUFFER_OPERATION"
-                              : (err == GL_OUT_OF_MEMORY)                     ? "OUT_OF_MEMORY"
-//                              : (err == GL_STACK_UNDERFLOW)                   ? "STACK_UNDERFLOW"                 // higher GL version
-//                              : (err == GL_STACK_OVERFLOW)                    ? "STACK_OVERFLOW"                  // higher GL version
-//                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION_EXT) ? "INVALID_FRAMEBUFFER_OPERATION"   // higher GL version
-                                                                              : "unknown") +
+                              (err == GL_INVALID_ENUM)                    ? "INVALID_ENUM"
+                              : (err == GL_INVALID_VALUE)                 ? "INVALID_VALUE"
+                              : (err == GL_INVALID_OPERATION)             ? "INVALID_OPERATION"
+                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION) ? "INVALID_FRAMEBUFFER_OPERATION"
+                              : (err == GL_OUT_OF_MEMORY)                 ? "OUT_OF_MEMORY"
+                                                          //                              : (err == GL_STACK_UNDERFLOW)                   ? "STACK_UNDERFLOW"                 // higher GL version
+                                                          //                              : (err == GL_STACK_OVERFLOW)                    ? "STACK_OVERFLOW"                  // higher GL version
+                                                          //                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION_EXT) ? "INVALID_FRAMEBUFFER_OPERATION"   // higher GL version
+                                                          : "unknown") +
                           " (glGetError()==" + std::to_string(err) + ")");
         err = glGetError();
     }  // while more errors
@@ -123,12 +123,35 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
     throw std::runtime_error(r);
 }
 
+twoDView_internal::twoDView_internal(float top, float left, float bottomOrHeight, float widthOrRight, bool absolutePt2)
+    : topLeft(::glm::vec2(top, left)),
+      bottomRight(absolutePt2 ? ::glm::vec2(bottomOrHeight, widthOrRight) : ::glm::vec2(top + bottomOrHeight, left + widthOrRight)) {}
+
+twoDView::twoDView(float top, float left, float bottomOrHeight, float widthOrRight, bool absolutePt2)
+    : twoDView_internal::twoDView_internal(top, left, bottomOrHeight, widthOrRight, absolutePt2) {}
+
 }  // namespace MNOGLA
 
 // === pull in various source files per include ===
-// - keeps CMAKE input file simple
-// - enables additional optimizations over independent object files
-#include "src/twoDShape.cpp"
+//  - keeps CMAKE input file simple
+//  - enables additional optimizations over independent object files
+//  - as we don't have headers:
+//      - everything must be included at the same time
+//      - dependencies must form a tree
 #include "src/filledRect.cpp"
 #include "src/outlinedRect.cpp"
+#include "src/twoDShape.cpp"
 #include "src/vectorText.cpp"
+
+namespace MNOGLA {
+void twoDView::filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb) {
+    filledRect::draw(pt1, pt2, rgb, topLeft, bottomRight);
+}
+void twoDView::outlinedRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, float w, const ::glm::vec3& rgb) {
+    outlinedRect::draw(pt1, pt2, w, rgb, topLeft, bottomRight);
+}
+void twoDView::vectorText(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb) {
+    vectorText::draw(pt, text, height, rgb, topLeft, bottomRight);
+}
+
+}  // namespace MNOGLA

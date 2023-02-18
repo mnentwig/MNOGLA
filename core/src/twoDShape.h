@@ -10,7 +10,7 @@ class twoDShape {
     static GLint p0_rgb;
     static GLint p0_scale;
     static GLint p0_offset;
-    static void setOffsetScale(const glm::vec2& topLeft, const glm::vec2& bottomRight);
+    static void setOffsetScale(const ::glm::vec2& topLeft, const ::glm::vec2& bottomRight);
 
    private:
     // twoDShape is used by many classes. Initialize for the first, deinitialize for the last.
