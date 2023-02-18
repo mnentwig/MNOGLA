@@ -12,7 +12,7 @@ static void window_size_callback(GLFWwindow* /*window*/, int width, int height) 
 }
 
 static void cursor_position_callback(GLFWwindow* /*window*/, double xpos, double ypos) {
-    MNOGLA::evtTimestampedSubmitHostToApp(MNOGLA::eKeyToHost::PTR_MOVE, /*nArgs*/ 3, /*ix*/ 0, (int32_t)xpos, (int32_t)ypos);
+    MNOGLA::evtTimestampedSubmitHostToApp(MNOGLA::eKeyToHost::MOUSE_MOVE, /*nArgs*/ 2, (int32_t)xpos, (int32_t)ypos);
 }
 
 void scroll_callback(GLFWwindow* /*window*/, double xoffset, double yoffset) {
@@ -26,8 +26,8 @@ void scroll_callback(GLFWwindow* /*window*/, double xoffset, double yoffset) {
 }
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    int32_t key = (action == GLFW_PRESS)     ? MNOGLA::eKeyToHost::BTNDOWN
-                  : (action == GLFW_RELEASE) ? MNOGLA::eKeyToHost::BTNUP
+    int32_t key = (action == GLFW_PRESS)     ? MNOGLA::eKeyToHost::MOUSE_DOWN
+                  : (action == GLFW_RELEASE) ? MNOGLA::eKeyToHost::MOUSE_UP
                                              : MNOGLA::eKeyToHost::INV_NULL;
     if (!key) return;
     MNOGLA::evtTimestampedSubmitHostToApp(key, /*nArgs*/ 1, button);

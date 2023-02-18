@@ -48,13 +48,13 @@ extern uint64_t lastTimestamp_nanosecs;
 // - width in pixels
 // - height in pixels
 //
-// PTR: touchscreen pointer
+// PTR_XYZ: touchscreen pointer
 // - pointer index  (multitouch)
 // - x coordinate in pixels
 // - y coordinate in pixels
-// A mouse reports as PTR_MOVE with index==0 (no DOWN/UP events)
+// A mouse reports as PTR_MOVE with index==0 (no DOWN/UP events, using BTN instead)
 //
-// BTNDOWN, BTNUP Mouse button down, up
+// MOUSE_DOWN, MOUSE_UP: Mouse button down, up
 // - button number (left, right, mid, ...)
 //
 // SCROLL: Mouse wheel
@@ -78,8 +78,9 @@ class eKeyToHost {
         PTR_DOWN = 200,
         PTR_UP = 201,
         PTR_MOVE = 202,
-        BTNDOWN = 300,
-        BTNUP = 301,
+        MOUSE_DOWN = 300,
+        MOUSE_UP = 301,
+        MOUSE_MOVE = 302,
         SCROLL = 400,
         WINSIZE = 1000,
         TIMESTAMP = 2000,
