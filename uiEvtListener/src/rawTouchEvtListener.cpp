@@ -8,7 +8,7 @@ bool rawTouchEvtListener::feedEvtTouch(size_t n, int32_t* buf) {
         // note: we don't put code into our own implementation of the callback
         // so the user implementation is not required to call the superclass function.
         case MNOGLA::eKeyToHost::TOUCH_DOWN: {
-            assert(n == 3);
+            assert(n == 3 + 1);
             int32_t ptr = buf[1];
             int32_t x = buf[2];
             int32_t y = buf[3];
@@ -16,7 +16,7 @@ bool rawTouchEvtListener::feedEvtTouch(size_t n, int32_t* buf) {
             return true;
         }
         case MNOGLA::eKeyToHost::TOUCH_UP: {
-            assert(n == 3);
+            assert(n == 3 + 1);
             int32_t ptr = buf[1];
             int32_t x = buf[2];
             int32_t y = buf[3];
@@ -24,7 +24,7 @@ bool rawTouchEvtListener::feedEvtTouch(size_t n, int32_t* buf) {
             return true;
         }
         case MNOGLA::eKeyToHost::TOUCH_MOVE: {
-            assert(n == 3);
+            assert(n == 3 + 1);
             int32_t ptr = buf[1];
             int32_t x = buf[2];
             int32_t y = buf[3];

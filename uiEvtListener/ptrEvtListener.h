@@ -9,7 +9,7 @@ class ptrEvtListener : protected ptrEvtListener_internal {
     // ptr went up without dragging too far
     virtual void evtPtr_confirmClick(int32_t x, int32_t y){};  // implementation overrides
     // ptr moved too far from down location
-    virtual void evtPtr_cancelClick(int32_t x, int32_t y){};  // implementation overrides
+    virtual void evtPtr_cancelClick(){};  // implementation overrides
     // RMB or long press
     virtual void evtPtr_secondary(int32_t x, int32_t y){};  // implementation overrides
 

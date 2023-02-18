@@ -8,21 +8,21 @@ bool rawMouseEvtListener::feedEvtMouse(size_t n, int32_t* buf) {
         // note: we don't put code e.g. "setButtonState()" into our own implementation of the callback
         // so the user implementation is not required to call the superclass function.
         case MNOGLA::eKeyToHost::MOUSE_DOWN: {
-            assert(n == 2);
+            assert(n == 1 + 1);
             int32_t bnum = buf[1];
             setButtonState(bnum, true);
             evtMouseRaw_down(bnum);
             return true;
         }
         case MNOGLA::eKeyToHost::MOUSE_UP: {
-            assert(n == 2);
+            assert(n == 1 + 1);
             int32_t bnum = buf[1];
             setButtonState(bnum, false);
             evtMouseRaw_up(bnum);
             return true;
         }
         case MNOGLA::eKeyToHost::MOUSE_MOVE: {
-            assert(n == 3);
+            assert(n == 2 + 1);
             int32_t x = buf[1];
             int32_t y = buf[2];
 
@@ -32,7 +32,7 @@ bool rawMouseEvtListener::feedEvtMouse(size_t n, int32_t* buf) {
             return true;
         }
         case MNOGLA::eKeyToHost::MOUSE_SCROLL: {
-            assert(n == 2);
+            assert(n == 1 + 1);
             int32_t delta = buf[1];
             evtMouseRaw_scroll(delta);
             return true;
