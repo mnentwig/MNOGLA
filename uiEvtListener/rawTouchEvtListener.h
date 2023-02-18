@@ -4,8 +4,6 @@
 // consumes mouse-related events and triggers callback functions, to be overridden by the implementation.
 class rawTouchEvtListener : protected rawTouchEvtListener_internal {
    public:
-    rawTouchEvtListener() {}
-
     // offer event. Returns true if touch-related.
     virtual bool feedEvtTouch(size_t n, int32_t* buf);
 

@@ -32,6 +32,7 @@ static int appH;
 
 class myPtrEvtListener : public ptrEvtListener {
     void evtPtr_preClick(int32_t x, int32_t y) { MNOGLA::logI("pre-click %d %d", x, y); };
+    void evtPtr_secondary(int32_t x, int32_t y){ MNOGLA::logI("secondary click %d %d", x, y); };
 };
 
 std::shared_ptr<myPtrEvtListener> evtListener(nullptr);

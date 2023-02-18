@@ -4,12 +4,20 @@ bool ptrEvtListener::feedEvtPtr(size_t n, int32_t* buf) {
 }
 
 void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) {
-     evtPtr_preClick(x, y);
+    evtPtr_preClick(x, y);
 };
 
 void ptrEvtListener_internal::evtMouseRaw_down(int32_t bnum) {
-     if (bnum == 0)
-        evtTouchRaw_down(/*ptrNum*/ -1, lastMouseX, lastMouseY);
+    switch (bnum) {
+        case 0:
+            evtTouchRaw_down(/*ptrNum*/ -1, lastMouseX, lastMouseY);  // fake touchscreen pointer "-1"
+            break;
+        case 1:
+            evtPtr_secondary(lastMouseX, lastMouseY);
+            break;
+        default:
+            break;
+    }
 }
 
 void ptrEvtListener_internal::evtMouseRaw_up(int32_t bnum) {
