@@ -40,8 +40,8 @@ Time is reported as 64-bit value in units of nanoseconds after application start
 
 Time stamps are handled internally and not visible via evtGetHostToApp(). Instead, the last received timestamp (which will be the timestamp associated with an eligible event) can be read from uint64_t MNOGLA::lastTimestamp_nanosecs.
 
-# Best practices
-The project serves me to try out C++ features and develop my "handwriting". I arrived at the following insights:
+# Best practices "notes to self"
+The project serves me to try out C++ features and develop my "handwriting". I arrived at the following insights (subject to change):
 
 ## Hiding private content from API header files
 A conventional class header file needs to include all protected/private members, which makes the header file less readable as API documentation.
@@ -50,8 +50,14 @@ One solution is pImpl but it seemed to clumsy and has a runtime penalty which ma
 
 My solution: 
 
-- For API class xyz, derive from private:class xyz_internal, which is #included by the API header. The content is not strictly hidden from the API user (the compiler still needs it for memory layout), but it needs to be explicitly opened. 
+- For API class xyz, derive from private:class xyz_internal, which is #included by the API header. The content is not strictly hidden (the compiler still needs it for memory layout), but the separate file needs to be explicitly opened by the API user.
 - A virtual function provided by the API class for overriding (e.g. a callback), which is called from the internal context, needs to be defined already in the internal class. The API file may redefine it for documentation purposes. Both require a dummy implementation to avoid linker error (gcc: "undefined reference to vtable").
 - A method e.g. void m() is implented as void xyz::m() at API level for void xyz_internal::m() for an internal feature, which improves code readability.
 - Downside: vscode Intellisense does not (yet?) hide "internal" context from autocompletion lists, if used where access is restricted.
 - all internal code is organized into a subfolder (src for now, consider "internal" name?) so that the API user sees only relevant files at toplevel.
+
+## Callback functions intended for overriding by user class
+E.g. GUI classes provide callback functions, of which only a few are implemented by overriding in a derived user class.
+
+- Provide empty default implementations so the user class is not forced to implement all of them (e.g. adding new callbacks doesn't break existing code)
+- Put empty default implementation into the API header to make it clear that user code does not need to call the overridden superclass function.
