@@ -39,3 +39,19 @@ TBD: Provide host function to request accurate time (not "last event"-time) from
 Time is reported as 64-bit value in units of nanoseconds after application start (the actual clock resolution may be worse, depending on the host / OS). The timer has sufficient bits so it will never overflow.
 
 Time stamps are handled internally and not visible via evtGetHostToApp(). Instead, the last received timestamp (which will be the timestamp associated with an eligible event) can be read from uint64_t MNOGLA::lastTimestamp_nanosecs.
+
+# Best practices
+The project serves me to try out C++ features and develop my "handwriting". I arrived at the following insights:
+
+## Hiding private content from API header files
+A conventional class header file needs to include all protected/private members, which makes the header file less readable as API documentation.
+
+One solution is pImpl but it seemed to clumsy and has a runtime penalty which makes it attractive for "hot" functions that the compiler would conventionally inline.
+
+My solution: 
+
+- For API class xyz, derive from private:class xyz_internal, which is #included by the API header. The content is not strictly hidden from the API user (the compiler still needs it for memory layout), but it needs to be explicitly opened. 
+- A virtual function provided by the API class for overriding (e.g. a callback), which is called from the internal context, needs to be defined already in the internal class. The API file may redefine it for documentation purposes. Both require a dummy implementation to avoid linker error (gcc: "undefined reference to vtable").
+- A method e.g. void m() is implented as void xyz::m() at API level for void xyz_internal::m() for an internal feature, which improves code readability.
+- Downside: vscode Intellisense does not (yet?) hide "internal" context from autocompletion lists, if used where access is restricted.
+- all internal code is organized into a subfolder (src for now, consider "internal" name?) so that the API user sees only relevant files at toplevel.

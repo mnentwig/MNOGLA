@@ -1,8 +1,13 @@
 #pragma once
+struct ptrEvtListenerConfig {
+    int clickRadius_pixels = 50;
+};
 #include "src/ptrEvtListener_internal.h"
+
 class ptrEvtListener : protected ptrEvtListener_internal {
    public:
-    ptrEvtListener() {}
+    ptrEvtListener();
+    ptrEvtListener(ptrEvtListenerConfig& config);
     bool feedEvtPtr(size_t n, int32_t* buf);
     // ptr went down
     virtual void evtPtr_preClick(int32_t x, int32_t y){};  // implementation overrides

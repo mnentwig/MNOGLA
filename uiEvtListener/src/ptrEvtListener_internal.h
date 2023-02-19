@@ -12,11 +12,13 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
 
     virtual void evtPtr_preClick(int32_t x, int32_t y){};      // implementation overrides ("internal" version needed to call it from here)
     virtual void evtPtr_confirmClick(int32_t x, int32_t y){};  // implementation overrides ("internal" version needed to call it from here)
-    virtual void evtPtr_cancelClick(){};   // implementation overrides ("internal" version needed to call it from here)
+    virtual void evtPtr_cancelClick(){};                       // implementation overrides ("internal" version needed to call it from here)
     virtual void evtPtr_secondary(int32_t x, int32_t y){};     // implementation overrides ("internal" version needed to call it from here)
    protected:
+    bool withinClickRadius(int32_t x, int32_t y);
     bool validFirstDown;
     int32_t firstDownPtr;
     int32_t firstDownX;
     int32_t firstDownY;
+    ptrEvtListenerConfig config;
 };
