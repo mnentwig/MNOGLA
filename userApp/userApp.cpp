@@ -1,4 +1,5 @@
 #include <cmath>
+#include <functional>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <memory>
@@ -13,53 +14,51 @@
 
 using std::runtime_error;
 
-auto gVertexShader =
-    "attribute vec4 vPosition;\n"
-    "void main() {\n"
-    "  gl_Position = vPosition;\n"
-    "}\n";
-
-auto gFragmentShader =
-    "precision mediump float;\n"
-    "void main() {\n"
-    "  gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n"
-    "}\n";
-
-static GLuint gProgram = 0;
-static GLuint gvPositionHandle;
-static int appW;
-static int appH;
-
 class myPtrEvtListener : public ptrEvtListener {
     void evtPtr_preClick(int32_t x, int32_t y) { MNOGLA::logI("pre-click %d %d", x, y); };
     void evtPtr_secondary(int32_t x, int32_t y) { MNOGLA::logI("secondary click %d %d", x, y); };
     void evtPtr_confirmClick(int32_t x, int32_t y) { MNOGLA::logI("confirm click %d %d", x, y); };
+    void evtPtr_cancelClick() { MNOGLA::logI("cancel click"); };
+};
+std::shared_ptr<myPtrEvtListener> evtListener(nullptr);
+
+const bool trace = false;
+class myAppState_t {
+   public:
+    myAppState_t() {
+        auto gVertexShader =
+            "attribute vec4 vPosition;\n"
+            "void main() {\n"
+            "  gl_Position = vPosition;\n"
+            "}\n";
+
+        auto gFragmentShader =
+            "precision mediump float;\n"
+            "void main() {\n"
+            "  gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n"
+            "}\n";
+        gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
+        gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
+        MNOGLA::checkGlError("glGetAttribLocation");
+    }
+    void eventDispatcher();
+    void render();
+
+   protected:
+    GLuint gProgram;
+    GLuint gvPositionHandle;
+    int appW = -1;
+    int appH = -1;
 };
 
-std::shared_ptr<myPtrEvtListener> evtListener(nullptr);
-void MNOGLA_userInit(int w, int h) {
-    MNOGLA::logI("user init");
-    evtListener = std::make_shared<myPtrEvtListener>();
-    assert(evtListener);
-    //    std::shared_ptr<uiListener> l = std::make_shared<myBasicUiListener>();
-    appW = -1;
-    appH = -1;  // invalid (used only for sanity check)
-    // defer handling the initial size to the resize handler by creating an event
-    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
-
-    gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
-    gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
-    MNOGLA::checkGlError("glGetAttribLocation");
-
-    glEnable(GL_DEPTH_TEST);
-    MNOGLA::checkGlError("gldepthtest");
-    glEnable(GL_BLEND);
-    MNOGLA::checkGlError("glblend");
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    MNOGLA::checkGlError("glblendfun");
-}
-
-void eventDispatcher() {
+void myAppState_t::eventDispatcher() {
+#if false
+    std::shared_ptr<myAppState_t> as(appState);
+    auto x = [as]() {};
+    x();
+    vector<std::function<void()>> funs;
+    funs.push_back(x);
+#endif
     int32_t buf[16];
     while (true) {
         size_t n = MNOGLA::evtGetHostToApp(buf);
@@ -72,7 +71,7 @@ void eventDispatcher() {
             case MNOGLA::eKeyToHost::WINSIZE:
                 appW = buf[1];
                 appH = buf[2];
-                glViewport(0, 0, appW, appH);
+                glViewport(0, 0, appW, appH);  // global (could move to lower-level render function)
                 continue;
             default:
                 break;
@@ -100,13 +99,7 @@ void eventDispatcher() {
     }
 }
 
-static const GLfloat gTriangleVertices[] = {0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f};
-
-void MNOGLA_videoCbT0() {
-    const bool trace = false;
-    if (trace) MNOGLA::logI("videoCbT0: eventDispatcher");
-
-    eventDispatcher();
+void myAppState_t::render() {
     if ((appW < 0) || (appH < 0)) throw runtime_error("window size not initialized");
     const glm::vec2 screenWH(appW, appH);
     MNOGLA::twoDView v(0, 0, appW, appH, /*absolutePt2*/ true);
@@ -128,12 +121,10 @@ void MNOGLA_videoCbT0() {
     glm::vec2 screenTopLeft(0, 0);
     v.filledRect(ptA, ptB, col);
 
-#if 1
-
-    if (trace) MNOGLA::logI("videoCbT0: glProg for Tri");
     glUseProgram(gProgram);
     MNOGLA::checkGlError("glUseProgram");
 
+    const GLfloat gTriangleVertices[] = {0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f};
     glVertexAttribPointer(gvPositionHandle, 2, GL_FLOAT, GL_FALSE, 0,
                           gTriangleVertices);
     MNOGLA::checkGlError("glVertexAttribPointer");
@@ -156,13 +147,40 @@ void MNOGLA_videoCbT0() {
         v.vectorText(pos, "Hello world", textsize, rgb);
         if (trace) MNOGLA::logI("text row %d done", (int)row);
     }
-#endif
+
     if (trace) MNOGLA::logI("videoCbT0: drawing rect");
     float w = 10.0f;
     glm::vec2 ptC(w, w);
     glm::vec2 ptD(appW - w, appH - w);
     glm::vec3 rgb2(0.0, 1.0, 1.0);
     v.outlinedRect(ptC, ptD, w, rgb2);
+}
+
+std::shared_ptr<myAppState_t> myAppState;
+void MNOGLA_userInit(int w, int h) {
+    myAppState = std::make_shared<myAppState_t>();
+    MNOGLA::logI("user init");
+    evtListener = std::make_shared<myPtrEvtListener>();
+    assert(evtListener);
+    //    std::shared_ptr<uiListener> l = std::make_shared<myBasicUiListener>();
+    // defer handling the initial size to the resize handler by creating an event
+    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
+
+    glEnable(GL_DEPTH_TEST);
+    MNOGLA::checkGlError("gldepthtest");
+    glEnable(GL_BLEND);
+    MNOGLA::checkGlError("glblend");
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    MNOGLA::checkGlError("glblendfun");
+}
+
+static const GLfloat gTriangleVertices[] = {0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f};
+
+void MNOGLA_videoCbT0() {
+    if (trace) MNOGLA::logI("videoCbT0: eventDispatcher");
+
+    myAppState->eventDispatcher();
+    myAppState->render();
 
     if (trace) MNOGLA::logI("videoCbT0: frame done");
 }
