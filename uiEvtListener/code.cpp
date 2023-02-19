@@ -2,8 +2,6 @@
 // pull in various source files per include ===
 //  - keeps CMAKE input file simple
 //  - enables additional optimizations over independent object files
-#include "internal/twoDView.cpp"
-#include "internal/twoDShape.cpp"
-#include "internal/filledRect.cpp"
-#include "internal/outlinedRect.cpp"
-#include "internal/vectorText.cpp"
+#include "../uiEvtListener/src/ptrEvtListener.cpp"
+#include "../uiEvtListener/src/rawMouseEvtListener.cpp"
+#include "../uiEvtListener/src/rawTouchEvtListener.cpp"

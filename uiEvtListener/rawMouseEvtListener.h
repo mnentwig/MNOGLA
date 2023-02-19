@@ -4,7 +4,6 @@
 // consumes mouse-related events and triggers callback functions, to be overridden by the implementation.
 class rawMouseEvtListener : protected rawMouseEvtListener_internal {
    public:
-
     // offer event. Returns true if mouse related.
     virtual bool feedEvtMouse(size_t n, int32_t* buf);
 
@@ -25,4 +24,5 @@ class rawMouseEvtListener : protected rawMouseEvtListener_internal {
 
     // returns state of given button
     bool getButtonState(uint32_t bnum);
+    virtual ~rawMouseEvtListener() = default;
 };

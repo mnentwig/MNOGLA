@@ -4,7 +4,7 @@ project(myProject)
 #host does NOT support audio (yet)
 # add_compile_definitions(MNOGLA_HASAUDIO)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic -Weffc++")
 
 # === MNOGLA_core ===
 # independent of both host and user app to avoid frequent recompilation.

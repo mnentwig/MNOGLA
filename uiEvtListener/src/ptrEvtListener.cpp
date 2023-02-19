@@ -1,4 +1,5 @@
 #include "../ptrEvtListener.h"
+ptrEvtListener_internal::ptrEvtListener_internal() : validFirstDown(false), firstDownPtr(0), firstDownX(0), firstDownY(0), config() {}
 ptrEvtListener::ptrEvtListener() {}
 
 ptrEvtListener::ptrEvtListener(ptrEvtListenerConfig& config) {
@@ -18,11 +19,14 @@ bool ptrEvtListener_internal::withinClickRadius(int32_t x, int32_t y) {
 }
 
 void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) {
+    MNOGLA::logI("DOWN");
     if (validFirstDown) {
+        MNOGLA::logI("DOWNa");
         validFirstDown = false;
         evtPtr_cancelClick();
         return;
     }
+    MNOGLA::logI("DOWNb");
     firstDownPtr = ptrNum;
     firstDownX = x;
     firstDownY = y;

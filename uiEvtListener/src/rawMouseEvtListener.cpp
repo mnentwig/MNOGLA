@@ -1,6 +1,8 @@
 #include "../rawMouseEvtListener.h"
 
 #include <cassert>
+rawMouseEvtListener_internal::rawMouseEvtListener_internal() : lastMouseX(0), lastMouseY(0), buttonState() {}
+
 bool rawMouseEvtListener::feedEvtMouse(size_t n, int32_t* buf) {
     uint32_t key = buf[0];
     if (!n) return false;

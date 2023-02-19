@@ -7,25 +7,14 @@
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_util.h"
-#include "../uiEvtListener/ptrEvtListener.h"
-#include "../uiEvtListener/src/ptrEvtListener.cpp"
-#include "../uiEvtListener/src/rawMouseEvtListener.cpp"
-#include "../uiEvtListener/src/rawTouchEvtListener.cpp"
+#include "../gui/guiContainer.h"
 #include "../twoD/twoDView.h"
 using std::runtime_error;
-
-class myPtrEvtListener : public ptrEvtListener {
-    void evtPtr_preClick(int32_t x, int32_t y) { MNOGLA::logI("pre-click %d %d", x, y); };
-    void evtPtr_secondary(int32_t x, int32_t y) { MNOGLA::logI("secondary click %d %d", x, y); };
-    void evtPtr_confirmClick(int32_t x, int32_t y) { MNOGLA::logI("confirm click %d %d", x, y); };
-    void evtPtr_cancelClick() { MNOGLA::logI("cancel click"); };
-};
-std::shared_ptr<myPtrEvtListener> evtListener(nullptr);
 
 const bool trace = false;
 class myAppState_t {
    public:
-    myAppState_t() {
+    myAppState_t() : guiCont() {
         auto gVertexShader =
             "attribute vec4 vPosition;\n"
             "void main() {\n"
@@ -40,31 +29,27 @@ class myAppState_t {
         gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
         gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
         MNOGLA::checkGlError("glGetAttribLocation");
+        for (int ix = 0; ix < 10; ++ix) {
+            auto b = guiCont.button(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
+        }
     }
     void eventDispatcher();
     void render();
 
    protected:
-    GLuint gProgram;
-    GLuint gvPositionHandle;
+    GLuint gProgram = 0;
+    GLuint gvPositionHandle = 0;
     int appW = -1;
     int appH = -1;
+    MNOGLA::guiContainer guiCont;
 };
 
 void myAppState_t::eventDispatcher() {
-#if false
-    std::shared_ptr<myAppState_t> as(appState);
-    auto x = [as]() {};
-    x();
-    vector<std::function<void()>> funs;
-    funs.push_back(x);
-#endif
     int32_t buf[16];
     while (true) {
         size_t n = MNOGLA::evtGetHostToApp(buf);
         if (!n) break;
-        assert(evtListener);
-        if (evtListener->feedEvtPtr(n, buf)) continue;
+        if (guiCont.feedEvtPtr(n, buf)) continue;
 
         uint32_t key = buf[0];
         switch (key) {
@@ -154,15 +139,14 @@ void myAppState_t::render() {
     glm::vec2 ptD(appW - w, appH - w);
     glm::vec3 rgb2(0.0, 1.0, 1.0);
     v.outlinedRect(ptC, ptD, w, rgb2);
+
+    guiCont.render(v);
 }
 
 std::shared_ptr<myAppState_t> myAppState;
 void MNOGLA_userInit(int w, int h) {
     myAppState = std::make_shared<myAppState_t>();
     MNOGLA::logI("user init");
-    evtListener = std::make_shared<myPtrEvtListener>();
-    assert(evtListener);
-    //    std::shared_ptr<uiListener> l = std::make_shared<myBasicUiListener>();
     // defer handling the initial size to the resize handler by creating an event
     MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
 

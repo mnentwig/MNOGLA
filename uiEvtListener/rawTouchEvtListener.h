@@ -15,4 +15,5 @@ class rawTouchEvtListener : protected rawTouchEvtListener_internal {
 
     // called on touchscreen move
     virtual void evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) {}
+    virtual ~rawTouchEvtListener() = default;
 };

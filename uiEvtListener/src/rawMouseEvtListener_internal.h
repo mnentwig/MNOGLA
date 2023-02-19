@@ -5,6 +5,9 @@
 
 // non-API content of rawMouseEvtListener
 class rawMouseEvtListener_internal {
+   public:
+    rawMouseEvtListener_internal();
+
    protected:
     int32_t lastMouseX;
     int32_t lastMouseY;
