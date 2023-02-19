@@ -1,5 +1,7 @@
 #pragma once
-#include "../MNOGLA_util.h"
+#include <glm/vec2.hpp>
+
+#include "../../core/MNOGLA_includeGl.h"
 namespace MNOGLA {
 class twoDShape {
    public:

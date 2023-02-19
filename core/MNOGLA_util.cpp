@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 using std::string, std::runtime_error, std::to_string;
 
@@ -122,36 +123,6 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
     ::MNOGLA::logE("%s", r.c_str());
     throw std::runtime_error(r);
 }
-
-twoDView_internal::twoDView_internal(float top, float left, float bottomOrHeight, float widthOrRight, bool absolutePt2)
-    : topLeft(::glm::vec2(top, left)),
-      bottomRight(absolutePt2 ? ::glm::vec2(bottomOrHeight, widthOrRight) : ::glm::vec2(top + bottomOrHeight, left + widthOrRight)) {}
-
-twoDView::twoDView(float top, float left, float bottomOrHeight, float widthOrRight, bool absolutePt2)
-    : twoDView_internal::twoDView_internal(top, left, bottomOrHeight, widthOrRight, absolutePt2) {}
-
 }  // namespace MNOGLA
 
-// === pull in various source files per include ===
-//  - keeps CMAKE input file simple
-//  - enables additional optimizations over independent object files
-//  - as we don't have headers:
-//      - everything must be included at the same time
-//      - dependencies must form a tree
-#include "src/filledRect.cpp"
-#include "src/outlinedRect.cpp"
-#include "src/twoDShape.cpp"
-#include "src/vectorText.cpp"
-
-namespace MNOGLA {
-void twoDView::filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb) {
-    filledRect::draw(pt1, pt2, rgb, topLeft, bottomRight);
-}
-void twoDView::outlinedRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, float w, const ::glm::vec3& rgb) {
-    outlinedRect::draw(pt1, pt2, w, rgb, topLeft, bottomRight);
-}
-void twoDView::vectorText(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb) {
-    vectorText::draw(pt, text, height, rgb, topLeft, bottomRight);
-}
-
-}  // namespace MNOGLA
+#include "../twoD/code.cpp" // for now...

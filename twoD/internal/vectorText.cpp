@@ -1,20 +1,10 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <vector>
-
-#include "../MNOGLA_util.h"
+#include "vectorText.h" 
+#include "../../core/MNOGLA_util.h"
 namespace MNOGLA {
-class vectorText : protected twoDShape {
-   public:
-    static void init();
-    static void deinit();
-    static void draw(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb, const ::glm::vec2& screenTopLeft, const ::glm::vec2& screenBottomRight);
-
-   protected:
-    static vector<glm::vec2> text2lines(const ::glm::vec2& pt, const ::std::string& text, float height);
-    static GLuint vertexBuf;
-};
-
+using ::std::vector;
 void vectorText::init() {
     twoDShape::init();
 

@@ -11,7 +11,7 @@
 #include "../uiEvtListener/src/ptrEvtListener.cpp"
 #include "../uiEvtListener/src/rawMouseEvtListener.cpp"
 #include "../uiEvtListener/src/rawTouchEvtListener.cpp"
-
+#include "../twoD/twoDView.h"
 using std::runtime_error;
 
 class myPtrEvtListener : public ptrEvtListener {
