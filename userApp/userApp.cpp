@@ -31,6 +31,7 @@ class myAppState_t {
         MNOGLA::checkGlError("glGetAttribLocation");
         for (int ix = 0; ix < 10; ++ix) {
             auto b = guiCont.button(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
+            b->setClickCallback([ix]() { MNOGLA::logI("hello I am button %i", ix); });
         }
     }
     void eventDispatcher();

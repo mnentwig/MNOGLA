@@ -14,6 +14,10 @@ class guiButton {
    public:
     guiButton(int32_t x, int32_t y, int w, int h, const string& text) : x(x), y(y), w(w), h(h), preClickState(false), text(text), clickCb(nullptr) {}
     void setClickCallback(std::function<void()> cb) { clickCb = cb; }
+    void executeClickCallback() {
+        if (clickCb != nullptr)
+            clickCb();
+    }
     void render(MNOGLA::twoDView& v) {
         const glm::vec3& drawBgCol = preClickState ? bgColPreClick : bgCol;
         const glm::vec3& drawTextCol = preClickState ? textColPreClick : textCol;
@@ -72,6 +76,7 @@ class guiContainer : public ptrEvtListener {
         for (auto b : buttons)
             if (b->getPreClickState()) {
                 b->setPreClickState(false);
+                b->executeClickCallback();
                 MNOGLA::logI("clicked!");
             }
     };
