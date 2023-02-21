@@ -7,11 +7,25 @@
 using std::string, std::runtime_error, std::to_string;
 
 namespace MNOGLA {
+static string glErrorCodeToString(GLenum err) {
+    return std::string(
+               (err == GL_INVALID_ENUM)                    ? "INVALID_ENUM"
+               : (err == GL_INVALID_VALUE)                 ? "INVALID_VALUE"
+               : (err == GL_INVALID_OPERATION)             ? "INVALID_OPERATION"
+               : (err == GL_INVALID_FRAMEBUFFER_OPERATION) ? "INVALID_FRAMEBUFFER_OPERATION"
+               : (err == GL_OUT_OF_MEMORY)                 ? "OUT_OF_MEMORY"
+                                           //                              : (err == GL_STACK_UNDERFLOW)                   ? "STACK_UNDERFLOW"                 // higher GL version
+                                           //                              : (err == GL_STACK_OVERFLOW)                    ? "STACK_OVERFLOW"                  // higher GL version
+                                           //                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION_EXT) ? "INVALID_FRAMEBUFFER_OPERATION"   // higher GL version
+                                           : "unknown") +
+           " (glGetError()==" + std::to_string(err) + ")";
+}
+
 void checkGlError(const char* op) {
     GLenum error = glGetError();
     if (!error)
         return;
-    string e("GL error (" + string(op) + "):" + to_string(error));
+    string e("GL error (" + string(op) + "):" + glErrorCodeToString(error));
     while ((error = glGetError()) != 0)
         e = e + ", " + to_string(error);
     logE("%s", e.c_str());
@@ -67,10 +81,17 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
     return program;
 }
 
-GLint getArgLoc(GLuint prog, const char* argName) {
+GLint getAttribLoc(GLuint prog, const char* argName) {
     GLint r = glGetAttribLocation(prog, argName);
     checkGlError((std::string("glGetAttribLocation:") + argName).c_str());
     if (r < 0) throw runtime_error(std::string("failed to getAttribLocation ") + argName);
+    return r;
+}
+
+GLint getUniformLoc(GLuint prog, const char* argName) {
+    GLint r = glGetUniformLocation(prog, argName);
+    checkGlError((std::string("glGetUniformLocation:") + argName).c_str());
+    if (r < 0) throw runtime_error(std::string("failed to getUniformLocation ") + argName);
     return r;
 }
 
@@ -100,17 +121,7 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
     if (!err) return;
     std::vector<std::string> errList;
     while (err && (errList.size() < 20)) {
-        errList.push_back(std::string(
-                              (err == GL_INVALID_ENUM)                    ? "INVALID_ENUM"
-                              : (err == GL_INVALID_VALUE)                 ? "INVALID_VALUE"
-                              : (err == GL_INVALID_OPERATION)             ? "INVALID_OPERATION"
-                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION) ? "INVALID_FRAMEBUFFER_OPERATION"
-                              : (err == GL_OUT_OF_MEMORY)                 ? "OUT_OF_MEMORY"
-                                                          //                              : (err == GL_STACK_UNDERFLOW)                   ? "STACK_UNDERFLOW"                 // higher GL version
-                                                          //                              : (err == GL_STACK_OVERFLOW)                    ? "STACK_OVERFLOW"                  // higher GL version
-                                                          //                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION_EXT) ? "INVALID_FRAMEBUFFER_OPERATION"   // higher GL version
-                                                          : "unknown") +
-                          " (glGetError()==" + std::to_string(err) + ")");
+        errList.push_back(glErrorCodeToString(err));
         err = glGetError();
     }  // while more errors
     std::string r;
@@ -125,5 +136,5 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
 }
 }  // namespace MNOGLA
 
-#include "../twoD/code.cpp" // for now, generate library code here
-#include "../uiEvtListener/code.cpp" // for now, generate library code here
+#include "../twoD/code.cpp"           // for now, generate library code here
+#include "../uiEvtListener/code.cpp"  // for now, generate library code here

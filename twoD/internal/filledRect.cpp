@@ -1,4 +1,6 @@
 #include "filledRect.h"
+
+#include "../../core/MNOGLA_util.h"
 namespace MNOGLA {
 void filledRect::init() {
     twoDShape::init();
@@ -13,17 +15,10 @@ void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::gl
     GLfloat vertices[4 * 2] = {pt1.x, pt1.y, pt1.x, pt2.y, pt2.x, pt1.y, pt2.x, pt2.y};
     GLCHK(glVertexAttribPointer(p0_coord2d, 2, GL_FLOAT, GL_FALSE, 0, vertices));
     GLCHK(glEnableVertexAttribArray(p0_coord2d));
-    GLCHK(glVertexAttrib3f(p0_rgb, rgb.r, rgb.g, rgb.b));
-    GLCHK(glDisableVertexAttribArray(p0_rgb));
+    GLCHK(glUniform3f(p0_rgb, rgb.r, rgb.g, rgb.b));
 
     // === mapping ===
     setOffsetScale(screenTopLeft, screenBottomRight);
-#if false
-    GLCHK(glVertexAttrib2f(p0_scale, 2.0f / screen.x, -2.0f / screen.y));
-    GLCHK(glDisableVertexAttribArray(p0_scale));
-    GLCHK(glVertexAttrib2f(p0_offset, -1.0f, 1.0f));
-    GLCHK(glDisableVertexAttribArray(p0_offset));
-#endif
     GLCHK(glDrawArrays(GL_TRIANGLE_STRIP, /*first vertex*/ 0, /*vertex count*/ 4));
 }
 

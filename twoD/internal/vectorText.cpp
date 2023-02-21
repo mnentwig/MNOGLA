@@ -1,7 +1,9 @@
+#include "vectorText.h"
+
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <vector>
-#include "vectorText.h" 
+
 #include "../../core/MNOGLA_util.h"
 namespace MNOGLA {
 using ::std::vector;
@@ -28,8 +30,7 @@ void vectorText::deinit() {
     GLCHK(glVertexAttribPointer(p0_coord2d, /*xy*/ 2, GL_FLOAT, GL_FALSE, 0, NULL));
     GLCHK(glVertexAttribPointer(p0, 2, GL_FLOAT, GL_FALSE, 0, 0));
 
-    GLCHK(glDisableVertexAttribArray(p0_rgb));
-    GLCHK(glVertexAttrib3f(p0_rgb, rgb.r, rgb.g, rgb.b));
+    GLCHK(glUniform3f(p0_rgb, rgb.r, rgb.g, rgb.b));
 
     // === mapping ===
     setOffsetScale(screenTopLeft, screenBottomRight);

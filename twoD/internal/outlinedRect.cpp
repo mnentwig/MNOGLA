@@ -1,4 +1,6 @@
 #include "outlinedRect.h"
+
+#include "../../core/MNOGLA_util.h"
 namespace MNOGLA {
 /*static!*/ void
 outlinedRect::init() {
@@ -50,15 +52,13 @@ outlinedRect::init() {
     GLCHK(glEnableVertexAttribArray(p0_coord2d));
 
     GLCHK(glBufferData(GL_ARRAY_BUFFER, /*nBytes*/ sizeof(vertexLocation), /*ptr*/ &vertexLocation[0], GL_STATIC_DRAW));
-    GLCHK(glVertexAttribDivisor(p0_coord2d, 0)); // remove
+    GLCHK(glVertexAttribDivisor(p0_coord2d, 0));  // remove
 
     // === index list ===
     GLCHK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuf));
 
     // === color ===
-    GLCHK(glVertexAttrib3f(p0_rgb, rgb.r, rgb.g, rgb.b));
-    GLCHK(glDisableVertexAttribArray(p0_rgb));
-    GLCHK(glVertexAttribDivisor(p0_rgb, 0));
+    GLCHK(glUniform3f(p0_rgb, rgb.r, rgb.g, rgb.b));
 
     // === mapping ===
     setOffsetScale(screenTopLeft, screenBottomRight);

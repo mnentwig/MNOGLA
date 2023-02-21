@@ -4,6 +4,8 @@
 
 #include "internal/twoDView_internal.h"
 namespace MNOGLA {
+
+// Purpose: Draw 2d primitives
 class twoDView : protected twoDView_internal {
    public:
     twoDView(float top, float left, float widthOrRight, float bottomOrHeight, bool absolutePt2);
