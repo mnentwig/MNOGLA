@@ -18,11 +18,17 @@ class guiButton {
         if (clickCb != nullptr)
             clickCb();
     }
+    glm::vec2 getTopLeft() const {
+        return glm::vec2(x, y);
+    }
+    glm::vec2 getBottomRight() const {
+        return glm::vec2(x + w, y + h);
+    }
     void render(MNOGLA::twoDView& v) {
         const glm::vec3& drawBgCol = preClickState ? bgColPreClick : bgCol;
         const glm::vec3& drawTextCol = preClickState ? textColPreClick : textCol;
-        v.filledRect(glm::vec2(x, y), glm::vec2(x + w, y + h), drawBgCol);
-        v.vectorText(glm::vec2(x, y), text, h, drawTextCol);
+        v.filledRect(getTopLeft(), getBottomRight(), drawBgCol);
+        v.vectorText(getTopLeft(), text, h, drawTextCol);
     }
 
     glm::vec3 bgCol = glm::vec3(0.2f, 0.2f, 0.2f);
@@ -48,10 +54,10 @@ class guiButton {
 
 class guiContainer : public ptrEvtListener {
    public:
-    guiContainer() : buttons() {}
-    void render(MNOGLA::twoDView& v) {
+    guiContainer() : buttons(), view(), panDownPt(0.0f, 0.0f), panDown(false) {}
+    void render() {
         for (auto b : buttons)
-            b->render(v);
+            b->render(view);
     }
 
     std::shared_ptr<guiButton> button(int32_t x, int32_t y, int w, int h, const string& text) {
@@ -59,10 +65,34 @@ class guiContainer : public ptrEvtListener {
         return buttons.back();
     }
 
+    void autoscale() {
+        struct {
+            void enterPt(const glm::vec2& pt) {
+                minPt = glm::vec2(std::min(minPt.x, pt.x), std::min(minPt.y, pt.y));
+                maxPt = glm::vec2(std::max(maxPt.x, pt.x), std::max(maxPt.y, pt.y));
+            }
+            glm::vec2 getCenter() { return (minPt + maxPt) / 2.0f; }
+            glm::vec2 getWh() { return (maxPt - minPt); }
+
+           protected:
+            glm::vec2 minPt = glm::vec2(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+            glm::vec2 maxPt = glm::vec2(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
+
+        } autoscaler;
+        for (auto b : buttons) {
+            autoscaler.enterPt(b->getTopLeft());
+            autoscaler.enterPt(b->getBottomRight());
+        }
+
+        view.set(autoscaler.getCenter(), autoscaler.getWh(), 0.0f);
+    }
+
     void evtPtr_preClick(int32_t x, int32_t y) {
         MNOGLA::logI("pre-click %d %d", x, y);
         for (auto b : buttons)
             b->setPreClickState(b->ptInside(x, y));
+        panDownPt = glm::vec2(x, y);
+        panDown = true;
     }
 
     void evtPtr_secondary(int32_t x, int32_t y) {
@@ -79,14 +109,21 @@ class guiContainer : public ptrEvtListener {
                 b->executeClickCallback();
                 MNOGLA::logI("clicked!");
             }
+        panDown = false;
     };
 
     void evtPtr_cancelClick() {
         for (auto b : buttons)
             b->setPreClickState(false);
+        panDown = false;
     };
 
    protected:
     vector<shared_ptr<guiButton>> buttons;
+    MNOGLA::twoDView view;
+
+    // === pan controls ===
+    glm::vec2 panDownPt;
+    bool panDown;
 };
 }  // namespace MNOGLA

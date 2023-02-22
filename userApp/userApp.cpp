@@ -14,7 +14,7 @@ using std::runtime_error;
 const bool trace = false;
 class myAppState_t {
    public:
-    myAppState_t() : guiCont() {
+    myAppState_t(float appW, float appH) : view(), appW(appW), appH(appH), guiCont() {
         auto gVertexShader =
             "attribute vec4 vPosition;\n"
             "void main() {\n"
@@ -29,19 +29,21 @@ class myAppState_t {
         gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
         gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
         MNOGLA::checkGlError("glGetAttribLocation");
-        for (int ix = 0; ix < 10; ++ix) {
+        for (int ix = 3; ix < 13; ++ix) {
             auto b = guiCont.button(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
             b->setClickCallback([ix]() { MNOGLA::logI("hello I am button %i", ix); });
         }
+        guiCont.autoscale();
     }
     void eventDispatcher();
     void render();
+    MNOGLA::twoDView view;
 
    protected:
     GLuint gProgram = 0;
     GLuint gvPositionHandle = 0;
-    int appW = -1;
-    int appH = -1;
+    int appW;
+    int appH;
     MNOGLA::guiContainer guiCont;
 };
 
@@ -87,11 +89,6 @@ void myAppState_t::eventDispatcher() {
 
 void myAppState_t::render() {
     if ((appW < 0) || (appH < 0)) throw runtime_error("window size not initialized");
-    const glm::vec2 screenWH(appW, appH);
-    MNOGLA::twoDView v;
-    glm::vec2 topLeft = glm::vec2(0, 0);
-    glm::vec2 center = topLeft + screenWH/2.0f;
-    v.set(center, screenWH, 0.0f);
     static float grey;
     grey += 0.01f;
     // if (grey > 1.0f) {
@@ -108,7 +105,7 @@ void myAppState_t::render() {
     ::glm::vec2 ptB(500, 150);
     ::glm::vec3 col(0.0f, 1.0f, 0.0f);
     glm::vec2 screenTopLeft(0, 0);
-    v.filledRect(ptA, ptB, col);
+    view.filledRect(ptA, ptB, col);
 
     glUseProgram(gProgram);
     MNOGLA::checkGlError("glUseProgram");
@@ -123,17 +120,12 @@ void myAppState_t::render() {
     MNOGLA::checkGlError("glDrawArrays");
     if (trace) MNOGLA::logI("videoCbT0: filled rect done");
 
-    //    for (int c = 0; c <= 4; ++c) {
-    //      float oX = (c == 1) ? -1 : (c == 2) ? 1
-    //                                        : 0;
-    //  float oY = (c == 3) ? -1 : (c == 4) ? 1
-    //                                    : 0;
     const glm::vec3 rgb(0.0f, 1.0f, 0.0f);
     for (float row = 0; row < 10; ++row) {
         if (trace) MNOGLA::logI("text row %d start", (int)row);
         float textsize = 60;
         glm::vec2 pos(textsize, row * textsize);
-        v.vectorText(pos, "Hello world", textsize, rgb);
+        view.vectorText(pos, "Hello world", textsize, rgb);
         if (trace) MNOGLA::logI("text row %d done", (int)row);
     }
 
@@ -142,17 +134,20 @@ void myAppState_t::render() {
     glm::vec2 ptC(w, w);
     glm::vec2 ptD(appW - w, appH - w);
     glm::vec3 rgb2(0.0, 1.0, 1.0);
-    v.outlinedRect(ptC, ptD, w, rgb2);
+    view.outlinedRect(ptC, ptD, w, rgb2);
 
-    guiCont.render(v);
+    guiCont.render();
 }
 
 std::shared_ptr<myAppState_t> myAppState;
 void MNOGLA_userInit(int w, int h) {
-    myAppState = std::make_shared<myAppState_t>();
+    myAppState = std::make_shared<myAppState_t>(w, h);
     MNOGLA::logI("user init");
-    // defer handling the initial size to the resize handler by creating an event
-    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
+
+    glm::vec2 topLeft = glm::vec2(0, 0);
+    const glm::vec2 screenWH(w, h);
+    glm::vec2 center = topLeft + screenWH / 2.0f;
+    myAppState->view.set(center, screenWH, 0.0f);
 
     glEnable(GL_DEPTH_TEST);
     MNOGLA::checkGlError("gldepthtest");
