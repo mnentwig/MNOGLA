@@ -16,5 +16,6 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
 
 void checkGlError(const char* op);
 GLuint createProgram(const char* pVertexSource, const char* pFragmentSource);
-GLint getArgLoc(GLuint prog, const char* argName);
+GLint getAttribLoc(GLuint prog, const char* argName);
+GLint getUniformLoc(GLuint prog, const char* argName);
 }  // namespace MNOGLA

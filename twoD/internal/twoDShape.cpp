@@ -12,14 +12,14 @@ void twoDShape::init() {
             "#version 300 es\n"
             "in vec2 coord2d;\n"
             "uniform vec3 rgb;\n"
-            "uniform vec2 scale;\n"
-            "uniform vec2 offset;\n"
+            "uniform mat3 world2screen;\n"
             "out vec3 rgbv;\n"
             "void main() {\n"
-            "  gl_Position = vec4(coord2d.x * scale.x + offset.x, coord2d.y * scale.y + offset.y, 0.0, 1.0);\n"
+            "  gl_Position = vec4(world2screen*vec3(coord2d, 1.0f), 1.0);\n"
             "  rgbv = rgb;\n"
             "}\n";
 
+// RGB as uniform here?
         const char* fragShader =
             "#version 300 es\n"
             "precision mediump float;\n"
@@ -32,28 +32,13 @@ void twoDShape::init() {
         p0 = createProgram(vShader, fragShader);
         p0_coord2d = getAttribLoc(p0, "coord2d");
         p0_rgb = getUniformLoc(p0, "rgb");
-        p0_scale = getUniformLoc(p0, "scale");
-        p0_offset = getUniformLoc(p0, "offset");
+        p0_world2screen = getUniformLoc(p0, "world2screen");
     }
     ++initCount;
 }
 
-void twoDShape::setOffsetScale(const glm::vec2& topLeft, const glm::vec2& bottomRight) {
-    // Maxima CAS:
-    // string(linsolve([sx*x1+ox = -1, sx*x2+ox = 1, sy*y1+oy = 1, sy * y2 + oy = -1], [sx, ox, sy, oy]));
-    // "[sx = -2/(x1-x2),ox = (x2+x1)/(x1-x2),sy = 2/(y1-y2),oy = -(y2+y1)/(y1-y2)]"
-    float x1 = topLeft.x;
-    float x2 = bottomRight.x;
-    float y1 = topLeft.y;
-    float y2 = bottomRight.y;
-
-    float sx = -2.0f / (x1 - x2);
-    float ox = (x2 + x1) / (x1 - x2);
-    float sy = 2.0f / (y1 - y2);
-    float oy = -(y2 + y1) / (y1 - y2);
-
-    GLCHK(glUniform2f(p0_scale, sx, sy));
-    GLCHK(glUniform2f(p0_offset, ox, oy));
+void twoDShape::setWorld2screen(const ::glm::mat3& world2screen) {
+    GLCHK(glUniformMatrix3fv(p0_world2screen, /*num matrices*/ 1, /*transpose*/ false, &world2screen[0][0]));
 }
 
 void twoDShape::deinit() {
@@ -66,6 +51,5 @@ void twoDShape::deinit() {
 GLuint twoDShape::p0;
 GLint twoDShape::p0_coord2d;
 GLint twoDShape::p0_rgb;
-GLint twoDShape::p0_scale;
-GLint twoDShape::p0_offset;
+GLint twoDShape::p0_world2screen;
 }  // namespace MNOGLA

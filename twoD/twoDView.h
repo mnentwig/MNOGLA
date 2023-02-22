@@ -8,7 +8,8 @@ namespace MNOGLA {
 // Purpose: Draw 2d primitives
 class twoDView : protected twoDView_internal {
    public:
-    twoDView(float top, float left, float widthOrRight, float bottomOrHeight, bool absolutePt2);
+//    twoDView();
+    void set(::glm::vec2 center, ::glm::vec2 wh, float rot_rad);
 
     void filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb);
     void outlinedRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, float w, const ::glm::vec3& rgb);

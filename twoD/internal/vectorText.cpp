@@ -19,7 +19,7 @@ void vectorText::deinit() {
     GLCHK(glDeleteBuffers(1, &vertexBuf));
 }
 
-/*static!*/ void vectorText::draw(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb, const ::glm::vec2& screenTopLeft, const ::glm::vec2& screenBottomRight) {
+/*static!*/ void vectorText::draw(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb, const ::glm::mat3& world2screen) {
     const vector<glm::vec2> v = text2lines(pt, text, height);
     GLCHK(glUseProgram(p0));
 
@@ -33,7 +33,7 @@ void vectorText::deinit() {
     GLCHK(glUniform3f(p0_rgb, rgb.r, rgb.g, rgb.b));
 
     // === mapping ===
-    setOffsetScale(screenTopLeft, screenBottomRight);
+    setWorld2screen(world2screen);
 
     glDrawArrays(GL_LINES, 0, v.size());
 

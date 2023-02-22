@@ -23,7 +23,7 @@ outlinedRect::init() {
     GLCHK(glDeleteBuffers(1, &indexBuf));
 }
 
-/*static!*/ void outlinedRect::draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::vec2& screenTopLeft, const ::glm::vec2& screenBottomRight) {
+/*static!*/ void outlinedRect::draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::mat3& world2screen) {
     GLCHK(glUseProgram(p0));
 
     // (a)0.........1...
@@ -61,7 +61,7 @@ outlinedRect::init() {
     GLCHK(glUniform3f(p0_rgb, rgb.r, rgb.g, rgb.b));
 
     // === mapping ===
-    setOffsetScale(screenTopLeft, screenBottomRight);
+    setWorld2screen(world2screen);
 
     // === draw ===
     GLCHK(glDrawElements(GL_TRIANGLE_STRIP, nVertexIndices, GL_UNSIGNED_SHORT, 0));

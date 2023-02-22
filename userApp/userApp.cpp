@@ -88,7 +88,10 @@ void myAppState_t::eventDispatcher() {
 void myAppState_t::render() {
     if ((appW < 0) || (appH < 0)) throw runtime_error("window size not initialized");
     const glm::vec2 screenWH(appW, appH);
-    MNOGLA::twoDView v(0, 0, appW, appH, /*absolutePt2*/ true);
+    MNOGLA::twoDView v;
+    glm::vec2 topLeft = glm::vec2(0, 0);
+    glm::vec2 center = topLeft + screenWH/2.0f;
+    v.set(center, screenWH, 0.0f);
     static float grey;
     grey += 0.01f;
     // if (grey > 1.0f) {
