@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "../MNOGLA.h"
+#include "../twoD/twoDMatrix.h"
 #include "../twoD/twoDView.h"
 #include "../uiEvtListener/ptrEvtListener.h"
 
@@ -37,12 +38,12 @@ class guiButton {
     glm::vec3 textColPreClick = glm::vec3(0.2f, 0.2f, 0.2f);
     void setPreClickState(bool state) { preClickState = state; }
     bool getPreClickState() { return preClickState; }
-    bool ptInside(int32_t ptX, int32_t ptY) {
-        return (ptX < x)        ? false
-               : (ptY < y)      ? false
-               : (ptX >= x + w) ? false
-               : (ptY >= y + h) ? false
-                                : true;
+    bool ptInside(glm::vec2(pt)) {
+        return (pt.x < x)        ? false
+               : (pt.y < y)      ? false
+               : (pt.x >= x + w) ? false
+               : (pt.y >= y + h) ? false
+                                 : true;
     }
 
    protected:
@@ -54,7 +55,11 @@ class guiButton {
 
 class guiContainer : public ptrEvtListener {
    public:
-    guiContainer() : buttons(), view(), panDownPt(0.0f, 0.0f), panDown(false) {}
+    guiContainer() : buttons(), view(), normalizeMouse(), panDownPt(0.0f, 0.0f), panDown(false) {}
+    void informViewport(float x, float y, float w, float h) {
+        glm::vec2 center(x + w / 2.0f, y + h / 2.0f);
+        normalizeMouse = twoDMatrix::scale(glm::vec2(2.0f / w, -2.0f / h)) * twoDMatrix::translate(-center);
+    }
     void render() {
         for (auto b : buttons)
             b->render(view);
@@ -88,21 +93,25 @@ class guiContainer : public ptrEvtListener {
     }
 
     void evtPtr_preClick(int32_t x, int32_t y) {
-        MNOGLA::logI("pre-click %d %d", x, y);
+        glm::vec3 xy = view.getScreen2world() * 
+        normalizeMouse * glm::vec3(x, y, 1);
+        MNOGLA::logI("pre-click %f %f", xy.x, xy.y);
         for (auto b : buttons)
-            b->setPreClickState(b->ptInside(x, y));
-        panDownPt = glm::vec2(x, y);
+            b->setPreClickState(b->ptInside(xy));
+        panDownPt = xy;
         panDown = true;
     }
 
     void evtPtr_secondary(int32_t x, int32_t y) {
-        MNOGLA::logI("secondary click %d %d", x, y);
+        glm::vec2 xy = view.getScreen2world() * glm::vec3(x, y, 1);
+        MNOGLA::logI("secondary click %f %f", xy.x, xy.y);
         for (auto b : buttons)
             b->setPreClickState(false);
     };
 
     void evtPtr_confirmClick(int32_t x, int32_t y) {
-        MNOGLA::logI("confirm click %d %d", x, y);
+        glm::vec2 xy = view.getScreen2world() * glm::vec3(x, y, 1);
+        MNOGLA::logI("confirm click %f %f", xy.x, xy.y);
         for (auto b : buttons)
             if (b->getPreClickState()) {
                 b->setPreClickState(false);
@@ -121,6 +130,7 @@ class guiContainer : public ptrEvtListener {
    protected:
     vector<shared_ptr<guiButton>> buttons;
     MNOGLA::twoDView view;
+    glm::mat3 normalizeMouse;
 
     // === pan controls ===
     glm::vec2 panDownPt;

@@ -6,17 +6,27 @@
 #include "vectorText.h"
 namespace MNOGLA {
 
-glm::mat3 twoDView::get() {
+const glm::mat3& twoDView::getWorld2screen() {
     return this->world2screen;
 }
 
-void twoDView::set(const ::glm::mat3& world2screen) {
+const glm::mat3& twoDView::getScreen2world() {
+    return this->screen2world;
+}
+
+void twoDView::setWorld2screen(const ::glm::mat3& world2screen) {
     this->world2screen = world2screen;
+    glm::vec3 test = world2screen * glm::vec3(30, 40, 1);
+    MNOGLA::logI("%f %f %f", test.x, test.y, test.z);
+    glm::vec3 test2 = glm::inverse(world2screen) * test;
+    MNOGLA::logI("%f %f %f", test2.x, test2.y, test2.z);
+    this->screen2world = glm::inverse(world2screen);
+ //   this->screen2world = glm::mat3(1.0f);
 }
 
 void twoDView::set(::glm::vec2 center, ::glm::vec2 wh, float rot_rad) {
     glm::vec2 scale(2.0f / wh.x, -2.0f / wh.y);
-    world2screen = twoDMatrix::scale(scale) * twoDMatrix::translate(-center);
+    setWorld2screen(twoDMatrix::scale(scale) * twoDMatrix::translate(-center));
     return;
 #if 0
     world2screen = glm::mat4(1.0f);

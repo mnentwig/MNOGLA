@@ -14,7 +14,7 @@ using std::runtime_error;
 const bool trace = false;
 class myAppState_t {
    public:
-    myAppState_t(float appW, float appH) : view(), appW(appW), appH(appH), guiCont() {
+    myAppState_t() : view(), appW(-1), appH(-1), guiCont() {
         auto gVertexShader =
             "attribute vec4 vPosition;\n"
             "void main() {\n"
@@ -56,11 +56,18 @@ void myAppState_t::eventDispatcher() {
 
         uint32_t key = buf[0];
         switch (key) {
-            case MNOGLA::eKeyToHost::WINSIZE:
+            case MNOGLA::eKeyToHost::WINSIZE: {
                 appW = buf[1];
                 appH = buf[2];
+
+                glm::vec2 topLeft = glm::vec2(0, 0);
+                const glm::vec2 screenWH(appW, appH);
+                glm::vec2 center = topLeft + screenWH / 2.0f;
+                view.set(center, screenWH, 0.0f);
+                guiCont.informViewport(0, 0, appW, appH);
                 glViewport(0, 0, appW, appH);  // global (could move to lower-level render function)
                 continue;
+            }
             default:
                 break;
         }
@@ -141,13 +148,11 @@ void myAppState_t::render() {
 
 std::shared_ptr<myAppState_t> myAppState;
 void MNOGLA_userInit(int w, int h) {
-    myAppState = std::make_shared<myAppState_t>(w, h);
+    myAppState = std::make_shared<myAppState_t>();
     MNOGLA::logI("user init");
 
-    glm::vec2 topLeft = glm::vec2(0, 0);
-    const glm::vec2 screenWH(w, h);
-    glm::vec2 center = topLeft + screenWH / 2.0f;
-    myAppState->view.set(center, screenWH, 0.0f);
+    // defer handling the initial size to the resize handler by creating an event
+    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
 
     glEnable(GL_DEPTH_TEST);
     MNOGLA::checkGlError("gldepthtest");
