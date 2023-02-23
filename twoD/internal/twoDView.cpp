@@ -26,7 +26,7 @@ void twoDView::setWorld2screen(const ::glm::mat3& world2screen) {
 
 void twoDView::set(::glm::vec2 center, ::glm::vec2 wh, float rot_rad) {
     glm::vec2 scale(2.0f / wh.x, -2.0f / wh.y);
-    setWorld2screen(twoDMatrix::scale(scale) * twoDMatrix::translate(-center));
+    setWorld2screen(twoDMatrix::scale(scale) * twoDMatrix::rot(rot_rad) * twoDMatrix::translate(-center));
     return;
 #if 0
     world2screen = glm::mat4(1.0f);

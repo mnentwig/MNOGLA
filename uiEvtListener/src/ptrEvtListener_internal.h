@@ -21,11 +21,12 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     virtual void evtPtr_cancelClick(){};                            // implementation overrides ("internal" version needed to call it from here)
     virtual void evtPtr_secondary(const ::glm::vec2& ptNorm){};     // implementation overrides ("internal" version needed to call it from here)
    protected:
-    bool withinClickRadius(const ::glm::vec2& ptNorm) const;
+    bool withinClickRadius(int32_t xRaw, int32_t yRaw) const;
     ::glm::vec2 getLastMouseNormalized();
     bool validFirstDown;
     int32_t firstDownPtr;
     ::glm::vec2 firstDownPt;
+    ::glm::vec2 firstDownPtRaw;
     ptrEvtListenerConfig config;
     glm::mat3 normalizeMouse;
 };

@@ -93,8 +93,9 @@ class guiContainer : public ptrEvtListener {
 
     void evtPtr_preClick(const ::glm::vec2& ptNorm) {
         MNOGLA::logI("pre-click %f %f", ptNorm.x, ptNorm.y);
+        glm::vec2 ptWorld = view.getScreen2world() * glm::vec3(ptNorm, 1.0f);
         for (auto b : buttons)
-            b->setPreClickState(b->ptInside(ptNorm));
+            b->setPreClickState(b->ptInside(ptWorld));
         panDownPt = ptNorm;
         panDown = true;
     }
