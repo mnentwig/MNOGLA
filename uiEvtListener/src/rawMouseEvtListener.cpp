@@ -1,6 +1,8 @@
 #include "../rawMouseEvtListener.h"
 
 #include <cassert>
+
+namespace MNOGLA {
 rawMouseEvtListener_internal::rawMouseEvtListener_internal() : lastMouseX(0), lastMouseY(0), buttonState() {}
 
 bool rawMouseEvtListener::feedEvtMouse(size_t n, int32_t* buf) {
@@ -56,3 +58,4 @@ void rawMouseEvtListener_internal::setButtonState(uint32_t bnum, bool state) {
 bool rawMouseEvtListener::getButtonState(uint32_t bnum) {
     return buttonState[bnum];
 }
+}  // namespace MNOGLA

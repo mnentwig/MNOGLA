@@ -1,6 +1,8 @@
 #pragma once
 #include "src/rawTouchEvtListener_internal.h"
 
+namespace MNOGLA {
+
 // consumes mouse-related events and triggers callback functions, to be overridden by the implementation.
 class rawTouchEvtListener : protected rawTouchEvtListener_internal {
    public:
@@ -17,3 +19,4 @@ class rawTouchEvtListener : protected rawTouchEvtListener_internal {
     virtual void evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) {}
     virtual ~rawTouchEvtListener() = default;
 };
+}  // namespace MNOGLA

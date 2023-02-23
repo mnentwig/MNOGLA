@@ -1,6 +1,7 @@
 #pragma once
 #include "src/rawMouseEvtListener_internal.h"
 
+namespace MNOGLA {
 // consumes mouse-related events and triggers callback functions, to be overridden by the implementation.
 class rawMouseEvtListener : protected rawMouseEvtListener_internal {
    public:
@@ -26,3 +27,4 @@ class rawMouseEvtListener : protected rawMouseEvtListener_internal {
     bool getButtonState(uint32_t bnum);
     virtual ~rawMouseEvtListener() = default;
 };
+}  // namespace MNOGLA

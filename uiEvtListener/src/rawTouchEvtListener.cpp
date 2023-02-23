@@ -1,6 +1,7 @@
 #include "../rawTouchEvtListener.h"
 
 #include <cassert>
+namespace MNOGLA {
 bool rawTouchEvtListener::feedEvtTouch(size_t n, int32_t* buf) {
     uint32_t key = buf[0];
     if (!n) return false;
@@ -35,3 +36,4 @@ bool rawTouchEvtListener::feedEvtTouch(size_t n, int32_t* buf) {
             return false;
     }
 }
+}  // namespace MNOGLA

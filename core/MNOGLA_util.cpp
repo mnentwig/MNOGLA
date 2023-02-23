@@ -4,11 +4,11 @@
 #include <string>
 #include <vector>
 
-using std::string, std::runtime_error, std::to_string;
 
 namespace MNOGLA {
+using ::std::string, ::std::runtime_error, ::std::to_string, ::std::vector;
 static string glErrorCodeToString(GLenum err) {
-    return std::string(
+    return string(
                (err == GL_INVALID_ENUM)                    ? "INVALID_ENUM"
                : (err == GL_INVALID_VALUE)                 ? "INVALID_VALUE"
                : (err == GL_INVALID_OPERATION)             ? "INVALID_OPERATION"
@@ -18,7 +18,7 @@ static string glErrorCodeToString(GLenum err) {
                                            //                              : (err == GL_STACK_OVERFLOW)                    ? "STACK_OVERFLOW"                  // higher GL version
                                            //                              : (err == GL_INVALID_FRAMEBUFFER_OPERATION_EXT) ? "INVALID_FRAMEBUFFER_OPERATION"   // higher GL version
                                            : "unknown") +
-           " (glGetError()==" + std::to_string(err) + ")";
+           " (glGetError()==" + to_string(err) + ")";
 }
 
 void checkGlError(const char* op) {
@@ -48,7 +48,7 @@ static GLuint loadShader(GLenum shaderType, const char* pSource) {
         string e("Failed to load GL shader (" + string(shaderType == GL_VERTEX_SHADER ? "vertex" : "fragment") + "): " + string(buf));
         logE("%s", e.c_str());
         free(buf);
-        throw std::runtime_error(e);
+        throw runtime_error(e);
     }
     return shader;
 }
@@ -58,7 +58,7 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
     GLuint pixelShader = loadShader(GL_FRAGMENT_SHADER, pFragmentSource);
 
     GLuint program = glCreateProgram();
-    if (!program) throw std::runtime_error("glCreateProgram() failed");
+    if (!program) throw runtime_error("glCreateProgram() failed");
     glAttachShader(program, vertexShader);
     checkGlError("glAttachShader");
     glAttachShader(program, pixelShader);
@@ -76,22 +76,22 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
         string e("failed to link GL program: " + string(buf));
         logE("%s", e.c_str());
         free(buf);
-        throw std::runtime_error(e);
+        throw runtime_error(e);
     }
     return program;
 }
 
 GLint getAttribLoc(GLuint prog, const char* argName) {
     GLint r = glGetAttribLocation(prog, argName);
-    checkGlError((std::string("glGetAttribLocation:") + argName).c_str());
-    if (r < 0) throw runtime_error(std::string("failed to getAttribLocation ") + argName);
+    checkGlError((string("glGetAttribLocation:") + argName).c_str());
+    if (r < 0) throw runtime_error(string("failed to getAttribLocation ") + argName);
     return r;
 }
 
 GLint getUniformLoc(GLuint prog, const char* argName) {
     GLint r = glGetUniformLocation(prog, argName);
-    checkGlError((std::string("glGetUniformLocation:") + argName).c_str());
-    if (r < 0) throw runtime_error(std::string("failed to getUniformLocation ") + argName);
+    checkGlError((string("glGetUniformLocation:") + argName).c_str());
+    if (r < 0) throw runtime_error(string("failed to getUniformLocation ") + argName);
     return r;
 }
 
@@ -119,20 +119,20 @@ void deinitUtil() {
 void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourceline) {
     GLenum err = glGetError();
     if (!err) return;
-    std::vector<std::string> errList;
+    vector<string> errList;
     while (err && (errList.size() < 20)) {
         errList.push_back(glErrorCodeToString(err));
         err = glGetError();
     }  // while more errors
-    std::string r;
+    string r;
     for (auto s : errList)
         if (r.size() == 0)
             r = s;
         else
             r = r + ";" + s;
-    r = "glError: " + r + " at " + std::string(sourcefile) + " (line " + std::to_string(sourceline) + "): " + std::string(sourceExpr);
+    r = "glError: " + r + " at " + string(sourcefile) + " (line " + to_string(sourceline) + "): " + string(sourceExpr);
     ::MNOGLA::logE("%s", r.c_str());
-    throw std::runtime_error(r);
+    throw runtime_error(r);
 }
 }  // namespace MNOGLA
 

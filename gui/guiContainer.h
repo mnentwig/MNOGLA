@@ -10,11 +10,11 @@
 #include "../uiEvtListener/ptrEvtListener.h"
 
 namespace MNOGLA {
-using std::shared_ptr, std::make_shared, std::string, std::vector;
+using ::std::shared_ptr, ::std::make_shared, ::std::string, ::std::vector;
 class guiButton {
    public:
     guiButton(int32_t x, int32_t y, int w, int h, const string& text) : x(x), y(y), w(w), h(h), preClickState(false), text(text), clickCb(nullptr) {}
-    void setClickCallback(std::function<void()> cb) { clickCb = cb; }
+    void setClickCallback(::std::function<void()> cb) { clickCb = cb; }
     void executeClickCallback() {
         if (clickCb != nullptr)
             clickCb();
@@ -47,41 +47,40 @@ class guiButton {
     }
 
    protected:
-    int32_t x, y, w, h;
+    int32_t x;
+    int32_t y;
+    int32_t w;
+    int32_t h;
     bool preClickState;
     string text;
-    std::function<void()> clickCb;
+    ::std::function<void()> clickCb;
 };
 
 class guiContainer : public ptrEvtListener {
    public:
-    guiContainer() : buttons(), view(), normalizeMouse(), panDownPt(0.0f, 0.0f), panDown(false) {}
-    void informViewport(float x, float y, float w, float h) {
-        glm::vec2 center(x + w / 2.0f, y + h / 2.0f);
-        normalizeMouse = twoDMatrix::scale(glm::vec2(2.0f / w, -2.0f / h)) * twoDMatrix::translate(-center);
-    }
+    guiContainer() : buttons(), view(), panDownPt(0.0f, 0.0f), panDown(false) {}
     void render() {
         for (auto b : buttons)
             b->render(view);
     }
 
-    std::shared_ptr<guiButton> button(int32_t x, int32_t y, int w, int h, const string& text) {
-        buttons.push_back(std::make_shared<guiButton>(x, y, w, h, text));
+    shared_ptr<guiButton> button(int32_t x, int32_t y, int w, int h, const string& text) {
+        buttons.push_back(::std::make_shared<guiButton>(x, y, w, h, text));
         return buttons.back();
     }
 
     void autoscale() {
         struct {
             void enterPt(const glm::vec2& pt) {
-                minPt = glm::vec2(std::min(minPt.x, pt.x), std::min(minPt.y, pt.y));
-                maxPt = glm::vec2(std::max(maxPt.x, pt.x), std::max(maxPt.y, pt.y));
+                minPt = glm::vec2(::std::min(minPt.x, pt.x), ::std::min(minPt.y, pt.y));
+                maxPt = glm::vec2(::std::max(maxPt.x, pt.x), ::std::max(maxPt.y, pt.y));
             }
             glm::vec2 getCenter() { return (minPt + maxPt) / 2.0f; }
             glm::vec2 getWh() { return (maxPt - minPt); }
 
            protected:
-            glm::vec2 minPt = glm::vec2(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
-            glm::vec2 maxPt = glm::vec2(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
+            glm::vec2 minPt = glm::vec2(::std::numeric_limits<float>::infinity(), ::std::numeric_limits<float>::infinity());
+            glm::vec2 maxPt = glm::vec2(-::std::numeric_limits<float>::infinity(), -::std::numeric_limits<float>::infinity());
 
         } autoscaler;
         for (auto b : buttons) {
@@ -92,26 +91,22 @@ class guiContainer : public ptrEvtListener {
         view.set(autoscaler.getCenter(), autoscaler.getWh(), 0.0f);
     }
 
-    void evtPtr_preClick(int32_t x, int32_t y) {
-        glm::vec3 xy = view.getScreen2world() * 
-        normalizeMouse * glm::vec3(x, y, 1);
-        MNOGLA::logI("pre-click %f %f", xy.x, xy.y);
+    void evtPtr_preClick(const ::glm::vec2& ptNorm) {
+        MNOGLA::logI("pre-click %f %f", ptNorm.x, ptNorm.y);
         for (auto b : buttons)
-            b->setPreClickState(b->ptInside(xy));
-        panDownPt = xy;
+            b->setPreClickState(b->ptInside(ptNorm));
+        panDownPt = ptNorm;
         panDown = true;
     }
 
-    void evtPtr_secondary(int32_t x, int32_t y) {
-        glm::vec2 xy = view.getScreen2world() * glm::vec3(x, y, 1);
-        MNOGLA::logI("secondary click %f %f", xy.x, xy.y);
+    void evtPtr_secondary(const ::glm::vec2& ptNorm) {
+        MNOGLA::logI("secondary click %f %f", ptNorm.x, ptNorm.y);
         for (auto b : buttons)
             b->setPreClickState(false);
     };
 
-    void evtPtr_confirmClick(int32_t x, int32_t y) {
-        glm::vec2 xy = view.getScreen2world() * glm::vec3(x, y, 1);
-        MNOGLA::logI("confirm click %f %f", xy.x, xy.y);
+    void evtPtr_confirmClick(const ::glm::vec2& ptNorm) {
+        MNOGLA::logI("confirm click %f %f", ptNorm.x, ptNorm.y);
         for (auto b : buttons)
             if (b->getPreClickState()) {
                 b->setPreClickState(false);
@@ -130,7 +125,6 @@ class guiContainer : public ptrEvtListener {
    protected:
     vector<shared_ptr<guiButton>> buttons;
     MNOGLA::twoDView view;
-    glm::mat3 normalizeMouse;
 
     // === pan controls ===
     glm::vec2 panDownPt;
