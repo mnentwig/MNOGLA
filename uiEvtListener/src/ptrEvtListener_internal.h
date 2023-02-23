@@ -29,5 +29,6 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     ::glm::vec2 firstDownPtRaw;
     ptrEvtListenerConfig config;
     glm::mat3 normalizeMouse;
+    float aspectRatio;
 };
 }  // namespace MNOGLA

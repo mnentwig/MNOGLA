@@ -33,7 +33,6 @@ class myAppState_t {
             auto b = guiCont.button(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
             b->setClickCallback([ix]() { MNOGLA::logI("hello I am button %i", ix); });
         }
-        guiCont.autoscale();
     }
     void eventDispatcher();
     void render();
@@ -65,6 +64,8 @@ void myAppState_t::eventDispatcher() {
                 glm::vec2 center = topLeft + screenWH / 2.0f;
                 view.set(center, screenWH, 0.0f);
                 guiCont.informViewport(0, 0, appW, appH);
+                guiCont.autoscale();
+
                 glViewport(0, 0, appW, appH);  // global (could move to lower-level render function)
                 continue;
             }

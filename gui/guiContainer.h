@@ -1,4 +1,5 @@
 #include <functional>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <memory>
 #include <string>
@@ -10,6 +11,7 @@
 #include "../uiEvtListener/ptrEvtListener.h"
 
 namespace MNOGLA {
+using ::glm::vec2, ::glm::vec3;
 using ::std::shared_ptr, ::std::make_shared, ::std::string, ::std::vector;
 class guiButton {
    public:
@@ -32,13 +34,13 @@ class guiButton {
         v.vectorText(getTopLeft(), text, h, drawTextCol);
     }
 
-    glm::vec3 bgCol = glm::vec3(0.2f, 0.2f, 0.2f);
-    glm::vec3 bgColPreClick = glm::vec3(0.8f, 0.8f, 0.8f);
-    glm::vec3 textCol = glm::vec3(0.8f, 0.8f, 0.8f);
-    glm::vec3 textColPreClick = glm::vec3(0.2f, 0.2f, 0.2f);
+    vec3 bgCol = vec3(0.2f, 0.2f, 0.2f);
+    vec3 bgColPreClick = vec3(0.8f, 0.8f, 0.8f);
+    vec3 textCol = vec3(0.8f, 0.8f, 0.8f);
+    vec3 textColPreClick = vec3(0.2f, 0.2f, 0.2f);
     void setPreClickState(bool state) { preClickState = state; }
     bool getPreClickState() { return preClickState; }
-    bool ptInside(glm::vec2(pt)) {
+    bool ptInside(vec2(pt)) {
         return (pt.x < x)        ? false
                : (pt.y < y)      ? false
                : (pt.x >= x + w) ? false
@@ -88,7 +90,9 @@ class guiContainer : public ptrEvtListener {
             autoscaler.enterPt(b->getBottomRight());
         }
 
-        view.set(autoscaler.getCenter(), autoscaler.getWh(), 0.0f);
+        const vec2 wh = autoscaler.getWh();
+        const vec2 viewWh(wh.x, wh.x / aspectRatio);
+        view.set(autoscaler.getCenter(), viewWh, 0.0f);
     }
 
     void evtPtr_preClick(const ::glm::vec2& ptNorm) {

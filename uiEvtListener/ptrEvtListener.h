@@ -4,6 +4,7 @@
 #include "src/ptrEvtListener_internal.h"
 namespace MNOGLA {
 
+// Purpose: Abstraction of mouse- and touchscreen UI for basic click-, pan-, zoom functionality. 
 class ptrEvtListener : protected ptrEvtListener_internal {
    public:
     ptrEvtListener();
