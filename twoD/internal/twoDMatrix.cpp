@@ -19,7 +19,7 @@ namespace MNOGLA {
     r[0][0] = cos(phi_rad);
     r[0][1] = -sin(phi_rad);
     r[1][0] = sin(phi_rad);
-    r[0][0] = cos(phi_rad);
+    r[1][1] = cos(phi_rad);
     return r;
 }
 }  // namespace MNOGLA

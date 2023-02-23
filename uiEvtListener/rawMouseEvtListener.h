@@ -18,7 +18,7 @@ class rawMouseEvtListener : protected rawMouseEvtListener_internal {
     virtual void evtMouseRaw_move(int32_t x, int32_t y) {}
 
     // called on mouse scrollwheel event
-    virtual void evtMouseRaw_scroll(int32_t delta) {}
+    virtual void evtMouseRaw_scroll(int32_t deltaX, int32_t deltaY) {}
 
     // returns mouse position into mX, mY
     void getMouse(int32_t* mX, int32_t* mY);

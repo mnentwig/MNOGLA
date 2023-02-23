@@ -123,6 +123,15 @@ class guiContainer : public ptrEvtListener {
         panDown = false;
     };
 
+    void evtMouseRaw_scroll(int32_t deltaX, int32_t deltaY) {
+        glm::vec2 mousePos = view.getScreen2world() * glm::vec3(getLastMouseNormalized(), 1.0f);
+        glm::mat3 m = view.getWorld2screen();
+        m = m * twoDMatrix::translate(mousePos);
+        m = m * twoDMatrix::rot((deltaX + deltaY) * 15.0f * 3.1415926 / 180.0f);
+        m = m * twoDMatrix::translate(-mousePos);
+        view.setWorld2screen(m);
+    }
+
    protected:
     vector<shared_ptr<guiButton>> buttons;
     MNOGLA::twoDView view;
