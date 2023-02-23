@@ -25,6 +25,8 @@ class rawMouseEvtListener : protected rawMouseEvtListener_internal {
 
     // returns state of given button
     bool getButtonState(uint32_t bnum);
+
+    // (destruct correctly for delete after upcasting)
     virtual ~rawMouseEvtListener() = default;
 };
 }  // namespace MNOGLA

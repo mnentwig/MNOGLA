@@ -95,13 +95,18 @@ class guiContainer : public ptrEvtListener {
         view.set(autoscaler.getCenter(), viewWh, 0.0f);
     }
 
-    void evtPtr_preClick(const ::glm::vec2& ptNorm) {
+    bool evtPtr_preClick(const ::glm::vec2& ptNorm) {
         MNOGLA::logI("pre-click %f %f", ptNorm.x, ptNorm.y);
         glm::vec2 ptWorld = view.getScreen2world() * glm::vec3(ptNorm, 1.0f);
-        for (auto b : buttons)
-            b->setPreClickState(b->ptInside(ptWorld));
+        bool anyHit = false;
+        for (auto b : buttons) {
+            bool hit = b->ptInside(ptWorld);
+            b->setPreClickState(hit);
+            anyHit |= hit;
+        }
         panDownPt = ptNorm;
         panDown = true;
+        return anyHit;
     }
 
     void evtPtr_secondary(const ::glm::vec2& ptNorm) {
@@ -126,6 +131,14 @@ class guiContainer : public ptrEvtListener {
             b->setPreClickState(false);
         panDown = false;
     };
+
+    void evtPtr_drag(const glm::vec2& deltaNorm) {
+        glm::vec2 mouseDelta = view.getScreen2world() * glm::vec3(getLastMouseNormalized(), 1.0f);
+        MNOGLA::logI("drag %f %f", deltaNorm.x, deltaNorm.y);
+        glm::mat3 m = view.getWorld2screen();
+        m = m * twoDMatrix::translate(mouseDelta);
+        view.setWorld2screen(m);
+    }
 
     void evtMouseRaw_scroll(int32_t deltaX, int32_t deltaY) {
         glm::vec2 mousePos = view.getScreen2world() * glm::vec3(getLastMouseNormalized(), 1.0f);

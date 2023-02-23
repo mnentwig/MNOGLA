@@ -1,5 +1,7 @@
 #include <glm/mat3x3.hpp>
 #include <glm/vec2.hpp>
+#include <memory>
+#include <vector>
 
 #include "../ptrEvtListenerConfig.h"
 #include "../rawMouseEvtListener.h"
@@ -16,19 +18,28 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     void evtMouseRaw_up(int32_t bnum) final;
     void evtMouseRaw_move(int32_t x, int32_t y) final;
 
-    virtual void evtPtr_preClick(const ::glm::vec2& ptNorm){};      // implementation overrides ("internal" version needed to call it from here)
-    virtual void evtPtr_confirmClick(const ::glm::vec2& ptNorm){};  // implementation overrides ("internal" version needed to call it from here)
-    virtual void evtPtr_cancelClick(){};                            // implementation overrides ("internal" version needed to call it from here)
-    virtual void evtPtr_secondary(const ::glm::vec2& ptNorm){};     // implementation overrides ("internal" version needed to call it from here)
+    // return true if hitting something "clickable" (disables drag detection within config.clickRadius_pixels)
+    virtual bool evtPtr_preClick(const ::glm::vec2& ptNorm) { return false; };  // implementation overrides ("internal" version needed to call it from here)
+    virtual void evtPtr_confirmClick(const ::glm::vec2& ptNorm){};              // implementation overrides ("internal" version needed to call it from here)
+    virtual void evtPtr_cancelClick(){};                                        // implementation overrides ("internal" version needed to call it from here)
+    virtual void evtPtr_secondary(const ::glm::vec2& ptNorm){};                 // implementation overrides ("internal" version needed to call it from here)
+    virtual void evtPtr_drag(const ::glm::vec2& deltaNorm){};                   // implementation overrides ("internal" version needed to call it from here)
    protected:
     bool withinClickRadius(int32_t xRaw, int32_t yRaw) const;
     ::glm::vec2 getLastMouseNormalized();
+    ::glm::vec2 normalizeRawMouse(int32_t x, int32_t y);
+
+    // whether firstDownPt(raw) qualifies for a click
     bool validFirstDown;
+    // index of first multitouch pointer that became active (redundant - remove?)
     int32_t firstDownPtr;
-    ::glm::vec2 firstDownPt;
-    ::glm::vec2 firstDownPtRaw;
+    // click detection: point where mouse/touch went down; drag: current drag position (raw mouse coordinates in pixels)
+    int32_t firstDownPtRawX;
+    int32_t firstDownPtRawY;
     ptrEvtListenerConfig config;
     glm::mat3 normalizeMouse;
     float aspectRatio;
+    class multitouchPtr;
+    std::vector<std::shared_ptr<multitouchPtr>> pointers;
 };
 }  // namespace MNOGLA
