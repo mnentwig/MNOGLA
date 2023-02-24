@@ -24,17 +24,13 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     virtual void evtPtr_cancelClick(){};                                        // implementation overrides ("internal" version needed to call it from here)
     virtual void evtPtr_secondary(const ::glm::vec2& ptNorm){};                 // implementation overrides ("internal" version needed to call it from here)
     virtual void evtPtr_drag(const ::glm::vec2& deltaNorm){};                   // implementation overrides ("internal" version needed to call it from here)
+    virtual void evtPtr_twoPtrDrag(const ::glm::vec2& pt1start, const ::glm::vec2& pt1stop,
+                                   const ::glm::vec2& pt2start, const ::glm::vec2& pt2stop){};  // implementation overrides
    protected:
     ::glm::vec2 getLastMouseNormalized();
+    ::glm::vec2 normalizeRawMouse(const ::glm::ivec2& xy);
     ::glm::vec2 normalizeRawMouse(int32_t x, int32_t y);
 
-    // whether firstDownPt(raw) qualifies for a click
-    bool validFirstDown;
-    // index of first multitouch pointer that became active (redundant - remove?)
-    int32_t firstDownPtr;
-    // click detection: point where mouse/touch went down; drag: current drag position (raw mouse coordinates in pixels)
-    int32_t firstDownPtRawX;
-    int32_t firstDownPtRawY;
     ptrEvtListenerConfig config;
     glm::mat3 normalizeMouse;
     float aspectRatio;
@@ -43,9 +39,13 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     typedef std::shared_ptr<multitouchPtr> pMultitouchPtr_t;
 
     // multitouch pointers by arbitrary (host-assigned) index
-    std::map<int32_t, pMultitouchPtr_t> pointers;
+    ::std::map<int32_t, pMultitouchPtr_t> pointers;
 
     class cClickAction;
-    std::shared_ptr<cClickAction> clickAction;
+    ::std::shared_ptr<cClickAction> clickAction;
+
+    class cTwoTouchAction;
+    ::std::shared_ptr<cTwoTouchAction> twoTouchAction;
+    void execTwoTouchAction(int32_t ptrNum);
 };
 }  // namespace MNOGLA

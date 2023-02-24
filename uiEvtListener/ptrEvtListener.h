@@ -20,9 +20,11 @@ class ptrEvtListener : protected ptrEvtListener_internal {
     virtual void evtPtr_confirmClick(::glm::vec2 xy){};  // implementation overrides
     // ptr moved too far from down location
     virtual void evtPtr_cancelClick(){};  // implementation overrides
-    // RMB or long press
+    // RMB or long press (TBD)
     virtual void evtPtr_secondary(::glm::vec2 xy){};           // implementation overrides
     virtual void evtPtr_drag(const ::glm::vec2& deltaNorm){};  // implementation overrides
+    virtual void evtPtr_twoPtrDrag(const ::glm::vec2& pt1start, const ::glm::vec2& pt1stop,
+                                   const ::glm::vec2& pt2start, const ::glm::vec2& pt2stop){};  // implementation overrides
 
    private:
     virtual bool feedEvtTouch(size_t n, int32_t* buf) final { return false; };  // "private" blocks access, we call superclass. Dummy override, never called.

@@ -133,7 +133,7 @@ class guiContainer : public ptrEvtListener {
     };
 
     void evtPtr_drag(const glm::vec2& deltaNorm) {
-        glm::vec2 mouseDelta = view.getScreen2world() * glm::vec3(deltaNorm, 1.0f) - view.getScreen2world() * glm::vec3(0.0f, 0.0f, 1.0f); // fixme
+        glm::vec2 mouseDelta = view.getScreen2world() * glm::vec3(deltaNorm, 1.0f) - view.getScreen2world() * glm::vec3(0.0f, 0.0f, 1.0f);  // fixme
         MNOGLA::logI("evtPtr drag %f %f", mouseDelta.x, mouseDelta.y);
         glm::mat3 m = view.getWorld2screen();
         m = m * twoDMatrix::translate(mouseDelta);
@@ -147,6 +147,12 @@ class guiContainer : public ptrEvtListener {
         m = m * twoDMatrix::rot((deltaX + deltaY) * 15.0f * 3.1415926 / 180.0f);
         m = m * twoDMatrix::translate(-mousePos);
         view.setWorld2screen(m);
+    }
+
+    void evtPtr_twoPtrDrag(const ::glm::vec2& pt1start, const ::glm::vec2& pt1stop,
+                           const ::glm::vec2& pt2start, const ::glm::vec2& pt2stop) {
+        MNOGLA::logI("twoPtr drag\t%f\t%f", pt1start.x, pt1start.y);
+        MNOGLA::logI("           \t%f\t%f", pt2start.x, pt2start.y);
     }
 
    protected:
