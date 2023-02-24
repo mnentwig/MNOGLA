@@ -133,8 +133,8 @@ class guiContainer : public ptrEvtListener {
     };
 
     void evtPtr_drag(const glm::vec2& deltaNorm) {
-        glm::vec2 mouseDelta = view.getScreen2world() * glm::vec3(getLastMouseNormalized(), 1.0f);
-        MNOGLA::logI("drag %f %f", deltaNorm.x, deltaNorm.y);
+        glm::vec2 mouseDelta = view.getScreen2world() * glm::vec3(deltaNorm, 1.0f) - view.getScreen2world() * glm::vec3(0.0f, 0.0f, 1.0f); // fixme
+        MNOGLA::logI("evtPtr drag %f %f", mouseDelta.x, mouseDelta.y);
         glm::mat3 m = view.getWorld2screen();
         m = m * twoDMatrix::translate(mouseDelta);
         view.setWorld2screen(m);

@@ -1,7 +1,7 @@
 #include <glm/mat3x3.hpp>
 #include <glm/vec2.hpp>
+#include <map>
 #include <memory>
-#include <vector>
 
 #include "../ptrEvtListenerConfig.h"
 #include "../rawMouseEvtListener.h"
@@ -25,7 +25,6 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     virtual void evtPtr_secondary(const ::glm::vec2& ptNorm){};                 // implementation overrides ("internal" version needed to call it from here)
     virtual void evtPtr_drag(const ::glm::vec2& deltaNorm){};                   // implementation overrides ("internal" version needed to call it from here)
    protected:
-    bool withinClickRadius(int32_t xRaw, int32_t yRaw) const;
     ::glm::vec2 getLastMouseNormalized();
     ::glm::vec2 normalizeRawMouse(int32_t x, int32_t y);
 
@@ -39,7 +38,14 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     ptrEvtListenerConfig config;
     glm::mat3 normalizeMouse;
     float aspectRatio;
+
     class multitouchPtr;
-    std::vector<std::shared_ptr<multitouchPtr>> pointers;
+    typedef std::shared_ptr<multitouchPtr> pMultitouchPtr_t;
+
+    // multitouch pointers by arbitrary (host-assigned) index
+    std::map<int32_t, pMultitouchPtr_t> pointers;
+
+    class cClickAction;
+    std::shared_ptr<cClickAction> clickAction;
 };
 }  // namespace MNOGLA

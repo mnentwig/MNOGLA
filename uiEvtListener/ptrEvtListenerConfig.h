@@ -1,5 +1,5 @@
 namespace MNOGLA {
 struct ptrEvtListenerConfig {
-    int clickRadius_pixels = 50;
+    int clickRadius_pixels = 15;
 };
 }
