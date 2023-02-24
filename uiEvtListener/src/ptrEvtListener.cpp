@@ -49,18 +49,27 @@ class ptrEvtListener_internal::multitouchPtr {
     float maxDistSquared;
 };
 
+class ptrEvtListener_internal::cDrag1ptAction {
+   public:
+    cDrag1ptAction(pMultitouchPtr_t ptr) : ptr(ptr) {}
+    pMultitouchPtr_t getPtr() const { return ptr; }
+
+   protected:
+    pMultitouchPtr_t ptr;
+};
+
 class ptrEvtListener_internal::cClickAction {
    public:
     cClickAction(pMultitouchPtr_t ptr) : ptr(ptr) {}
     pMultitouchPtr_t getPtr() const { return ptr; }
 
    protected:
-    shared_ptr<ptrEvtListener_internal::multitouchPtr> ptr;
+    pMultitouchPtr_t ptr;
 };
 
-class ptrEvtListener_internal::cTwoTouchAction {
+class ptrEvtListener_internal::cDrag2ptAction {
    public:
-    cTwoTouchAction(int32_t ixPtrA, pMultitouchPtr_t ptrA, int32_t ixPtrB, pMultitouchPtr_t ptrB) : ixPtrA(ixPtrA), ptrA(ptrA), ixPtrB(ixPtrB), ptrB(ptrB) {}
+    cDrag2ptAction(int32_t ixPtrA, pMultitouchPtr_t ptrA, int32_t ixPtrB, pMultitouchPtr_t ptrB) : ixPtrA(ixPtrA), ptrA(ptrA), ixPtrB(ixPtrB), ptrB(ptrB) {}
     bool ptrTriggersAction(int32_t ixPtr) const {
         return (ixPtr == ixPtrA) || (ixPtr == ixPtrB);
     }
@@ -83,7 +92,9 @@ ptrEvtListener_internal::ptrEvtListener_internal()
       normalizeMouse(/*identity matrix*/ 1.0f),
       aspectRatio(1.0f),
       pointers(),
-      clickAction(nullptr), twoTouchAction(nullptr) {}
+      clickAction(nullptr),
+      drag1ptAction(nullptr),
+      drag2ptAction(nullptr) {}
 ptrEvtListener::ptrEvtListener() {}
 
 ptrEvtListener::ptrEvtListener(ptrEvtListenerConfig& config) {
@@ -102,45 +113,60 @@ bool ptrEvtListener::feedEvtPtr(size_t n, int32_t* buf) {
 }
 
 void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) {
-    const vec2 ptNorm = normalizeMouse * glm::vec3(x, y, 1.0f);
-
-    pointers[ptrNum] = make_shared<multitouchPtr>(ivec2(x, y));
-
     // Note: we should be robust to recover from inconsistent host input as much as possible e.g. silently replace stale pointers and actions.
+
+    // === collect pointer ===
+    pointers[ptrNum] = make_shared<multitouchPtr>(ivec2(x, y));
+    size_t nPointersDown = pointers.size();
+
+    // === decide next receiving action ===
     bool validClick = false;
-    if (pointers.size() == 1) {
-        // first pointer down might become a click
-        if (evtPtr_preClick(ptNorm)) {
-            validClick = true;
+    bool valid1ptDrag = false;
+    bool valid2ptDrag = false;
+    switch (nPointersDown) {
+        case 1: {
+            valid1ptDrag = true;
+
+            const vec2 ptNorm = normalizeMouse * glm::vec3(x, y, 1.0f);
+            if (evtPtr_preClick(ptNorm))  // ptr went down on something clickable
+                validClick = true;
+            break;
         }
+        case 2:
+            valid2ptDrag = true;
+            break;
+        default:
+            break;
     }
 
-    if (validClick) {
-        // ptr went down on something clickable
+    // === cancel ongoing actions ===
+    if (clickAction) {
+        evtPtr_cancelClick();  // 2nd pointer down invalidates a potential click
+    }
+
+    // === clear ongoing actions ===
+    clickAction = nullptr;
+    drag1ptAction = nullptr;
+    drag2ptAction = nullptr;
+
+    // === create new action ===
+    if (validClick)
         clickAction = make_shared<cClickAction>(pointers[ptrNum]);
-    } else {
-        if (clickAction) {
-            // 2nd pointer down invalidates a potential click
-            evtPtr_cancelClick();
-            clickAction = nullptr;
-        }
-    }
-
-    if (pointers.size() == 2) {
-        // create two-finger touch action
+    if (valid1ptDrag)
+        drag1ptAction = make_shared<cDrag1ptAction>(pointers[ptrNum]);
+    if (valid2ptDrag) {
         auto itA = pointers.begin();
         auto itB = ::std::next(itA);
         assert(::std::next(itB) == pointers.end());
-
-        twoTouchAction = make_shared<cTwoTouchAction>(itA->first, itA->second, itB->first, itB->second);
-    } else {
-        twoTouchAction = nullptr;
+        drag2ptAction = make_shared<cDrag2ptAction>(itA->first, itA->second, itB->first, itB->second);
     }
 }
 
 void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t y) {
-    // process the position update
+    // === position update ===
     evtTouchRaw_move(ptrNum, x, y);
+
+    // === pointer release ===
     if (clickAction) {
         if (clickAction->getPtr() == pointers[ptrNum]) {
             const vec2 ptNorm = normalizeMouse * vec3(x, y, 1.0f);
@@ -148,21 +174,21 @@ void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t 
         } else {
             evtPtr_cancelClick();  // impossible
         }
-        clickAction = nullptr;
     }
 
-    execTwoTouchAction(ptrNum);
-    twoTouchAction = nullptr;
+    // === clear actions ===
+    clickAction = nullptr;
+    drag1ptAction = nullptr;
+    drag2ptAction = nullptr;
 
-    // stop tracking the pointer
+    // === de-list pointer ===
     pointers.erase(ptrNum);
 }
 
 void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) {
     pMultitouchPtr_t p = pointers[ptrNum];
-    if (p.get() == nullptr) return;
+    if (p.get() == nullptr) return;  // guardrail
 
-    MNOGLA::logI("ptr %p", pointers[ptrNum].get());
     p->update(ivec2(x, y));
     if (clickAction) {
         if (p->getMaxDistSquared() <= config.clickRadius_pixels * config.clickRadius_pixels) {
@@ -177,12 +203,21 @@ void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_
         }
     }
 
-    if (pointers.size() == 1) {
+    // drag1ptAction is fallthrough if clickAction is no longer possible
+    if (drag1ptAction && drag1ptAction->getPtr().get() == p.get()) {
         ivec2 drag = p->getDrag();
         const glm::vec2 ptNorm = normalizeRawMouse(drag.x, drag.y) - normalizeRawMouse(0, 0);  // hack to remove translation
         evtPtr_drag(ptNorm);
-    } else if (pointers.size() == 2) {
-        execTwoTouchAction(ptrNum);
+    }
+
+    if (drag2ptAction && drag2ptAction->ptrTriggersAction(ptrNum)) {
+        ivec2 pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw;
+        drag2ptAction->get(pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw);
+        vec2 pt1Start = normalizeRawMouse(pt1StartRaw);
+        vec2 pt1Stop = normalizeRawMouse(pt1Stop);
+        vec2 pt2Start = normalizeRawMouse(pt2Start);
+        vec2 pt2Stop = normalizeRawMouse(pt2Stop);
+        evtPtr_twoPtrDrag(pt1Start, pt1Stop, pt2Start, pt2Stop);
     }
 }
 
@@ -220,19 +255,5 @@ vec2 ptrEvtListener_internal::normalizeRawMouse(int32_t x, int32_t y) {
 
 vec2 ptrEvtListener_internal::normalizeRawMouse(const ivec2& xy) {
     return normalizeMouse * vec3((float)xy.x, (float)xy.y, 1.0f);
-}
-
-void ptrEvtListener_internal::execTwoTouchAction(int32_t ptrNum) {
-    if (twoTouchAction.get() == nullptr)
-        return;
-    if (!twoTouchAction->ptrTriggersAction(ptrNum)) {
-        ivec2 pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw;
-        twoTouchAction->get(pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw);
-        vec2 pt1Start = normalizeRawMouse(pt1StartRaw);
-        vec2 pt1Stop = normalizeRawMouse(pt1Stop);
-        vec2 pt2Start = normalizeRawMouse(pt2Start);
-        vec2 pt2Stop = normalizeRawMouse(pt2Stop);
-        evtPtr_twoPtrDrag(pt1Start, pt1Stop, pt2Start, pt2Stop);
-    }
 }
 }  // namespace MNOGLA

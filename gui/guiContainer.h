@@ -121,7 +121,6 @@ class guiContainer : public ptrEvtListener {
             if (b->getPreClickState()) {
                 b->setPreClickState(false);
                 b->executeClickCallback();
-                MNOGLA::logI("clicked!");
             }
         panDown = false;
     };

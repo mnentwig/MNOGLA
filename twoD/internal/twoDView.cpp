@@ -16,12 +16,7 @@ const glm::mat3& twoDView::getScreen2world() {
 
 void twoDView::setWorld2screen(const ::glm::mat3& world2screen) {
     this->world2screen = world2screen;
-    glm::vec3 test = world2screen * glm::vec3(30, 40, 1);
-    MNOGLA::logI("%f %f %f", test.x, test.y, test.z);
-    glm::vec3 test2 = glm::inverse(world2screen) * test;
-    MNOGLA::logI("%f %f %f", test2.x, test2.y, test2.z);
     this->screen2world = glm::inverse(world2screen);
- //   this->screen2world = glm::mat3(1.0f);
 }
 
 void twoDView::set(::glm::vec2 center, ::glm::vec2 wh, float rot_rad) {

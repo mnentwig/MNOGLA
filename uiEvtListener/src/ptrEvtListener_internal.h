@@ -44,8 +44,10 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     class cClickAction;
     ::std::shared_ptr<cClickAction> clickAction;
 
-    class cTwoTouchAction;
-    ::std::shared_ptr<cTwoTouchAction> twoTouchAction;
-    void execTwoTouchAction(int32_t ptrNum);
+    class cDrag1ptAction;
+    ::std::shared_ptr<cDrag1ptAction> drag1ptAction;
+
+    class cDrag2ptAction;
+    ::std::shared_ptr<cDrag2ptAction> drag2ptAction;
 };
 }  // namespace MNOGLA
