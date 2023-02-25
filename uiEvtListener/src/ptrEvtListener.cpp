@@ -51,7 +51,7 @@ class ptrEvtListener_internal::multitouchPtr {
 
 class ptrEvtListener_internal::cDrag1ptAction {
    public:
-    cDrag1ptAction(pMultitouchPtr_t ptr) : ptr(ptr) {}
+    cDrag1ptAction(pMultitouchPtr_t ptr) : ptr(ptr) { assert(ptr); }
     pMultitouchPtr_t getPtr() const { return ptr; }
 
    protected:
@@ -60,7 +60,7 @@ class ptrEvtListener_internal::cDrag1ptAction {
 
 class ptrEvtListener_internal::cClickAction {
    public:
-    cClickAction(pMultitouchPtr_t ptr) : ptr(ptr) {}
+    cClickAction(pMultitouchPtr_t ptr) : ptr(ptr) { assert(ptr); }
     pMultitouchPtr_t getPtr() const { return ptr; }
 
    protected:
@@ -69,7 +69,12 @@ class ptrEvtListener_internal::cClickAction {
 
 class ptrEvtListener_internal::cDrag2ptAction {
    public:
-    cDrag2ptAction(int32_t ixPtrA, pMultitouchPtr_t ptrA, int32_t ixPtrB, pMultitouchPtr_t ptrB) : ixPtrA(ixPtrA), ptrA(ptrA), ixPtrB(ixPtrB), ptrB(ptrB) {}
+    cDrag2ptAction(int32_t ixPtrA, pMultitouchPtr_t ptrA, int32_t ixPtrB, pMultitouchPtr_t ptrB) : ixPtrA(ixPtrA), ptrA(ptrA), ixPtrB(ixPtrB), ptrB(ptrB) {
+        assert(ptrA);
+        assert(ptrB);
+        assert(ptrA != ptrB);
+        assert(ixPtrA != ixPtrB);
+    }
     bool ptrTriggersAction(int32_t ixPtr) const {
         return (ixPtr == ixPtrA) || (ixPtr == ixPtrB);
     }
@@ -113,11 +118,26 @@ bool ptrEvtListener::feedEvtPtr(size_t n, int32_t* buf) {
 }
 
 void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) {
+    logI("ptrEvtListener_internal::evtTouchRaw_down %d", ptrNum);
     // Note: we should be robust to recover from inconsistent host input as much as possible e.g. silently replace stale pointers and actions.
 
+    // == get existing pointer - if any - before insertion ===
+    // (which does not invalidate map iterators)
+    auto itExistingPtr = pointers.begin();
+
     // === collect pointer ===
-    pointers[ptrNum] = make_shared<multitouchPtr>(ivec2(x, y));
+    pMultitouchPtr_t newPtr = make_shared<multitouchPtr>(ivec2(x, y));
+    pointers.insert_or_assign(ptrNum, newPtr);
     size_t nPointersDown = pointers.size();
+
+    // === cancel ongoing actions ===
+    if (clickAction)
+        evtPtr_cancelClick();  // 2nd pointer down invalidates a potential click
+
+    // === clear ongoing actions ===
+    clickAction = nullptr;
+    drag1ptAction = nullptr;
+    drag2ptAction = nullptr;
 
     // === decide next receiving action ===
     bool validClick = false;
@@ -139,40 +159,34 @@ void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_
             break;
     }
 
-    // === cancel ongoing actions ===
-    if (clickAction) {
-        evtPtr_cancelClick();  // 2nd pointer down invalidates a potential click
-    }
-
-    // === clear ongoing actions ===
-    clickAction = nullptr;
-    drag1ptAction = nullptr;
-    drag2ptAction = nullptr;
-
     // === create new action ===
     if (validClick)
-        clickAction = make_shared<cClickAction>(pointers[ptrNum]);
+        clickAction = make_shared<cClickAction>(newPtr);
     if (valid1ptDrag)
-        drag1ptAction = make_shared<cDrag1ptAction>(pointers[ptrNum]);
+        drag1ptAction = make_shared<cDrag1ptAction>(newPtr);
     if (valid2ptDrag) {
-        auto itA = pointers.begin();
-        auto itB = ::std::next(itA);
-        assert(::std::next(itB) == pointers.end());
-        drag2ptAction = make_shared<cDrag2ptAction>(itA->first, itA->second, itB->first, itB->second);
+        drag2ptAction = make_shared<cDrag2ptAction>(ptrNum, newPtr, itExistingPtr->first, itExistingPtr->second);
     }
 }
 
 void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t y) {
+    logI("ptrEvtListener_internal::evtTouchRaw_up %d", ptrNum);
+
     // === position update ===
     evtTouchRaw_move(ptrNum, x, y);
 
+    // === retrieve pointer ===
+    auto itPtr = pointers.find(ptrNum);
+    if (itPtr == pointers.end())
+        return;  // guardrail
+
     // === pointer release ===
     if (clickAction) {
-        if (clickAction->getPtr() == pointers[ptrNum]) {
+        if (clickAction->getPtr() == itPtr->second) {
             const vec2 ptNorm = normalizeMouse * vec3(x, y, 1.0f);
             evtPtr_confirmClick(ptNorm);
         } else {
-            evtPtr_cancelClick();  // impossible
+            evtPtr_cancelClick();  // guardrail
         }
     }
 
@@ -182,14 +196,20 @@ void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t 
     drag2ptAction = nullptr;
 
     // === de-list pointer ===
-    pointers.erase(ptrNum);
+    pointers.erase(itPtr);
 }
 
 void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) {
-    pMultitouchPtr_t p = pointers[ptrNum];
-    if (p.get() == nullptr) return;  // guardrail
+    // === retrieve pointer ===
+    auto itPtr = pointers.find(ptrNum);
+    if (itPtr == pointers.end())
+        return;  // guardrail
+    pMultitouchPtr_t p = itPtr->second;
 
+    // === pointer position update ===
     p->update(ivec2(x, y));
+
+    // === actions ===
     if (clickAction) {
         if (p->getMaxDistSquared() <= config.clickRadius_pixels * config.clickRadius_pixels) {
             // treating as potential click - don't process as drag (yet)
@@ -204,21 +224,23 @@ void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_
     }
 
     // drag1ptAction is fallthrough if clickAction is no longer possible
-    if (drag1ptAction && drag1ptAction->getPtr().get() == p.get()) {
-        ivec2 drag = p->getDrag();
-        const glm::vec2 ptNorm = normalizeRawMouse(drag.x, drag.y) - normalizeRawMouse(0, 0);  // hack to remove translation
-        evtPtr_drag(ptNorm);
-    }
+    if (drag1ptAction)
+        if (drag1ptAction->getPtr() == p) {
+            ivec2 drag = p->getDrag();
+            const glm::vec2 ptNorm = normalizeRawMouse(drag.x, drag.y) - normalizeRawMouse(0, 0);  // hack to remove translation
+            evtPtr_drag(ptNorm);
+        }
 
-    if (drag2ptAction && drag2ptAction->ptrTriggersAction(ptrNum)) {
-        ivec2 pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw;
-        drag2ptAction->get(pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw);
-        vec2 pt1Start = normalizeRawMouse(pt1StartRaw);
-        vec2 pt1Stop = normalizeRawMouse(pt1Stop);
-        vec2 pt2Start = normalizeRawMouse(pt2Start);
-        vec2 pt2Stop = normalizeRawMouse(pt2Stop);
-        evtPtr_twoPtrDrag(pt1Start, pt1Stop, pt2Start, pt2Stop);
-    }
+    if (drag2ptAction)
+        if (drag2ptAction->ptrTriggersAction(ptrNum)) {
+            ivec2 pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw;
+            drag2ptAction->get(pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw);
+            vec2 pt1Start = normalizeRawMouse(pt1StartRaw);
+            vec2 pt1Stop = normalizeRawMouse(pt1Stop);
+            vec2 pt2Start = normalizeRawMouse(pt2Start);
+            vec2 pt2Stop = normalizeRawMouse(pt2Stop);
+            evtPtr_twoPtrDrag(pt1Start, pt1Stop, pt2Start, pt2Stop);
+        }
 }
 
 void ptrEvtListener_internal::evtMouseRaw_down(int32_t bnum) {

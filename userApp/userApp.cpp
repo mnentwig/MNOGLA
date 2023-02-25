@@ -46,14 +46,40 @@ class myAppState_t {
     MNOGLA::guiContainer guiCont;
 };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+static void logRawEvents(int32_t n, const int32_t* buf) {
+    const uint32_t key = buf[0];
+    if (key == MNOGLA::eKeyToHost::TOUCH_MOVE) return;
+    switch (n) {
+        case 1:
+            MNOGLA::logI("EVT%d\t%d", n, key);
+            break;
+        case 2:
+            MNOGLA::logI("EVT%d\t%d\t%d", n, key, buf[1]);
+            break;
+        case 3:
+            MNOGLA::logI("EVT%d\t%d\t%d\t%d", n, key, buf[1], buf[2]);
+            break;
+        case 4:
+            MNOGLA::logI("EVT%d\t%d\t%d\t%d\t%d", n, key, buf[1], buf[2], buf[3]);
+            break;
+        default:
+            MNOGLA::logI("EVT%d", n);
+            break;
+    }
+}
+#pragma GCC diagnostic pop
+
 void myAppState_t::eventDispatcher() {
     int32_t buf[16];
     while (true) {
-        size_t n = MNOGLA::evtGetHostToApp(buf);
+        const size_t n = MNOGLA::evtGetHostToApp(buf);
         if (!n) break;
+        //logRawEvents(n, buf);
         if (guiCont.feedEvtPtr(n, buf)) continue;
 
-        uint32_t key = buf[0];
+        const uint32_t key = buf[0];
         switch (key) {
             case MNOGLA::eKeyToHost::WINSIZE: {
                 appW = buf[1];
@@ -74,24 +100,6 @@ void myAppState_t::eventDispatcher() {
         }
 
         MNOGLA::logI("%llu", MNOGLA::lastTimestamp_nanosecs);
-
-        switch (n) {
-            case 1:
-                MNOGLA::logI("EVT%d\t%d", n, key);
-                break;
-            case 2:
-                MNOGLA::logI("EVT%d\t%d\t%d", n, key, buf[1]);
-                break;
-            case 3:
-                MNOGLA::logI("EVT%d\t%d\t%d\t%d", n, key, buf[1], buf[2]);
-                break;
-            case 4:
-                MNOGLA::logI("EVT%d\t%d\t%d\t%d\t%d", n, key, buf[1], buf[2], buf[3]);
-                break;
-            default:
-                MNOGLA::logI("EVT%d", n);
-                break;
-        }
     }
 }
 

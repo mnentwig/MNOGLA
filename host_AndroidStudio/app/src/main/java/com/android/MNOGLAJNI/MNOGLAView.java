@@ -2,6 +2,7 @@ package com.android.MNOGLAJNI;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -31,11 +32,21 @@ public class MNOGLAView extends GLSurfaceView {
 
     @Override public boolean onTouchEvent(MotionEvent ev) {
         int key;
-        switch(ev.getAction()){
+        switch(ev.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
+                //Log.i("MNOGLA java", "ACTION DOWN");
+                key = 200;
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                //Log.i("MNOGLA java", "ACTION_PTR DOWN");
                 key = 200;
                 break;
             case MotionEvent.ACTION_UP:
+                //Log.i("MNOGLA java", "ACTION_UP");
+                key = 201;
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                //Log.i("MNOGLA java", "ACTION_PTR UP");
                 key = 201;
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -44,15 +55,10 @@ public class MNOGLAView extends GLSurfaceView {
             default:
                 return true;
         }
-
-        final int historySize = ev.getHistorySize();
-        final int pointerCount = ev.getPointerCount();
-        for (int h = 0; h < historySize; h++)
-            for (int p = 0; p < pointerCount; p++)
-                MNOGLALIB.evt3(key, ev.getPointerId(p), (int)ev.getHistoricalX(p, h), (int)ev.getHistoricalY(p, h));
-
-        for (int p = 0; p < pointerCount; p++)
-            MNOGLALIB.evt3(key, ev.getPointerId(p), (int)ev.getX(p), (int)ev.getY(p));
+        // action is reported for one specific pointer but event lists all active pointers
+        int p = ev.getActionIndex();
+        if (key != 202) Log.i("MNOGLA java", key + "\t" + ev.getPointerId(p) + "\t" + (int)ev.getX(p) + "\t" + (int)ev.getY(p));
+        MNOGLALIB.evt3(key, ev.getPointerId(p), (int)ev.getX(p), (int)ev.getY(p));
         return true;
     }
 }
