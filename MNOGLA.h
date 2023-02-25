@@ -48,10 +48,23 @@ extern uint64_t lastTimestamp_nanosecs;
 // - width in pixels
 // - height in pixels
 //
-// TOUCH_XYZ: touchscreen pointer
+// TOUCH_DOWN: touchscreen pointer
 // - pointer index  (multitouch)
 // - x coordinate in pixels
 // - y coordinate in pixels
+// 
+// TOUCH_MOVE: touchscreen pointer
+// - pointer index  (multitouch)
+// - x coordinate in pixels
+// - y coordinate in pixels
+//
+// TOUCH_UP: touchscreen pointer
+// - pointer index  (multitouch)
+// - nRemaining pointers (e.g. 0 when last finger is removed from the screen)
+//   use as guardrail against state inconsistency between OS and app
+//   (if 0, app clears all known pointers).
+//   negative number: not known (mouse uses this variant)
+//   Note: Android host doesn't implement all possible OS event types
 //
 // MOUSE_DOWN, MOUSE_UP: Mouse button down, up
 // - button number (left, right, mid, ...)

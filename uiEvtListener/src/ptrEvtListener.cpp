@@ -169,11 +169,8 @@ void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_
     }
 }
 
-void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t y) {
+void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t nRemainingPointers) {
     logI("ptrEvtListener_internal::evtTouchRaw_up %d", ptrNum);
-
-    // === position update ===
-    evtTouchRaw_move(ptrNum, x, y);
 
     // === retrieve pointer ===
     auto itPtr = pointers.find(ptrNum);
@@ -182,8 +179,10 @@ void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t 
 
     // === pointer release ===
     if (clickAction) {
-        if (clickAction->getPtr() == itPtr->second) {
-            const vec2 ptNorm = normalizeMouse * vec3(x, y, 1.0f);
+        pMultitouchPtr_t p = itPtr->second;
+        if (clickAction->getPtr() == p) {
+            ivec2 xy = p->getCurrent();
+            const vec2 ptNorm = normalizeMouse * vec3((float)xy.x, (float)xy.y, 1.0f);
             evtPtr_confirmClick(ptNorm);
         } else {
             evtPtr_cancelClick();  // guardrail
@@ -197,6 +196,13 @@ void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t 
 
     // === de-list pointer ===
     pointers.erase(itPtr);
+
+    // === guardrail against OS/app inconsistency ===
+    // note: negative numbers (used by mouse = "don't know") are ignored.
+    if ((nRemainingPointers == 0) && (pointers.size() > 0)) {
+        logI("!!! ptrEvtListener: Touch out of sync. Resetting all pointers !!!");
+        pointers.clear();
+    }
 }
 
 void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) {
@@ -262,7 +268,8 @@ void ptrEvtListener_internal::evtMouseRaw_down(int32_t bnum) {
 
 void ptrEvtListener_internal::evtMouseRaw_up(int32_t bnum) {
     if (bnum == 0) {
-        evtTouchRaw_up(/*ptrNum*/ -1, lastMouseX, lastMouseY);
+        // note: negative nRemainingPointers signals "not known" (don't mess up touchscreen state if used simultaneously)
+        evtTouchRaw_up(/*ptrNum*/ -1, /*nRemainingPointers*/-1);
     }
 }
 

@@ -13,7 +13,7 @@ class rawTouchEvtListener : protected rawTouchEvtListener_internal {
     virtual void evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) {}
 
     // called on touchscreen up
-    virtual void evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t y) {}
+    virtual void evtTouchRaw_up(int32_t ptrNum, int32_t nRemainingPointers) {}
 
     // called on touchscreen move
     virtual void evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) {}

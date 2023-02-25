@@ -17,11 +17,10 @@ bool rawTouchEvtListener::feedEvtTouch(size_t n, int32_t* buf) {
             return true;
         }
         case MNOGLA::eKeyToHost::TOUCH_UP: {
-            assert(n == 3 + 1);
+            assert(n == 2 + 1);
             int32_t ptr = buf[1];
-            int32_t x = buf[2];
-            int32_t y = buf[3];
-            evtTouchRaw_up(ptr, x, y);
+            int32_t nRemainingPointers = buf[2];
+            evtTouchRaw_up(ptr, nRemainingPointers);
             return true;
         }
         case MNOGLA::eKeyToHost::TOUCH_MOVE: {

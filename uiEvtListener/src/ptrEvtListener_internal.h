@@ -12,7 +12,7 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
    public:
     ptrEvtListener_internal();
     void evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) final;
-    void evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t y) final;
+    void evtTouchRaw_up(int32_t ptrNum, int32_t nRemainingPointers) final;
     void evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) final;
     void evtMouseRaw_down(int32_t bnum) final;
     void evtMouseRaw_up(int32_t bnum) final;

@@ -68,10 +68,14 @@ public class MNOGLAView extends GLSurfaceView {
                     ptrIx = 0;
                 else
                     ptrIx = ev.getActionIndex(); // documented for ACTION_POINTER_(UP/DOWN) only
+
                 int ptrId = ev.getPointerId(ptrIx);
-                touchStateByPtrId.remove(ptrId);
-                touchXy xy = new touchXy(ev.getX(ptrIx), ev.getY(ptrIx)); // dummy object
-                MNOGLALIB.evt3(201, ptrId, xy.x, xy.y);
+                if (action == MotionEvent.ACTION_UP)
+                    touchStateByPtrId.clear(); // force re-sync of our state against OS
+                else
+                    touchStateByPtrId.remove(ptrId);
+
+                MNOGLALIB.evt2(201, ptrId, touchStateByPtrId.size());
                 return true;
             }
             case MotionEvent.ACTION_MOVE:
