@@ -118,7 +118,7 @@ bool ptrEvtListener::feedEvtPtr(size_t n, int32_t* buf) {
 }
 
 void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) {
-    logI("ptrEvtListener_internal::evtTouchRaw_down %d", ptrNum);
+    //    logI("ptrEvtListener_internal::evtTouchRaw_down %d", ptrNum);
 
     // == get existing pointer - if any - before insertion ===
     // (which does not invalidate map iterators)
@@ -170,7 +170,7 @@ void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_
 }
 
 void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t nRemainingPointers) {
-    logI("ptrEvtListener_internal::evtTouchRaw_up %d", ptrNum);
+    //    logI("ptrEvtListener_internal::evtTouchRaw_up %d", ptrNum);
 
     // === retrieve pointer ===
     auto itPtr = pointers.find(ptrNum);
@@ -206,7 +206,7 @@ void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t nRemainingP
 }
 
 void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) {
-    logI("ptrEvtListener_internal::evtTouchRaw_move\t%d\t%d\t%d", ptrNum, x, y);
+    //    logI("ptrEvtListener_internal::evtTouchRaw_move\t%d\t%d\t%d", ptrNum, x, y);
 
     // === retrieve pointer ===
     auto itPtr = pointers.find(ptrNum);
@@ -247,9 +247,8 @@ void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_
             vec2 pt1Stop = normalizeRawMouse(pt1StopRaw);
             vec2 pt2Start = normalizeRawMouse(pt2StartRaw);
             vec2 pt2Stop = normalizeRawMouse(pt2StopRaw);
-            logI("raw\t%d\t%d\t%d\t%f", pt1StopRaw.x, pt1StopRaw.y, pt2StopRaw.x, pt2StopRaw.y);
-            //            logI("%f\t%f", pt1Stop.x, pt1Stop.y);
-            // evtPtr_twoPtrDrag(pt1Start, pt1Stop, pt2Start, pt2Stop);
+            // logI("raw\t%d\t%d\t%d\t%d", pt1StopRaw.x, pt1StopRaw.y, pt2StopRaw.x, pt2StopRaw.y);
+            evtPtr_twoPtrDrag(pt1Start, pt1Stop, pt2Start, pt2Stop);
         }
 }
 
@@ -269,7 +268,7 @@ void ptrEvtListener_internal::evtMouseRaw_down(int32_t bnum) {
 void ptrEvtListener_internal::evtMouseRaw_up(int32_t bnum) {
     if (bnum == 0) {
         // note: negative nRemainingPointers signals "not known" (don't mess up touchscreen state if used simultaneously)
-        evtTouchRaw_up(/*ptrNum*/ -1, /*nRemainingPointers*/-1);
+        evtTouchRaw_up(/*ptrNum*/ -1, /*nRemainingPointers*/ -1);
     }
 }
 
