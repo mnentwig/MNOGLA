@@ -14,6 +14,10 @@ namespace MNOGLA {
     return r;
 }
 
+/*static*/ glm::mat3 twoDMatrix::scale(float f) {
+    return twoDMatrix::scale(glm::vec2(f, f));
+}
+
 /*static*/ glm::mat3 twoDMatrix::rot(float phi_rad) {
     glm::mat3 r(1.0f);
     r[0][0] = cos(phi_rad);

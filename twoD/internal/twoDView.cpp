@@ -14,6 +14,10 @@ const glm::mat3& twoDView::getScreen2world() {
     return this->screen2world;
 }
 
+glm::vec2 twoDView::NDC2world(const glm::vec2& xy_NDC) const {
+    return this->screen2world * ::glm::vec3(xy_NDC, 1.0f);
+}
+
 void twoDView::setWorld2screen(const ::glm::mat3& world2screen) {
     this->world2screen = world2screen;
     this->screen2world = glm::inverse(world2screen);

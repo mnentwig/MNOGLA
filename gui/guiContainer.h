@@ -1,4 +1,5 @@
 #include <functional>
+#include <glm/gtx/vector_angle.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <memory>
@@ -133,7 +134,7 @@ class guiContainer : public ptrEvtListener {
 
     void evtPtr_drag(const glm::vec2& deltaNorm) {
         glm::vec2 mouseDelta = view.getScreen2world() * glm::vec3(deltaNorm, 1.0f) - view.getScreen2world() * glm::vec3(0.0f, 0.0f, 1.0f);  // fixme
-        //MNOGLA::logI("evtPtr drag %f %f", mouseDelta.x, mouseDelta.y);
+        // MNOGLA::logI("evtPtr drag %f %f", mouseDelta.x, mouseDelta.y);
         glm::mat3 m = view.getWorld2screen();
         m = m * twoDMatrix::translate(mouseDelta);
         view.setWorld2screen(m);
@@ -148,10 +149,32 @@ class guiContainer : public ptrEvtListener {
         view.setWorld2screen(m);
     }
 
-    void evtPtr_twoPtrDrag(const ::glm::vec2& pt1start, const ::glm::vec2& pt1stop,
-                           const ::glm::vec2& pt2start, const ::glm::vec2& pt2stop) {
-        MNOGLA::logI("twoPtr drag\t%f\t%f", pt1start.x, pt1start.y);
-        MNOGLA::logI("           \t%f\t%f", pt2start.x, pt2start.y);
+    void evtPtr_twoPtrDrag(const ::glm::vec2& pt1start_NDC, const ::glm::vec2& pt1stop_NDC,
+                           const ::glm::vec2& pt2start_NDC, const ::glm::vec2& pt2stop_NDC) {
+        // MNOGLA::logI("twoPtr drag\t%f\t%f", pt1start.x, pt1start.y);
+        // MNOGLA::logI("           \t%f\t%f", pt2start.x, pt2start.y);
+        ::glm::vec2 p1startW = view.NDC2world(pt1start_NDC);
+        ::glm::vec2 p1stopW = view.NDC2world(pt1stop_NDC);
+        ::glm::vec2 p2startW = view.NDC2world(pt2start_NDC);
+        ::glm::vec2 p2stopW = view.NDC2world(pt2stop_NDC);
+
+        // pinch vectors before and after event
+        ::glm::vec2 vStop = p2stopW - p1stopW;
+        ::glm::vec2 vStart = p2startW - p1startW;
+        float vStopLen = glm::length(vStop);
+        float vStartLen = glm::length(vStart);
+        float phi_rad = glm::orientedAngle(vStart / vStartLen, vStop / vStopLen);
+
+        ::glm::vec2 centerStart = (p1startW + p2startW) / 2.0f;
+        ::glm::vec2 centerStop = (p1stopW + p2stopW) / 2.0f;
+
+        glm::mat3 m = view.getWorld2screen();
+        m = m *
+            twoDMatrix::translate(centerStop) *        // step 4: origin to center of stop line
+            twoDMatrix::rot(-phi_rad) *                // step 3: rotate to new direction
+            twoDMatrix::scale(vStopLen / vStartLen) *  // step 2: scale from startLen to stopLen
+            twoDMatrix::translate(-centerStart);       // step 1: center of start line to origin
+        view.setWorld2screen(m);
     }
 
    protected:
