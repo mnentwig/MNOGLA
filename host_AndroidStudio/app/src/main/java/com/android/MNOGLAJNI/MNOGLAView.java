@@ -5,6 +5,9 @@ import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -30,35 +33,62 @@ public class MNOGLAView extends GLSurfaceView {
         }
     }
 
+    private class touchXy {
+        public touchXy(float xf, float yf){
+            x = (int)xf;
+            y = (int)yf;
+        }
+        public int x;
+        public int y;
+    }
+
+    static Map<Integer, touchXy> touchStateByPtrId = new HashMap<Integer, touchXy>() ;
     @Override public boolean onTouchEvent(MotionEvent ev) {
-        int key;
-        switch(ev.getActionMasked()){
+        final int action = ev.getActionMasked();
+        switch(action){
             case MotionEvent.ACTION_DOWN:
-                //Log.i("MNOGLA java", "ACTION DOWN");
-                key = 200;
-                break;
-            case MotionEvent.ACTION_POINTER_DOWN:
-                //Log.i("MNOGLA java", "ACTION_PTR DOWN");
-                key = 200;
-                break;
-            case MotionEvent.ACTION_UP:
-                //Log.i("MNOGLA java", "ACTION_UP");
-                key = 201;
-                break;
+            case MotionEvent.ACTION_POINTER_DOWN:{
+                //Log.i("MNOGLA java", "ACTION_(POINTER_)DOWN");
+                int ptrIx;
+                if (action == MotionEvent.ACTION_DOWN)
+                    ptrIx = 0;
+                else
+                    ptrIx = ev.getActionIndex(); // documented for ACTION_POINTER_(UP/DOWN) only
+                int ptrId = ev.getPointerId(ptrIx);
+                touchXy xy = new touchXy(ev.getX(ptrIx), ev.getY(ptrIx));
+                touchStateByPtrId.put(ptrId, xy);
+                MNOGLALIB.evt3(200, ptrId, xy.x, xy.y);
+                return true;
+            }
             case MotionEvent.ACTION_POINTER_UP:
-                //Log.i("MNOGLA java", "ACTION_PTR UP");
-                key = 201;
-                break;
+            case MotionEvent.ACTION_UP:{
+                //Log.i("MNOGLA java", "ACTION_(POINTER_)UP");
+                int ptrIx;
+                if (action == MotionEvent.ACTION_UP)
+                    ptrIx = 0;
+                else
+                    ptrIx = ev.getActionIndex(); // documented for ACTION_POINTER_(UP/DOWN) only
+                int ptrId = ev.getPointerId(ptrIx);
+                touchStateByPtrId.remove(ptrId);
+                touchXy xy = new touchXy(ev.getX(ptrIx), ev.getY(ptrIx)); // dummy object
+                MNOGLALIB.evt3(201, ptrId, xy.x, xy.y);
+                return true;
+            }
             case MotionEvent.ACTION_MOVE:
-                key = 202;
-                break;
+                for (int ptrIx = 0; ptrIx < ev.getPointerCount(); ++ptrIx) {
+                    int pointerId = ev.getPointerId(ptrIx);
+                    touchXy xy = new touchXy(ev.getX(ptrIx), ev.getY(ptrIx));
+                    touchXy xyPrev = touchStateByPtrId.get(pointerId);
+                    if (xyPrev == null
+                            || (xyPrev.x != xy.x)
+                            || (xyPrev.y != xy.y)) {
+                        touchStateByPtrId.put(pointerId, xy);
+                        MNOGLALIB.evt3(/*key: MOVE*/202, pointerId, xy.x, xy.y);
+                    }
+                }
+                return true;
             default:
                 return true;
-        }
-        // action is reported for one specific pointer but event lists all active pointers
-        int p = ev.getActionIndex();
-        if (key != 202) Log.i("MNOGLA java", key + "\t" + ev.getPointerId(p) + "\t" + (int)ev.getX(p) + "\t" + (int)ev.getY(p));
-        MNOGLALIB.evt3(key, ev.getPointerId(p), (int)ev.getX(p), (int)ev.getY(p));
-        return true;
+        } // switch action
     }
 }

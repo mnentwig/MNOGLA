@@ -10,7 +10,7 @@ using ::glm::vec2, ::glm::vec3, ::glm::ivec2, ::std::shared_ptr, ::std::make_sha
 
 class ptrEvtListener_internal::multitouchPtr {
    public:
-    multitouchPtr(ivec2 initial)
+    multitouchPtr(const ivec2& initial)
         : initial(initial),
           current(initial),
           dragReported(initial),
@@ -18,7 +18,7 @@ class ptrEvtListener_internal::multitouchPtr {
     float getMaxDistSquared() const { return maxDistSquared; }
 
     // update pointer position to raw pixel coordinates xy
-    void update(ivec2 xy) {
+    void update(const ivec2& xy) {
         int32_t dx = xy.x - initial.x;
         int32_t dy = xy.y - initial.y;
         maxDistSquared = std::max(maxDistSquared, (float)(dx * dx + dy * dy));
@@ -119,7 +119,6 @@ bool ptrEvtListener::feedEvtPtr(size_t n, int32_t* buf) {
 
 void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) {
     logI("ptrEvtListener_internal::evtTouchRaw_down %d", ptrNum);
-    // Note: we should be robust to recover from inconsistent host input as much as possible e.g. silently replace stale pointers and actions.
 
     // == get existing pointer - if any - before insertion ===
     // (which does not invalidate map iterators)
@@ -130,9 +129,10 @@ void ptrEvtListener_internal::evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_
     pointers.insert_or_assign(ptrNum, newPtr);
     size_t nPointersDown = pointers.size();
 
-    // === cancel ongoing actions ===
+    // === process ongoing actions ===
     if (clickAction)
-        evtPtr_cancelClick();  // 2nd pointer down invalidates a potential click
+        evtPtr_cancelClick();   // 2nd pointer down invalidates a potential click
+    if (drag2ptAction) return;  // there may be stray finger down events - ignore.
 
     // === clear ongoing actions ===
     clickAction = nullptr;
@@ -200,6 +200,8 @@ void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t x, int32_t 
 }
 
 void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) {
+    logI("ptrEvtListener_internal::evtTouchRaw_move\t%d\t%d\t%d", ptrNum, x, y);
+
     // === retrieve pointer ===
     auto itPtr = pointers.find(ptrNum);
     if (itPtr == pointers.end())
@@ -236,10 +238,12 @@ void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_
             ivec2 pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw;
             drag2ptAction->get(pt1StartRaw, pt1StopRaw, pt2StartRaw, pt2StopRaw);
             vec2 pt1Start = normalizeRawMouse(pt1StartRaw);
-            vec2 pt1Stop = normalizeRawMouse(pt1Stop);
-            vec2 pt2Start = normalizeRawMouse(pt2Start);
-            vec2 pt2Stop = normalizeRawMouse(pt2Stop);
-            evtPtr_twoPtrDrag(pt1Start, pt1Stop, pt2Start, pt2Stop);
+            vec2 pt1Stop = normalizeRawMouse(pt1StopRaw);
+            vec2 pt2Start = normalizeRawMouse(pt2StartRaw);
+            vec2 pt2Stop = normalizeRawMouse(pt2StopRaw);
+            logI("raw\t%d\t%d\t%d\t%f", pt1StopRaw.x, pt1StopRaw.y, pt2StopRaw.x, pt2StopRaw.y);
+            //            logI("%f\t%f", pt1Stop.x, pt1Stop.y);
+            // evtPtr_twoPtrDrag(pt1Start, pt1Stop, pt2Start, pt2Stop);
         }
 }
 
@@ -267,15 +271,15 @@ void ptrEvtListener_internal::evtMouseRaw_move(int32_t x, int32_t y) {
     evtTouchRaw_move(/*ptrNum*/ -1, lastMouseX, lastMouseY);  // fake touchscreen pointer "-1"
 }
 
-vec2 ptrEvtListener_internal::getLastMouseNormalized() {
+vec2 ptrEvtListener_internal::getLastMouseNormalized() const {
     return normalizeRawMouse(lastMouseX, lastMouseY);
 }
 
-vec2 ptrEvtListener_internal::normalizeRawMouse(int32_t x, int32_t y) {
+vec2 ptrEvtListener_internal::normalizeRawMouse(int32_t x, int32_t y) const {
     return normalizeMouse * vec3(x, y, 1.0f);
 }
 
-vec2 ptrEvtListener_internal::normalizeRawMouse(const ivec2& xy) {
+vec2 ptrEvtListener_internal::normalizeRawMouse(const ivec2& xy) const {
     return normalizeMouse * vec3((float)xy.x, (float)xy.y, 1.0f);
 }
 }  // namespace MNOGLA
