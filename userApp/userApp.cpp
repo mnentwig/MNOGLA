@@ -33,6 +33,7 @@ class myAppState_t {
             auto b = guiCont.button(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
             b->setClickCallback([ix]() { MNOGLA::logI("hello I am button %i", ix); });
         }
+        guiCont.close();
     }
     void eventDispatcher();
     void render();

@@ -38,7 +38,9 @@ void timestampSubmitHostToApp();
 // userApp gets event
 size_t evtGetHostToApp(int32_t* dest);
 
-// last timestamp received in the event queue
+// timestamp of last event retrieved by getEvtHostToApp()
+// - for a timestamped event, it is the exact event time
+// - render callback sends an own timestamp, which becomes visible after running the event loop empty
 extern uint64_t lastTimestamp_nanosecs;
 
 // ############################################################

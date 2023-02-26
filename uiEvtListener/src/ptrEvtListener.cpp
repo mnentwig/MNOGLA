@@ -190,6 +190,7 @@ void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t nRemainingP
     }
 
     // === clear actions ===
+    bool ongoingAction = clickAction || drag1ptAction || drag2ptAction;
     clickAction = nullptr;
     drag1ptAction = nullptr;
     drag2ptAction = nullptr;
@@ -203,6 +204,7 @@ void ptrEvtListener_internal::evtTouchRaw_up(int32_t ptrNum, int32_t nRemainingP
         logI("!!! ptrEvtListener: Touch out of sync. Resetting all pointers !!!");
         pointers.clear();
     }
+    if (ongoingAction) evtPtr_dragPanZoomEnds();
 }
 
 void ptrEvtListener_internal::evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) {

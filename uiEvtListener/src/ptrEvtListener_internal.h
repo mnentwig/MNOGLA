@@ -26,6 +26,7 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     virtual void evtPtr_drag(const ::glm::vec2& deltaNorm){};                   // implementation overrides ("internal" version needed to call it from here)
     virtual void evtPtr_twoPtrDrag(const ::glm::vec2& pt1start, const ::glm::vec2& pt1stop,
                                    const ::glm::vec2& pt2start, const ::glm::vec2& pt2stop){};  // implementation overrides
+    virtual void evtPtr_dragPanZoomEnds(){};                                                    // implementation overrides ("internal" version needed to call it from here)
    protected:
     ::glm::vec2 getLastMouseNormalized() const;
     ::glm::vec2 normalizeRawMouse(const ::glm::ivec2& xy) const;
