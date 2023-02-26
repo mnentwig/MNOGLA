@@ -48,11 +48,18 @@ class rezoomer {
         // logI("rezoomer analyze: scale=%f offset_NDC=%f, %f offset_world=%f, %f", fRezoom, offset_NDC.x, offset_NDC.y, offset.x, offset.y);
     }
 
-    glm::mat3 getResult() {
+    // returns interpolation (fInterp = 0..1) between initial and rezoom result transformation matrices
+    glm::mat3 getResult(float fInterp) {
+        assert(fInterp >= 0);
+        assert(fInterp <= 1.001f);
+        const float fadeIn = (-std::cos(fInterp * 3.141592f) + 1.0f) / 2.0f;
+        const float fadeOut = 1.0f - fadeIn;
+        float fRezoomInterpolated = fadeOut * 1.0f + fadeIn * fRezoom;
+        vec2 offsetInterpolated = fadeOut * vec2(0.0f, 0.0f) + fadeIn * offset;
         glm::mat3 m = world2screenCopy;
         m = m *
-            twoDMatrix::scale(fRezoom) *    // step 2: apply rezooming factor
-            twoDMatrix::translate(offset);  // step 1: apply offset (in world coordinates)
+            twoDMatrix::scale(fRezoomInterpolated) *    // step 2: apply rezooming factor
+            twoDMatrix::translate(offsetInterpolated);  // step 1: apply offset (in world coordinates)
         return m;
     }
 
