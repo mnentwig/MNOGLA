@@ -10,8 +10,8 @@ class twoDView : protected twoDView_internal {
    public:
     void set(::glm::vec2 center, ::glm::vec2 wh, float rot_rad);
     void setWorld2screen(const ::glm::mat3& world2screen);
-    const glm::mat3& getWorld2screen();
-    const glm::mat3& getScreen2world();
+    const glm::mat3& getWorld2screen() const;
+    const glm::mat3& getScreen2world() const;
 
     void filledRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb);
     void outlinedRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, float w, const ::glm::vec3& rgb);

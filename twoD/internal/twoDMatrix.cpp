@@ -1,13 +1,13 @@
 #include "../twoDMatrix.h"
 namespace MNOGLA {
-/*static*/ glm::mat3 twoDMatrix::translate(glm::vec2 t) {
+/*static*/ glm::mat3 twoDMatrix::translate(const glm::vec2& t) {
     glm::mat3 r(1.0f);
     r[2][0] = t.x;
     r[2][1] = t.y;
     return r;
 }
 
-/*static*/ glm::mat3 twoDMatrix::scale(glm::vec2 s) {
+/*static*/ glm::mat3 twoDMatrix::scale(const glm::vec2& s) {
     glm::mat3 r(1.0f);
     r[0][0] = s.x;
     r[1][1] = s.y;
