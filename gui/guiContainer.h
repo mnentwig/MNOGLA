@@ -87,7 +87,7 @@ class rezoomer {
         // rezooming factor eliminates excess slack in one dimension (in sum over both edges, needs centering after scaling).
         slack s1(points_world, world2NDC);
         fRezoom = s1.getZoomAdjustment();
-        glm::mat3 m1 = twoDMatrix::scale(fRezoom) * world2NDC;
+        glm::mat3 m1 = world2NDC * twoDMatrix::scale(fRezoom);
 
         // === re-center: set this->offset ===
         // positive slack: content may move closer to the edge
@@ -95,8 +95,7 @@ class rezoomer {
         vec2 offset_NDC = vec2(
             s2.getOffsetAdjustment(s2.getSlackXMin(), s2.getSlackXMax()),
             s2.getOffsetAdjustment(s2.getSlackYMin(), s2.getSlackYMax()));
-        offset = glm::inverse(m1) * glm::vec3(offset_NDC, 1.0f) - glm::inverse(m1) * glm::vec3(0.0f, 0.0f, 1.0f);
-        //        offset = glm::inverse(m1) * glm::vec3(offset_NDC, /*scale only. Don't use translation part of matrix*/ 0.0f);
+        offset = glm::inverse(m1) * glm::vec3(offset_NDC, /*scale only. Don't use translation part of matrix*/ 0.0f);
         logI("rescaler analyze: scale=%f offset_NDC=%f, %f offset_world=%f, %f", fRezoom, offset_NDC.x, offset_NDC.y, offset.x, offset.y);
     }
 
