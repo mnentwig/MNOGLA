@@ -1,9 +1,12 @@
 #pragma once
+#include <glm/gtx/vector_angle.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 #include "../../MNOGLA.h"
 #include "../../twoD/twoDMatrix.h"
@@ -14,7 +17,10 @@ using ::glm::vec2, ::glm::vec3, ::glm::mat3, ::std::vector, ::std::runtime_error
 
 class rezoomer {
    public:
-    rezoomer() : points_world(), fRezoom(1.0f), offset(0.0f, 0.0f), world2screenCopy(1.0f) {}
+    rezoomer(const vector<float>& angleSnap_deg) : points_world(), phi(0.0f), fRezoom(1.0f), offset(0.0f, 0.0f), world2screenCopy(1.0f), angleSnap_rad(angleSnap_deg) {
+        for (float& elem : angleSnap_rad)
+            elem *= M_PI / 180.0f;
+    }
 
     void clearPts() {
         points_world.clear();
@@ -27,25 +33,44 @@ class rezoomer {
         points_world.insert(points_world.end(), itemPts.begin(), itemPts.end());
     }
 
-    void analyze(const glm::mat3& world2NDC) {
+    void analyze(const glm::vec2& lastRefPt, const glm::mat3& world2NDC) {
         // === set this->world2screenCopy ===
         // defines the target for transformations below
         world2screenCopy = world2NDC;
+        this->lastRefPt = lastRefPt;
+        glm::mat3 m1 = world2NDC;
+        //  === rotate: set this->phi ===
+        if (angleSnap_rad.size() > 0) {
+            // determine rotation applied by world2NDC matrix
+
+            float phi_rad = twoDMatrix::matrixRotAngle_rad(m1);
+            float bestPhi_rad = ::std::numeric_limits<float>::infinity();
+            for (int wrap = -1; wrap <= 1; ++wrap)
+                for (size_t ix = 0; ix < angleSnap_rad.size(); ++ix) {
+                    float angleSnapWrap = angleSnap_rad[ix] + (float)wrap * 2.0f * M_PI;
+                    if (std::abs(phi_rad - angleSnapWrap) < std::abs(phi_rad - bestPhi_rad))
+                        bestPhi_rad = angleSnapWrap;
+                }
+            phi = bestPhi_rad - phi_rad;
+            m1 = m1 * /*C*/ twoDMatrix::translate(lastRefPt) * /*B1*/ twoDMatrix::rot(phi) * /*A*/ twoDMatrix::translate(-lastRefPt);
+        } else
+            phi = 0;
 
         // === scale: set this->fRezoom ===
         // rezooming factor eliminates excess slack in one dimension (in sum over both edges, needs centering after scaling).
-        slack s1(points_world, world2NDC);
+        // Note: Evaluated on NDC data (after m1 is applied) but applied as B2 in world coordinates at lastRefPt
+        slack s1(points_world, m1);
         fRezoom = s1.getZoomAdjustment();
-        glm::mat3 m1 = world2NDC * twoDMatrix::scale(fRezoom);
 
         // === re-center: set this->offset ===
         // positive slack: content may move closer to the edge
+        // Note: evaluated and applied in NDC coordinates after world2screen)
+        m1 = world2NDC * /*C*/ twoDMatrix::translate(lastRefPt) * /*B2*/ twoDMatrix::scale(fRezoom) * /*B1*/ twoDMatrix::rot(phi) * /*A*/ twoDMatrix::translate(-lastRefPt);
         slack s2(points_world, m1);
         vec2 offset_NDC = vec2(
             s2.getOffsetAdjustment(s2.getSlackXMin(), s2.getSlackXMax()),
             s2.getOffsetAdjustment(s2.getSlackYMin(), s2.getSlackYMax()));
-        offset = glm::inverse(m1) * glm::vec3(offset_NDC, /*scale only. Don't use translation part of matrix*/ 0.0f);
-        // logI("rezoomer analyze: scale=%f offset_NDC=%f, %f offset_world=%f, %f", fRezoom, offset_NDC.x, offset_NDC.y, offset.x, offset.y);
+        offset = /*D*/ offset_NDC;
     }
 
     // returns interpolation (fInterp = 0..1) between initial and rezoom result transformation matrices
@@ -56,23 +81,30 @@ class rezoomer {
         const float fadeOut = 1.0f - fadeIn;
         float fRezoomInterpolated = fadeOut * 1.0f + fadeIn * fRezoom;
         vec2 offsetInterpolated = fadeOut * vec2(0.0f, 0.0f) + fadeIn * offset;
-        glm::mat3 m = world2screenCopy;
-        m = m *
-            twoDMatrix::scale(fRezoomInterpolated) *    // step 2: apply rezooming factor
-            twoDMatrix::translate(offsetInterpolated);  // step 1: apply offset (in world coordinates)
+        // note: column vectors - transformation are applied A first, world2screenCopy 2nd last, D last
+        glm::mat3 m = /*D*/ twoDMatrix::translate(offsetInterpolated) * world2screenCopy *
+                      /*C*/ twoDMatrix::translate(lastRefPt) *
+                      /*B2*/ twoDMatrix::scale(fRezoomInterpolated) *
+                      /*B1*/ twoDMatrix::rot(phi) *
+                      /*A*/ twoDMatrix::translate(-lastRefPt);
         return m;
     }
 
    protected:
     // points describing the content
     vector<vec2> points_world;
-    // analyze result: step 1 = scale by this
+    // rotation, scaling around this point (mouse position, center of pinch)
+    vec2 lastRefPt;
+    // analyze result: step 1 = rotation angle
+    float phi;
+    // analyze result: step 2 = scale by this
     float fRezoom;
-    // analyze result: step 2 = shift by this
+    // analyze result: step 3 = shift by this
     vec2 offset;
     // analyzed world2screen matrix
     glm::mat3 world2screenCopy;
 
+    vector<float> angleSnap_rad;
     class slack {
        public:
         slack(const vector<glm::vec2> points_world, const glm::mat3& world2NDC) {

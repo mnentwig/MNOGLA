@@ -21,7 +21,7 @@ using ::std::shared_ptr, ::std::make_shared, ::std::string, ::std::vector, ::std
 // graphical top-level element that holds child elements e.g. buttons. Manages pan, zoom, rotation receiving ptrEvt input.
 class guiContainer : public ptrEvtListener {
    public:
-    guiContainer() : buttons(), view(), rez(), rezCtrl() {}
+    guiContainer() : buttons(), view(), rez(vector<float>{0, 45, 90, 135, 180, 225, 270, 315}), rezCtrl(), dragPanZoomLastRefPt(0.0f, 0.0f) {}
     void render() {
         if (isOpen) throw runtime_error("guiContainer render() in open state. Must close() first");
 
@@ -104,6 +104,7 @@ class guiContainer : public ptrEvtListener {
         mat3 m = view.getWorld2screen();
         m = m * twoDMatrix::translate(mouseDelta);
         view.setWorld2screen(m);
+        // no dragPanZoomLastRefPt but it shouldn't matter for translation only
     }
 
     void evtMouseRaw_scroll(int32_t deltaX, int32_t deltaY) {
@@ -113,6 +114,7 @@ class guiContainer : public ptrEvtListener {
         m = m * twoDMatrix::rot((deltaX + deltaY) * 15.0f * 3.1415926 / 180.0f);
         m = m * twoDMatrix::translate(-mousePos);
         view.setWorld2screen(m);
+        dragPanZoomLastRefPt = mousePos;
     }
 
     void evtPtr_twoPtrDrag(const vec2& pt1start_NDC, const vec2& pt1stop_NDC,
@@ -139,11 +141,14 @@ class guiContainer : public ptrEvtListener {
             twoDMatrix::scale(vStopLen / vStartLen) *  // step 2: scale from startLen to stopLen
             twoDMatrix::translate(-centerStart);       // step 1: center of start line to origin
         view.setWorld2screen(m);
+        dragPanZoomLastRefPt = centerStop;
     }
 
     void evtPtr_dragPanZoomEnds() {
-        rez.analyze(view.getWorld2screen());
-        //        view.setWorld2screen(rez.getResult());
+        // check whether view is in a suboptimal position (unused screen space)
+        rez.analyze(dragPanZoomLastRefPt, view.getWorld2screen());
+
+        // prepare animation zooming towards optimized screen position (if no correction, this is a dummy animation)
         rezCtrl.start(/*nanoseconds*/ (uint64_t)(config.rescaleTime_ms * 1e6));
     };
 
@@ -199,5 +204,6 @@ class guiContainer : public ptrEvtListener {
     bool isOpen = true;
     rezoomer rez;
     rescaleControl rezCtrl;
+    vec2 dragPanZoomLastRefPt;
 };
 }  // namespace MNOGLA

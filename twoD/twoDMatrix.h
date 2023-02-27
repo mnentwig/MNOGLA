@@ -9,5 +9,6 @@ class twoDMatrix {
     static glm::mat3 scale(float f);
 
     static glm::mat3 rot(float phi_rad);
+    static float matrixRotAngle_rad(const glm::mat3& m);
 };
 }  // namespace MNOGLA

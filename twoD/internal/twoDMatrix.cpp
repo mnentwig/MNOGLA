@@ -1,4 +1,6 @@
 #include "../twoDMatrix.h"
+
+#include <cmath>
 namespace MNOGLA {
 /*static*/ glm::mat3 twoDMatrix::translate(const glm::vec2& t) {
     glm::mat3 r(1.0f);
@@ -25,5 +27,10 @@ namespace MNOGLA {
     r[1][0] = sin(phi_rad);
     r[1][1] = cos(phi_rad);
     return r;
+}
+
+/*static*/ float twoDMatrix::matrixRotAngle_rad(const glm::mat3& m) {
+    // https://math.stackexchange.com/questions/301319/derive-a-rotation-from-a-2d-rotation-matrix
+    return std::atan2(m[1][0], m[0][0]);
 }
 }  // namespace MNOGLA
