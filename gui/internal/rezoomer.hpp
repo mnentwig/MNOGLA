@@ -1,12 +1,11 @@
 #pragma once
+#include <glm/gtc/constants.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <memory>
 #include <stdexcept>
 #include <vector>
-#define _USE_MATH_DEFINES
-#include <cmath>
 
 #include "../../MNOGLA.h"
 #include "../../twoD/twoDMatrix.h"
@@ -17,9 +16,9 @@ using ::glm::vec2, ::glm::vec3, ::glm::mat3, ::std::vector, ::std::runtime_error
 
 class rezoomer {
    public:
-    rezoomer(const vector<float>& angleSnap_deg) : points_world(), phi(0.0f), fRezoom(1.0f), offset(0.0f, 0.0f), world2screenCopy(1.0f), angleSnap_rad(angleSnap_deg) {
+    rezoomer(const vector<float>& angleSnap_deg) : points_world(), lastRefPt(), phi(0.0f), fRezoom(1.0f), offset(0.0f, 0.0f), world2screenCopy(1.0f), angleSnap_rad(angleSnap_deg) {
         for (float& elem : angleSnap_rad)
-            elem *= M_PI / 180.0f;
+            elem *= ::glm::pi<float>() / 180.0f;
     }
 
     void clearPts() {
@@ -47,7 +46,7 @@ class rezoomer {
             float bestPhi_rad = ::std::numeric_limits<float>::infinity();
             for (int wrap = -1; wrap <= 1; ++wrap)
                 for (size_t ix = 0; ix < angleSnap_rad.size(); ++ix) {
-                    float angleSnapWrap = angleSnap_rad[ix] + (float)wrap * 2.0f * M_PI;
+                    float angleSnapWrap = angleSnap_rad[ix] + (float)wrap * 2.0f * ::glm::pi<float>();
                     if (std::abs(phi_rad - angleSnapWrap) < std::abs(phi_rad - bestPhi_rad))
                         bestPhi_rad = angleSnapWrap;
                 }
