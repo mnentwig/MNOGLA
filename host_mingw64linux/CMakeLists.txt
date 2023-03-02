@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(myProject)
 
-#host does NOT support audio (yet)
-# add_compile_definitions(MNOGLA_HASAUDIO)
+add_compile_definitions(MNOGLA_HASAUDIO)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic -Weffc++ -fmax-errors=1")
 
@@ -19,13 +18,16 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MINGW")
     glfw3 
     opengl32 
     stdc++
+    portaudio
     )
   add_compile_definitions(MNOGLA_WINDOWS)
 else()
   target_link_libraries(MNOGLA_core
     GL
     glfw
-    stdc++)
+    stdc++
+    portaudio
+)
 endif()
 
 # === user application ===

@@ -2,10 +2,27 @@
 // this file: Windows host, to be used with minGW
 #include <cstdarg>
 #include <stdexcept>
+#include <string>
+#include <iostream>
+#ifdef MNOGLA_HASAUDIO
+#include <portaudio.h>
+
+#endif
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_includeGl.h"
-using std::runtime_error;
+using std::runtime_error, std::string;
+
+#ifdef MNOGLA_HASAUDIO
+static int portaudioCallback(const void* /*inputBuffer*/, void* outputBuffer,
+                             unsigned long framesPerBuffer,
+                             const PaStreamCallbackTimeInfo* /*timeInfo*/,
+                             PaStreamCallbackFlags /*statusFlags*/,
+                             void* /*userData*/) {
+    MNOGLA_audioCbT1((float*)outputBuffer, framesPerBuffer);
+    return 0;
+}
+#endif
 
 static void window_size_callback(GLFWwindow* /*window*/, int width, int height) {
     MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, /*nArgs*/ 2, (int32_t)width, (int32_t)height);
@@ -95,6 +112,26 @@ int main(void) {
 
     MNOGLA::coreInit(logI_impl, logE_impl);
     MNOGLA_userInit(winWidth, winHeight);
+#ifdef MNOGLA_HASAUDIO
+    // =============================================
+    // Audio
+    // =============================================
+    PaError paErr = Pa_Initialize();
+    if (paErr != paNoError) throw runtime_error(string("failed to initialize portAudio: ") + Pa_GetErrorText(paErr));
+
+    PaStream* stream;
+    paErr = Pa_OpenDefaultStream(&stream,
+                                 /*nChanIn*/ 0,
+                                 /*nChanOut*/ 2,
+                                 /*format*/ paFloat32,
+                                 /*rate*/ 48000,
+                                 /*frames per buf*/ 256,
+                                 portaudioCallback,
+                                 /*userData*/ NULL);
+    if (paErr != paNoError) throw runtime_error(string("failed to open portAudio stream:") + Pa_GetErrorText(paErr));
+    paErr = Pa_StartStream(stream);
+    if (paErr != paNoError) throw runtime_error(string("failed to start portAudio stream:") + Pa_GetErrorText(paErr));
+#endif
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -110,6 +147,13 @@ int main(void) {
         glfwSwapBuffers(window);
 #endif
     }
+#ifdef MNOGLA_HASAUDIO
+    paErr = Pa_StopStream(stream);
+    if (paErr != paNoError) throw runtime_error(string("failed to stop portAudio stream:") + Pa_GetErrorText(paErr));
+    paErr = Pa_Terminate();
+    if (paErr != paNoError) throw runtime_error(string("failed to terminate portAudio:") + Pa_GetErrorText(paErr));
+#endif
+
     MNOGLA::coreDeinit();
 
     glfwTerminate();
