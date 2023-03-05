@@ -4,14 +4,16 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "../odsLoader/odsLoader.hpp"
+#include "pattern.hpp"
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-using std::vector, std::cout, std::endl, std::string;
+using std::vector, std::cout, std::endl, std::string, std::map;
 class mono1 {
    public:
     mono1(float tStart_s, float tStep_s, const vector<int>& steps) : tStart_s(tStart_s), tStep_s(tStep_s), steps(steps) {}
@@ -64,7 +66,7 @@ class mono1 {
         assert(step < steps.size());
         float f_Hz = std::pow(2.0f, (steps[step] - 69) / 12.0f) * 440.0f;
         dphi = f_Hz * tFrame_s * M_PI;
-//        cout << "trig " << step << "\t" << f_Hz << "\t" << dphi << endl;
+        //        cout << "trig " << step << "\t" << f_Hz << "\t" << dphi << endl;
         amp = 10.0f;
         famp = 0.9999;
         float wrap = std::floor(phi / (2.0f * M_PI));
@@ -81,6 +83,7 @@ class mono1 {
 
    public:
     void loadOds(const string& fname) {
+        map<string, pattern> patterns;
         MNOGLA::odsDoc l(fname);
         const size_t nSheets = l.getNSheets();
         for (size_t ixSheet = 0; ixSheet < nSheets; ++ixSheet) {
@@ -93,7 +96,11 @@ class mono1 {
                     if (!l.getCell(ixSheet, ixRow, ixCol, /*out*/ val)) continue;
                     if ((val.size() < 1) || (val[0] != '$')) continue;
                     MNOGLA::odsDoc::block b(l, ixSheet, ixRow, ixCol);
-                    cout << "got block" << endl;
+                    cout << "got block" << b.getNCols() << " " << b.getNRows() << " " << val << endl;
+                    if (val == "$pattern") {
+                        pattern p(b);
+                        patterns.insert({p.getName(), std::move(p)});
+                    }
                 }
         }
     }

@@ -205,6 +205,13 @@ class odsDoc {
             while (doc.getCell(ixSheet, ixRow + nRows, ixCol, val) && val != "") ++nRows;
         }
 
+        size_t getIxSheet() const { return ixSheet; }
+        size_t getIxRow() const { return ixRow; }
+        size_t getIxCol() const { return ixCol; }
+        size_t getNRows() const { return nRows; }
+        size_t getNCols() const { return nCols; }
+        const odsDoc& getDoc() const { return doc; }
+
        protected:
         const odsDoc& doc;
         size_t ixSheet;
