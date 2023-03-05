@@ -49,4 +49,4 @@ add_executable (host
 target_link_libraries(host
         userApp
 )
-configure_file(../hello.ods hello.ods COPYONLY)
+configure_file(../userApp/synth/hello.ods hello.ods COPYONLY)

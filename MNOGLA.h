@@ -22,6 +22,9 @@ typedef void (*logFun_t)(const char* format, ...);
 extern logFun_t logI;
 extern logFun_t logE;
 
+// argv[0] from int main(int argc, const char** argv);
+extern const char* mainArg0;
+
 // host calls core to initialize
 void coreInit(logFun_t logI, logFun_t logE);
 void coreDeinit();

@@ -1,9 +1,9 @@
 // MNOGLA: mn's operating-system independent openGl ES application
 // this file: Windows host, to be used with minGW
 #include <cstdarg>
+#include <iostream>
 #include <stdexcept>
 #include <string>
-#include <iostream>
 #ifdef MNOGLA_HASAUDIO
 #include <portaudio.h>
 
@@ -70,7 +70,9 @@ void logE_impl(const char* format, ...) {
     va_end(args);
 }
 
-int main(void) {
+int main(int argc, char** argv) {
+    if (argc > 0)
+        MNOGLA::mainArg0 = argv[0];
     if (!glfwInit()) throw runtime_error("Failed to initialize GLFW");
 
     // Android: <uses-feature android:glEsVersion="0x00030001" android:required="true" />

@@ -128,4 +128,7 @@ void coreDeinit() {
 }
 
 uint64_t lastTimestamp_nanosecs;
+
+const char* mainArg0;
+
 }  // namespace MNOGLA

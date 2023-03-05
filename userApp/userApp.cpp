@@ -9,7 +9,7 @@
 #include "../core/MNOGLA_util.h"
 #include "../gui/guiContainer.h"
 #include "../twoD/twoDView.h"
-#include "synth.hpp"
+#include "synth/synth.hpp"
 #include "odsLoader/odsLoader.hpp"
 using std::runtime_error;
 
@@ -56,7 +56,7 @@ class myAppState_t {
         mono1::config(1, 1.0f / audiorate_Hz);
         synth = ::std::make_shared<mono1>(0.0f, 0.25, steps);
         audioloop_s = synth->getTStop_s();
-        //MNOGLA::odsLoader l("hello.ods");
+        MNOGLA::odsDoc l("hello.ods");
     }
     void eventDispatcher();
     void render();
