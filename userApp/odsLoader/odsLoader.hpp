@@ -42,6 +42,7 @@ class odsDoc {
         startup(buf, nBytes);
     }
 
+   public:
     size_t getNSheets() { return sheetNames.size(); }
 
     typedef map<size_t, string> odsRow_t;
@@ -159,12 +160,12 @@ class odsDoc {
     }
 
    public:
-    void getSize(size_t ixTable, size_t* nRows, size_t* nCols) {
+    void getSize(size_t ixSheet, size_t* nRows, size_t* nCols) {
         assert(nRows != nullptr);
         assert(nCols != nullptr);
         *nRows = 0;
         *nCols = 0;
-        auto it1 = content.find(ixTable);
+        auto it1 = content.find(ixSheet);
         if (it1 == content.end()) return;  // table does not exist
         odsSheet_t& currentSheet = it1->second;
         for (auto& itRow : currentSheet) {
@@ -189,12 +190,15 @@ class odsDoc {
         auto it3 = row.find(ixCol);
         if (it3 == row.end()) return false;  // cell does not exist
         val = it3->second;
+        return true;
     }
+
+    // a "block" is defined by non-empty cells in horizontal and vertical direction (usually from a startcode in the top-left cell)
     class block {
        public:
         block(const odsDoc& doc, size_t ixSheet, size_t ixRow, size_t ixCol) : doc(doc), ixSheet(ixSheet), ixRow(ixRow), ixCol(ixCol), nRows(0), nCols(0) {
             string val;
-            if (!(doc.getCell(ixSheet, ixRow, ixCol, val) && val == "")) throw runtime_error("odsDoc.block(): Start on empty or non-existing cell");
+            if (!(doc.getCell(ixSheet, ixRow, ixCol, val) && val != "")) throw runtime_error("odsDoc.block(): Start on empty or non-existing cell");
             // determine extent in horizontal direction
             while (doc.getCell(ixSheet, ixRow, ixCol + nCols, val) && val != "") ++nCols;
             // determine extent in vertical direction

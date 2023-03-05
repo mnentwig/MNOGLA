@@ -10,7 +10,6 @@
 #include "../gui/guiContainer.h"
 #include "../twoD/twoDView.h"
 #include "synth/synth.hpp"
-#include "odsLoader/odsLoader.hpp"
 using std::runtime_error;
 
 const bool trace = false;
@@ -55,8 +54,9 @@ class myAppState_t {
         }
         mono1::config(1, 1.0f / audiorate_Hz);
         synth = ::std::make_shared<mono1>(0.0f, 0.25, steps);
+        synth->loadOds("hello.ods");
         audioloop_s = synth->getTStop_s();
-        MNOGLA::odsDoc l("hello.ods");
+        
     }
     void eventDispatcher();
     void render();
