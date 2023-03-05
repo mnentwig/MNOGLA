@@ -9,12 +9,14 @@
 #include "../core/MNOGLA_util.h"
 #include "../gui/guiContainer.h"
 #include "../twoD/twoDView.h"
+#include "synth.hpp"
+#include "odsLoader/odsLoader.hpp"
 using std::runtime_error;
 
 const bool trace = false;
 class myAppState_t {
    public:
-    myAppState_t() : view(), appW(-1), appH(-1), guiCont() {
+    myAppState_t() : view(), appW(-1), appH(-1) {
         auto gVertexShader =
             "attribute vec4 vPosition;\n"
             "void main() {\n"
@@ -29,14 +31,47 @@ class myAppState_t {
         gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
         gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
         MNOGLA::checkGlError("glGetAttribLocation");
+
+        pGui = std::make_shared<MNOGLA::guiContainer>();
         for (int ix = 3; ix < 13; ++ix) {
-            auto b = guiCont.button(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
+            auto b = pGui->button(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
             b->setClickCallback([ix]() { MNOGLA::logI("hello I am button %i", ix); });
         }
-        guiCont.close();
+        pGui->freeze();
+
+        vector<int> steps;
+        int basenote = 52;
+        for (int oct = -2; oct <= 1; ++oct) {
+            steps.push_back(12 * oct + basenote + 0);
+            steps.push_back(12 * oct + basenote + 3);
+            steps.push_back(12 * oct + basenote + 7);
+            steps.push_back(12 * oct + basenote + 10);
+        }
+        for (int oct = 1; oct >= -2; --oct) {
+            steps.push_back(12 * oct + basenote + 12);
+            steps.push_back(12 * oct + basenote + 10);
+            steps.push_back(12 * oct + basenote + 7);
+            steps.push_back(12 * oct + basenote + 3);
+        }
+        mono1::config(1, 1.0f / audiorate_Hz);
+        synth = ::std::make_shared<mono1>(0.0f, 0.25, steps);
+        audioloop_s = synth->getTStop_s();
+        //MNOGLA::odsLoader l("hello.ods");
     }
     void eventDispatcher();
     void render();
+    void runAudio(float* dest, size_t nFrames) {
+        while (nFrames) {
+            size_t nFramesToLoop = std::ceil((audioloop_s - audiotime_s) * audiorate_Hz);
+            nFramesToLoop = std::max(nFramesToLoop, (size_t)1);  // avoid getting stuck
+            size_t nFramesNow = std::min(nFrames, nFramesToLoop);
+            synth->run(dest, nFramesNow, audiotime_s);
+            audiotime_s += nFramesNow * 1.0f / audiorate_Hz;
+            nFrames -= nFramesNow;
+            if (audiotime_s > audioloop_s)
+                audiotime_s -= audioloop_s;
+        }
+    }
     MNOGLA::twoDView view;
 
    protected:
@@ -44,7 +79,11 @@ class myAppState_t {
     GLuint gvPositionHandle = 0;
     int appW;
     int appH;
-    MNOGLA::guiContainer guiCont;
+    ::std::shared_ptr<MNOGLA::guiContainer> pGui = nullptr;
+    ::std::shared_ptr<mono1> synth = nullptr;
+    float audiotime_s = 0;
+    float audioloop_s = 0;
+    float audiorate_Hz = 48000;
 };
 
 #pragma GCC diagnostic push
@@ -77,8 +116,8 @@ void myAppState_t::eventDispatcher() {
     while (true) {
         const size_t n = MNOGLA::evtGetHostToApp(buf);
         if (!n) break;
-        //logRawEvents(n, buf);
-        if (guiCont.feedEvtPtr(n, buf)) continue;
+        // logRawEvents(n, buf);
+        if (pGui->feedEvtPtr(n, buf)) continue;
 
         const uint32_t key = buf[0];
         switch (key) {
@@ -90,8 +129,8 @@ void myAppState_t::eventDispatcher() {
                 const glm::vec2 screenWH(appW, appH);
                 glm::vec2 center = topLeft + screenWH / 2.0f;
                 view.set(center, screenWH, 0.0f);
-                guiCont.informViewport(0, 0, appW, appH);
-                guiCont.autoscale();
+                pGui->informViewport(0, 0, appW, appH);
+                pGui->autoscale();
 
                 glViewport(0, 0, appW, appH);  // global (could move to lower-level render function)
                 continue;
@@ -153,7 +192,7 @@ void myAppState_t::render() {
     glm::vec3 rgb2(0.0, 1.0, 1.0);
     view.outlinedRect(ptC, ptD, w, rgb2);
 
-    guiCont.render();
+    pGui->render();
 }
 
 std::shared_ptr<myAppState_t> myAppState;
@@ -182,9 +221,13 @@ void MNOGLA_videoCbT0() {
 
     if (trace) MNOGLA::logI("videoCbT0: frame done");
 }
-float vol = 0;
-float freq = 0;
+float vol = 0.1;
+float freq = 440;
 void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames) {
+    for (int32_t ix = 0; ix < numFrames; ++ix)
+        *(audioBuf + ix) = 0.0f;
+    myAppState->runAudio(audioBuf, numFrames);
+#if 0
     const float twoPi = 2.0 * 3.14159265358979323846f;
     static float phi = 0;
     float dPhi = freq / 48000.0f * twoPi;
@@ -194,6 +237,7 @@ void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames) {
     }
     int n = (int)(phi / twoPi);
     phi -= (float)(n * twoPi);
+#endif
 }
 
 void MNOGLA_midiCbT2(int32_t v0, int32_t v1, int32_t v2) {

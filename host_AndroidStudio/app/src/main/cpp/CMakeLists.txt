@@ -21,7 +21,8 @@ add_library(userApp SHARED
 target_link_libraries(userApp
         MNOGLA_core
         EGL
-        GLESv3)
+        GLESv3
+        z)
 
 target_link_libraries(MNOGLA_core
         EGL
@@ -33,4 +34,3 @@ target_link_libraries(MNOGLA_host
         android
         log
         aaudio)
-

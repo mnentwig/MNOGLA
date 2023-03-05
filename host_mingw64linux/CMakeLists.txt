@@ -38,6 +38,7 @@ add_library(userApp STATIC
 
 target_link_libraries(userApp
         MNOGLA_core
+        z
 )
 
 # === host ===
@@ -48,4 +49,4 @@ add_executable (host
 target_link_libraries(host
         userApp
 )
-
+configure_file(../hello.ods hello.ods COPYONLY)

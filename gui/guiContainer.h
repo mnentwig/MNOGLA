@@ -152,10 +152,10 @@ class guiContainer : public ptrEvtListener {
         rezCtrl.start(/*nanoseconds*/ (uint64_t)(config.rescaleTime_ms * 1e6));
     };
 
-    void open() {
+    void unfreeze() {
         isOpen = true;
     }
-    void close() {
+    void freeze() {
         isOpen = false;
         rez.clearPts();
         for (const auto& b : buttons)

@@ -122,7 +122,7 @@ int main(void) {
     PaStream* stream;
     paErr = Pa_OpenDefaultStream(&stream,
                                  /*nChanIn*/ 0,
-                                 /*nChanOut*/ 2,
+                                 /*nChanOut*/ 1,
                                  /*format*/ paFloat32,
                                  /*rate*/ 48000,
                                  /*frames per buf*/ 256,
