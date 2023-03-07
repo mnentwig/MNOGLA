@@ -9,7 +9,7 @@
 #include "../core/MNOGLA_util.h"
 #include "../gui/guiContainer.h"
 #include "../twoD/twoDView.h"
-#include "synth/synth.hpp"
+#include "synth/audiobook.hpp"
 using std::runtime_error;
 
 const bool trace = false;
@@ -52,25 +52,16 @@ class myAppState_t {
             steps.push_back(12 * oct + basenote + 7);
             steps.push_back(12 * oct + basenote + 3);
         }
-        mono1::config(1, 1.0f / audiorate_Hz);
-        synth = ::std::make_shared<mono1>(0.0f, 0.25, steps);
-        synth->loadOds("hello.ods");
-        audioloop_s = synth->getTStop_s();
-        
     }
     void eventDispatcher();
     void render();
+    void startAudio(int32_t nChan, int32_t rate_Hz) {
+        MNOGLA::mono1::config(1, 1.0f / rate_Hz);
+        abook = ::std::make_shared<MNOGLA::audiobook>("hello.ods", (float)rate_Hz);
+    }
     void runAudio(float* dest, size_t nFrames) {
-        while (nFrames) {
-            size_t nFramesToLoop = std::ceil((audioloop_s - audiotime_s) * audiorate_Hz);
-            nFramesToLoop = std::max(nFramesToLoop, (size_t)1);  // avoid getting stuck
-            size_t nFramesNow = std::min(nFrames, nFramesToLoop);
-            synth->run(dest, nFramesNow, audiotime_s);
-            audiotime_s += nFramesNow * 1.0f / audiorate_Hz;
-            nFrames -= nFramesNow;
-            if (audiotime_s > audioloop_s)
-                audiotime_s -= audioloop_s;
-        }
+        if (!abook) return;
+        abook->run(dest, nFrames);
     }
     MNOGLA::twoDView view;
 
@@ -80,10 +71,7 @@ class myAppState_t {
     int appW;
     int appH;
     ::std::shared_ptr<MNOGLA::guiContainer> pGui = nullptr;
-    ::std::shared_ptr<mono1> synth = nullptr;
-    float audiotime_s = 0;
-    float audioloop_s = 0;
-    float audiorate_Hz = 48000;
+    ::std::shared_ptr<MNOGLA::audiobook> abook = nullptr;
 };
 
 #pragma GCC diagnostic push
@@ -134,6 +122,11 @@ void myAppState_t::eventDispatcher() {
 
                 glViewport(0, 0, appW, appH);  // global (could move to lower-level render function)
                 continue;
+            }
+            case MNOGLA::eKeyToHost::AUDIO_START: {
+                int32_t nChan = buf[1];
+                int32_t audiorate_Hz = buf[2];
+                startAudio(nChan, audiorate_Hz);
             }
             default:
                 break;
@@ -221,6 +214,7 @@ void MNOGLA_videoCbT0() {
 
     if (trace) MNOGLA::logI("videoCbT0: frame done");
 }
+
 float vol = 0.1;
 float freq = 440;
 void MNOGLA_audioCbT1(float* audioBuf, int32_t numFrames) {

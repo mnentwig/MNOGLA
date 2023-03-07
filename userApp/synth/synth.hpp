@@ -13,6 +13,7 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+namespace MNOGLA {
 using std::vector, std::cout, std::endl, std::string, std::map;
 class mono1 {
    public:
@@ -82,29 +83,6 @@ class mono1 {
     }
 
    public:
-    void loadOds(const string& fname) {
-        map<string, pattern> patterns;
-        MNOGLA::odsDoc l(fname);
-        const size_t nSheets = l.getNSheets();
-        for (size_t ixSheet = 0; ixSheet < nSheets; ++ixSheet) {
-            size_t nRows;
-            size_t nCols;
-            l.getSize(ixSheet, &nRows, &nCols);
-            for (size_t ixRow = 0; ixRow < nRows; ++ixRow)
-                for (size_t ixCol = 0; ixCol < nCols; ++ixCol) {
-                    string val;
-                    if (!l.getCell(ixSheet, ixRow, ixCol, /*out*/ val)) continue;
-                    if ((val.size() < 1) || (val[0] != '$')) continue;
-                    MNOGLA::odsDoc::block b(l, ixSheet, ixRow, ixCol);
-                    cout << "got block" << b.getNCols() << " " << b.getNRows() << " " << val << endl;
-                    if (val == "$pattern") {
-                        pattern p(b);
-                        patterns.insert({p.getName(), std::move(p)});
-                    }
-                }
-        }
-    }
-
     float tStart_s;
     float tStep_s;
     float amp = 0;
@@ -118,3 +96,4 @@ class mono1 {
 };
 float mono1::tFrame_s;
 size_t mono1::interleave;
+}  // namespace MNOGLA

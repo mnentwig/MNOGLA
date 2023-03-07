@@ -43,7 +43,7 @@ class odsDoc {
     }
 
    public:
-    size_t getNSheets() { return sheetNames.size(); }
+    size_t getNSheets() const { return sheetNames.size(); }
 
     typedef map<size_t, string> odsRow_t;
     typedef map<size_t, odsRow_t> odsSheet_t;
@@ -160,17 +160,17 @@ class odsDoc {
     }
 
    public:
-    void getSize(size_t ixSheet, size_t* nRows, size_t* nCols) {
+    void getSize(size_t ixSheet, size_t* nRows, size_t* nCols) const {
         assert(nRows != nullptr);
         assert(nCols != nullptr);
         *nRows = 0;
         *nCols = 0;
         auto it1 = content.find(ixSheet);
         if (it1 == content.end()) return;  // table does not exist
-        odsSheet_t& currentSheet = it1->second;
+        const odsSheet_t& currentSheet = it1->second;
         for (auto& itRow : currentSheet) {
             size_t ixCurrentRow = itRow.first;
-            odsRow_t& currentRow = itRow.second;
+            const odsRow_t& currentRow = itRow.second;
             *nRows = std::max(*nRows, ixCurrentRow + 1u);  // size = ixMax+1
             for (auto& itCol : currentRow) {
                 size_t ixCurrentCol = itCol.first;
@@ -211,6 +211,12 @@ class odsDoc {
         size_t getNRows() const { return nRows; }
         size_t getNCols() const { return nCols; }
         const odsDoc& getDoc() const { return doc; }
+        string getCellRel(size_t dRow, size_t dCol, const string& defVal) const {
+            string r;
+            if (doc.getCell(ixSheet, ixRow + dRow, ixCol + dCol, r))
+                return r;
+            return defVal;
+        }
 
        protected:
         const odsDoc& doc;
@@ -220,6 +226,28 @@ class odsDoc {
         size_t nRows;
         size_t nCols;
     };
+
+   public:
+    vector<block> getBlocks() const {
+        vector<block> r;
+        const size_t nSheets = getNSheets();
+        for (size_t ixSheet = 0; ixSheet < nSheets; ++ixSheet) {
+            size_t nRows;
+            size_t nCols;
+            getSize(ixSheet, &nRows, &nCols);
+            for (size_t ixRow = 0; ixRow < nRows; ++ixRow)
+                for (size_t ixCol = 0; ixCol < nCols; ++ixCol) {
+                    string val;
+                    if (!getCell(ixSheet, ixRow, ixCol, /*out*/ val)) continue;
+                    if ((val.size() < 1) || (val[0] != '$')) continue;
+                    MNOGLA::odsDoc::block b(*this, ixSheet, ixRow, ixCol);
+                    cout << "got block" << b.getNCols() << " " << b.getNRows() << " " << val << endl;
+                    r.push_back(std::move(b));
+                }
+            //                    ::std::make_shared<MNOGLA::mono1>(0.0f, 0.25, steps);
+        }
+        return r;
+    }
 
    protected:
     // helper class for RAII-wrapping a cleanup function.

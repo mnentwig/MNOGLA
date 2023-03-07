@@ -1,11 +1,13 @@
+#pragma once
 #include <cstdio>
 #include <map>
+#include <regex>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "../odsLoader/odsLoader.hpp"
-using std::string, std::to_string, std::runtime_error, std::vector, std::map;
+using std::string, std::to_string, std::runtime_error, std::vector, std::map, std::regex;
 class pattern {
    public:
     pattern(const MNOGLA::odsDoc::block& data) : name(), denom(4), notes() {
@@ -32,18 +34,28 @@ class pattern {
 
         // === parse sequence ===
         // starting 2nd row, 2nd column
-        for (size_t ixCol = data.getIxCol() + 1; ixCol < data.getIxCol() + data.getNCols(); ++ixCol) {
-            string val;
-            if (!data.getDoc().getCell(data.getIxSheet(), data.getIxRow() + 1, ixCol, val))
-                val = "";
-            if (val == "")
-                notes.push_back(0);  // pause
-            else if (val == "-")
-                notes.push_back(-1);  // sustain
-            else {
-                auto it = notename2midi.find(val);
-                if (it == notename2midi.end()) throw runtime_error("failed to parse " + val);
-                notes.push_back(it->second);
+        for (size_t ixCol = 1; ixCol < data.getNCols(); ++ixCol) {
+            const string cellnotesStr = data.getCellRel(/*2nd row*/ 1, ixCol, /*default*/ "");  // e.g. "c3,d3,e3"
+            const regex e(",");
+            const auto cellnotes = strsplit(cellnotesStr, e);  // e.g. {"c3", "d3", "e3"}
+            for (size_t ixCellnote = 0; ixCellnote < cellnotes.size(); ++ixCellnote) {
+                // extend polyphony vectors
+                if (notes.size() < ixCellnote + 1)
+                    notes.emplace_back(vector<int>());
+                // pad polyphony vector with pause
+                while (notes[ixCellnote].size() < notes[0].size())  // does nothing for ixCellnote == 0
+                    notes[ixCellnote].push_back(/*pause*/ 0);
+                // insert note to polyphony vector
+                const string cellnote = cellnotes[ixCellnote];
+                if (cellnote == "")
+                    notes[ixCellnote].push_back(0);  // pause
+                else if (cellnote == "-")
+                    notes[ixCellnote].push_back(-1);  // sustain
+                else {
+                    auto it = notename2midi.find(cellnote);
+                    if (it == notename2midi.end()) throw runtime_error("failed to parse " + cellnote);
+                    notes[ixCellnote].push_back(it->second);
+                }
             }
         }
     }
@@ -53,5 +65,13 @@ class pattern {
    protected:
     string name;
     size_t denom;
-    vector<int> notes;
+    vector<vector<int>> notes;
+    static vector<string> strsplit(const string& s, const regex& e) {
+        vector<string> r;
+        std::sregex_token_iterator it(s.begin(), s.end(), e, -1);
+        std::sregex_token_iterator end;
+        while (it != end)
+            r.push_back(*it++);
+        return r;
+    }
 };

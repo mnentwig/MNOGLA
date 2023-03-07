@@ -133,6 +133,7 @@ int main(int argc, char** argv) {
     if (paErr != paNoError) throw runtime_error(string("failed to open portAudio stream:") + Pa_GetErrorText(paErr));
     paErr = Pa_StartStream(stream);
     if (paErr != paNoError) throw runtime_error(string("failed to start portAudio stream:") + Pa_GetErrorText(paErr));
+    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::AUDIO_START, /*nArgs*/ 2, /*nChan*/ 1, /*rate_Hz*/ 48000);
 #endif
 
     while (!glfwWindowShouldClose(window)) {
