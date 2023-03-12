@@ -6,12 +6,13 @@
 #include "../odsLoader/odsLoader.hpp"
 #include "pattern.hpp"
 #include "synth.hpp"
+#include "track.hpp"
 
 namespace MNOGLA {
 using std::vector, std::cout, std::endl, std::string, std::map, std::runtime_error, std::shared_ptr, std::make_shared;
 class audiobook {
    public:
-    audiobook(const char* odsFilename, float audiorate_Hz) : patterns(), synths(), audiorate_Hz(audiorate_Hz) {
+    audiobook(const char* odsFilename, float audiorate_Hz) : patterns(), tracks(), synths(), audiorate_Hz(audiorate_Hz) {
         MNOGLA::odsDoc l(odsFilename);
 
         auto blocks = l.getBlocks();
@@ -21,6 +22,15 @@ class audiobook {
                 pattern p(b);
                 if (patterns.find(p.getName()) != patterns.end()) throw runtime_error("duplicate pattern: " + p.getName());
                 patterns.insert({p.getName(), std::move(p)});
+            }
+        }
+
+        for (const auto& b : blocks) {
+            string id = b.getCellRel(/*leftmost*/ 0, /*topmost*/ 0, /*default*/ "");
+            if (id == "$track") {
+                track t(b, patterns);
+                if (tracks.find(t.getName()) != tracks.end()) throw runtime_error("duplicate track: " + t.getName());
+                tracks.insert({t.getName(), std::move(t)});
             }
         }
     }
@@ -43,6 +53,7 @@ class audiobook {
 
    protected:
     map<string, pattern> patterns;
+    map<string, track> tracks;
     vector<shared_ptr<MNOGLA::mono1>> synths;
     float audiorate_Hz;
     float audiotime_s = 0;

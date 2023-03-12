@@ -6,7 +6,14 @@
 #include <string>
 #ifdef MNOGLA_HASAUDIO
 #include <portaudio.h>
+#endif
 
+#ifdef MNOGLA_HASWINMIDI
+#define WIN32_LEAN_AND_MEAN
+// clang-format off
+#include <windows.h> // must include mmsystem after windows.h
+#include <mmsystem.h>
+// clang-format on
 #endif
 
 #include "../MNOGLA.h"
@@ -69,6 +76,19 @@ void logE_impl(const char* format, ...) {
     fflush(stdout);
     va_end(args);
 }
+
+#ifdef MNOGLA_HASWINMIDI
+void CALLBACK midiCallback(HMIDIIN handle, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2) {
+    if (uMsg == MIM_DATA) {
+        uint32_t b0 = (dwParam1 >> 0) & 0xFF;
+        if (b0 == 0xF8) return; // don't propagate active sensing messages
+        uint32_t b1 = (dwParam1 >> 8) & 0xFF;
+        uint32_t b2 = (dwParam1 >> 16) & 0xFF;
+        MNOGLA_midiCbT2(b0, b1, b2);
+    }
+}
+static HMIDIIN inHandle;
+#endif
 
 int main(int argc, char** argv) {
     if (argc > 0)
@@ -136,6 +156,16 @@ int main(int argc, char** argv) {
     MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::AUDIO_START, /*nArgs*/ 2, /*nChan*/ 1, /*rate_Hz*/ 48000);
 #endif
 
+#ifdef MNOGLA_HASWINMIDI
+    unsigned long result;
+    inHandle = nullptr;
+    result = midiInOpen(&inHandle, 0, (DWORD_PTR)midiCallback, 0, CALLBACK_FUNCTION);
+    if (!result)
+        midiInStart(inHandle);
+    else
+        logI_impl("failed to open MIDI");
+#endif
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         if (glfwWindowShouldClose(window))
@@ -160,6 +190,9 @@ int main(int argc, char** argv) {
     MNOGLA::coreDeinit();
 
     glfwTerminate();
-
+#ifdef MNOGLA_HASWINMIDI
+    if (inHandle)
+        midiInClose(inHandle);
+#endif
     return 0;
 }

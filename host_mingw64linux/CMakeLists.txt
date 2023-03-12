@@ -4,6 +4,10 @@ project(myProject)
 #set(CMAKE_VERBOSE_MAKEFILE ON) # spam spam spam
 add_compile_definitions(MNOGLA_HASAUDIO)
 
+if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MINGW")
+  add_compile_definitions(MNOGLA_HASWINMIDI)
+endif()
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic -Weffc++ -fmax-errors=1")
 
 # === MNOGLA_core ===
