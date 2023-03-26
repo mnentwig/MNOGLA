@@ -173,5 +173,7 @@ Java_com_android_MNOGLAJNI_MNOGLALIB_evt3(JNIEnv *, jclass, int32_t key, int32_t
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_midiCb(JNIEnv *, jclass, jint v1, jint v2, jint v3) {
+    #ifdef MNOGLA_HASMIDI
     MNOGLA_midiCbT2(v1, v2, v3);
+    #endif
 }

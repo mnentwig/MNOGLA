@@ -78,7 +78,7 @@ void logE_impl(const char* format, ...) {
 }
 
 #ifdef MNOGLA_HASWINMIDI
-void CALLBACK midiCallback(HMIDIIN handle, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2) {
+void CALLBACK midiCallback(HMIDIIN handle, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2) {    
     if (uMsg == MIM_DATA) {
         uint32_t b0 = (dwParam1 >> 0) & 0xFF;
         if (b0 == 0xF8) return; // don't propagate active sensing messages

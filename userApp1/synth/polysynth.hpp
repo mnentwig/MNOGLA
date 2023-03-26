@@ -17,7 +17,11 @@ class midisynth {
         for (auto it : synthByNote)
             it.second->run(dest, nFrames, audiotime_s);
     }
-    void midiCb(int32_t v0, int32_t v1, int32_t v2) {}
+    void midiCb(int32_t v0, int32_t v1, int32_t v2) {
+        if ((v0 & 0xF0) == 0x90){
+MNOGLA::mono1(
+        }
+    }
 
    protected:
     map<size_t, shared_ptr<MNOGLA::mono1>> synthByNote;

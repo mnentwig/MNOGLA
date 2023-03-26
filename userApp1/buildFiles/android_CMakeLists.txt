@@ -3,7 +3,9 @@ project(myProject)
 
 include_directories(SYSTEM .)
 
-# add_compile_definitions(MNOGLA_HASAUDIO)
+#Android host supports audio
+add_compile_definitions(MNOGLA_HASAUDIO)
+add_compile_definitions(MNOGLA_HASMIDI)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 
@@ -15,12 +17,13 @@ add_library(MNOGLA_host SHARED
         host.cpp)
 
 add_library(userApp SHARED
-        ../../../../../userApp2/userApp.cpp)
+        ../../../../../userApp1/userApp.cpp)
 
 target_link_libraries(userApp
         MNOGLA_core
         EGL
-        GLESv3)
+        GLESv3
+        z)
 
 target_link_libraries(MNOGLA_core
         EGL
@@ -30,4 +33,5 @@ target_link_libraries(MNOGLA_host
         userApp
         MNOGLA_core
         android
-        log)
+        log
+        aaudio)
