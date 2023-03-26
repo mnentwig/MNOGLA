@@ -78,10 +78,10 @@ void logE_impl(const char* format, ...) {
 }
 
 #ifdef MNOGLA_HASWINMIDI
-void CALLBACK midiCallback(HMIDIIN handle, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2) {    
+void CALLBACK midiCallback(HMIDIIN handle, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2) {
     if (uMsg == MIM_DATA) {
         uint32_t b0 = (dwParam1 >> 0) & 0xFF;
-        if (b0 == 0xF8) return; // don't propagate active sensing messages
+        if (b0 == 0xF8) return;  // don't propagate active sensing messages
         uint32_t b1 = (dwParam1 >> 8) & 0xFF;
         uint32_t b2 = (dwParam1 >> 16) & 0xFF;
         MNOGLA_midiCbT2(b0, b1, b2);
@@ -132,12 +132,26 @@ int main(int argc, char** argv) {
     glfwSetScrollCallback(window, scroll_callback);
     //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+    // === host-independent startup ===
     MNOGLA::coreInit(logI_impl, logE_impl);
-    MNOGLA_userInit(winWidth, winHeight);
-#ifdef MNOGLA_HASAUDIO
+
+    // === application startup (no GL context) ===
+    // note: application could signal back startup options for openGl
+    MNOGLA_userInit();
+
+    // === startup core with GL context ===
+    MNOGLA::coreInitGlContext();
+
+    // === startup user app with GL context ===
+    MNOGLA_initGlContext();
+
+    // === signal window size ===
+    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, /*nArgs*/ 2, /*width*/ winWidth, /*height*/ winHeight);
+
     // =============================================
     // Audio
     // =============================================
+#ifdef MNOGLA_HASAUDIO
     PaError paErr = Pa_Initialize();
     if (paErr != paNoError) throw runtime_error(string("failed to initialize portAudio: ") + Pa_GetErrorText(paErr));
 
@@ -156,6 +170,9 @@ int main(int argc, char** argv) {
     MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::AUDIO_START, /*nArgs*/ 2, /*nChan*/ 1, /*rate_Hz*/ 48000);
 #endif
 
+    // =============================================
+    // MIDI
+    // =============================================
 #ifdef MNOGLA_HASWINMIDI
     unsigned long result;
     inHandle = nullptr;

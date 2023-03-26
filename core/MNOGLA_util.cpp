@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-
 namespace MNOGLA {
 using ::std::string, ::std::runtime_error, ::std::to_string, ::std::vector;
 static string glErrorCodeToString(GLenum err) {
@@ -95,7 +94,7 @@ GLint getUniformLoc(GLuint prog, const char* argName) {
     return r;
 }
 
-// we don't create an internal header file to only include those few scattered function => declare here
+// (function implementations scattered across multiple internal files)
 void init_filledRect();
 void deinit_filledRect();
 
@@ -105,12 +104,13 @@ void deinit_outlinedRect();
 void init_vectorText();
 void deinit_vectorText();
 
-void initUtil() {
+void util_initGlContext() {
+    // Note: In case of GL context loss, init() will be called without deinit(). No need to glDelete() anything.
     init_filledRect();
     init_vectorText();
     init_outlinedRect();
 }
-void deinitUtil() {
+void util_deinit() {
     deinit_outlinedRect();
     deinit_vectorText();
     deinit_filledRect();

@@ -118,13 +118,18 @@ void coreInit(logFun_t _logI, logFun_t _logE) {
     if (glewInit() != GLEW_OK) throw runtime_error("Failed to initialize GLEW");
     glfwWindowHint(GLFW_SAMPLES, 4);
 #endif
-    initUtil();
 
     // clock starts after initialization is done
     appStartTime = std::chrono::high_resolution_clock::now();
 }
+
+void coreInitGlContext() {
+    // Note: In case of GL context loss, this will be called repeatedly. No need to glDelete() anything.
+    util_initGlContext();
+}
+
 void coreDeinit() {
-    deinitUtil();
+    util_deinit();
 }
 
 uint64_t lastTimestamp_nanosecs;

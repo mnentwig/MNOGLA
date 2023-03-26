@@ -3,6 +3,7 @@
 #include "../../core/MNOGLA_util.h"
 namespace MNOGLA {
 void filledRect::init() {
+    // Note: In case of GL context loss, init() will be called without deinit(). No need to glDelete() anything.
     twoDShape::init();
 }
 

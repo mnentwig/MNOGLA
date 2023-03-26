@@ -6,7 +6,9 @@
 namespace MNOGLA {
 class twoDShape {
    public:
+    // create GL objects
     static void init();
+    // delete GL objects. Note: First deinit affects all derived classes. Use only on application shutdown
     static void deinit();
     static GLuint p0;
     static GLint p0_coord2d;
@@ -15,7 +17,6 @@ class twoDShape {
     static void setWorld2screen(const ::glm::mat3& world2screen);
 
    private:
-    // twoDShape is used by many classes. Initialize for the first, deinitialize for the last.
-    static size_t initCount;
+    static bool canClean;
 };
 }  // namespace MNOGLA

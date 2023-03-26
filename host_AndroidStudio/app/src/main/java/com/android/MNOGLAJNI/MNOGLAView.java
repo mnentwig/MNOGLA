@@ -19,35 +19,54 @@ public class MNOGLAView extends GLSurfaceView {
         setRenderer(new Renderer());
     }
 
+    protected Renderer r = null;
+
+    public void onPause() {
+        Log.i("MNOGLA", "onPause");
+    }
+
+    public void onResume() {
+        Log.i("MNOGLA", "onResume");
+    }
+
     private static class Renderer implements GLSurfaceView.Renderer {
+        protected boolean isPaused = false;
+
         public void onDrawFrame(GL10 gl) {
-            MNOGLALIB.render();
+//            Log.i("MNOGLA", "onDrawFrame");
+            if (!isPaused)
+                MNOGLALIB.render();
         }
 
         public void onSurfaceChanged(GL10 gl, int width, int height) {
-            MNOGLALIB.init(width, height);
+            Log.i("MNOGLA", "onSurfaceChanged" + width + " " + height);
+            MNOGLALIB.evt2(/*key: WINSIZE*/1000, width, height);
         }
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            // Do nothing.
+            Log.i("MNOGLA", "onSurfaceCreated");
+            MNOGLALIB.initGlContext();
         }
     }
 
     private class touchXy {
-        public touchXy(float xf, float yf){
-            x = (int)xf;
-            y = (int)yf;
+        public touchXy(float xf, float yf) {
+            x = (int) xf;
+            y = (int) yf;
         }
+
         public int x;
         public int y;
     }
 
-    static Map<Integer, touchXy> touchStateByPtrId = new HashMap<Integer, touchXy>() ;
-    @Override public boolean onTouchEvent(MotionEvent ev) {
+    static Map<Integer, touchXy> touchStateByPtrId = new HashMap<Integer, touchXy>();
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
         final int action = ev.getActionMasked();
-        switch(action){
+        switch (action) {
             case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN:{
+            case MotionEvent.ACTION_POINTER_DOWN: {
                 //Log.i("MNOGLA java", "ACTION_(POINTER_)DOWN");
                 int ptrIx;
                 if (action == MotionEvent.ACTION_DOWN)
@@ -61,7 +80,7 @@ public class MNOGLAView extends GLSurfaceView {
                 return true;
             }
             case MotionEvent.ACTION_POINTER_UP:
-            case MotionEvent.ACTION_UP:{
+            case MotionEvent.ACTION_UP: {
                 //Log.i("MNOGLA java", "ACTION_(POINTER_)UP");
                 int ptrIx;
                 if (action == MotionEvent.ACTION_UP)

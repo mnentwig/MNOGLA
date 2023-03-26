@@ -11,7 +11,7 @@
 #include "../twoD/twoDView.h"
 using std::runtime_error;
 
-const bool trace = true;
+const bool trace = false;
 class myAppState_t {
    public:
     myAppState_t() : view(), appW(-1), appH(-1) {
@@ -91,10 +91,16 @@ void myAppState_t::eventDispatcher() {
 
 void myAppState_t::render() {
     if ((appW < 0) || (appH < 0)) throw runtime_error("window size not initialized");
+
+    // === basic openGl setup ===
+    if (trace) MNOGLA::logI("videoCbT0: gl setup");
+    GLCHK(glEnable(GL_DEPTH_TEST));
+    GLCHK(glEnable(GL_BLEND));
+    GLCHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     if (trace) MNOGLA::logI("videoCbT0: glClear");
     GLCHK(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
     GLCHK(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
-    
+
     const glm::vec3 rgb(0.0f, 1.0f, 0.0f);
     for (float row = 0; row < 10; ++row) {
         if (trace) MNOGLA::logI("text row %d start", (int)row);
@@ -114,18 +120,17 @@ void myAppState_t::render() {
     pGui->render();
 }
 
-std::shared_ptr<myAppState_t> myAppState;
-void MNOGLA_userInit(int w, int h) {
-    myAppState = std::make_shared<myAppState_t>();
-    MNOGLA::logI("user init");
-
-    // defer handling the initial size to the resize handler by creating an event
-    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
-
-    GLCHK(glEnable(GL_DEPTH_TEST));
-    GLCHK(glEnable(GL_BLEND));
-    GLCHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+std::shared_ptr<myAppState_t> myAppState = nullptr;
+void MNOGLA_userInit() {
+    if (myAppState == nullptr) {
+        myAppState = std::make_shared<myAppState_t>();
+        MNOGLA::logI("user init (startup)");
+    } else {
+        MNOGLA::logI("user init (openGL context regained)");
+    }
 }
+
+void MNOGLA_initGlContext() {}
 
 void MNOGLA_videoCbT0() {
     if (trace) MNOGLA::logI("videoCbT0: eventDispatcher");

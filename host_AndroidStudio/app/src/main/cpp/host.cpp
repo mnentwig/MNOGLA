@@ -177,3 +177,8 @@ Java_com_android_MNOGLAJNI_MNOGLALIB_midiCb(JNIEnv *, jclass, jint v1, jint v2, 
     MNOGLA_midiCbT2(v1, v2, v3);
     #endif
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_android_MNOGLAJNI_MNOGLALIB_initGlContext(JNIEnv *env, jclass clazz) {
+    MNOGLA_initGlContext();
+}

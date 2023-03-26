@@ -8,6 +8,7 @@
 namespace MNOGLA {
 using ::std::vector;
 void vectorText::init() {
+    // Note: In case of GL context loss, init() will be called without deinit(). No need to glDelete() anything.
     twoDShape::init();
 
     // === buffers ===

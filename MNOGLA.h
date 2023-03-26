@@ -5,8 +5,11 @@ using std::size_t;
 
 // === user code must implement those: ===
 
-//* host calls userApp at startup */
-void MNOGLA_userInit(int w, int h);
+//* host calls userApp at startup. Gl context is NOT available. */
+void MNOGLA_userInit();
+//* host calls userApp once GL context is available and whenever it is re-obtained e.g. app switch in Android */
+void MNOGLA_initGlContext();
+
 //* host calls userApp to render new video frame (thread 0) */
 void MNOGLA_videoCbT0();
 //* host calls userApp to request generation of an audio buffer */
@@ -27,6 +30,13 @@ extern const char* mainArg0;
 
 // host calls core to initialize
 void coreInit(logFun_t logI, logFun_t logE);
+
+// host calls when a GL context has been (re)obtained
+// Note: for repeated callbacks, it means the glContext was lost and re-obtained.
+// If so, resources in a lost context do not need to be glDelete()d.
+void coreInitGlContext();
+
+// host calls on application exit
 void coreDeinit();
 
 // host signals an event
@@ -57,7 +67,7 @@ extern uint64_t lastTimestamp_nanosecs;
 // - pointer index  (multitouch)
 // - x coordinate in pixels
 // - y coordinate in pixels
-// 
+//
 // TOUCH_MOVE: touchscreen pointer
 // - pointer index  (multitouch)
 // - x coordinate in pixels
