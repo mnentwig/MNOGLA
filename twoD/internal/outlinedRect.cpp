@@ -25,8 +25,6 @@ outlinedRect::init() {
 }
 
 /*static!*/ void outlinedRect::draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::mat3& world2screen) {
-    GLCHK(glUseProgram(p0));
-
     // (a)0.........1...
     // ..(c)4.....5.....
     // .................
@@ -45,7 +43,9 @@ outlinedRect::init() {
         ::glm::vec2(c.x, d.y),   // 6
         ::glm::vec2(d.x, d.y)};  // 7
 
+    // === config ===
     GLCHK(glDisable(GL_DEPTH_TEST));
+    GLCHK(glUseProgram(p0));
 
     // == vertex locations ===
     GLCHK(glBindBuffer(GL_ARRAY_BUFFER, vertexBuf));

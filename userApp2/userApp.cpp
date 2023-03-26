@@ -97,6 +97,8 @@ void myAppState_t::render() {
     GLCHK(glEnable(GL_DEPTH_TEST));
     GLCHK(glEnable(GL_BLEND));
     GLCHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+    // === clear ===
     if (trace) MNOGLA::logI("videoCbT0: glClear");
     GLCHK(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
     GLCHK(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));

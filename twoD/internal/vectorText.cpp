@@ -22,8 +22,12 @@ void vectorText::deinit() {
 
 /*static!*/ void vectorText::draw(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb, const ::glm::mat3& world2screen) {
     const vector<glm::vec2> v = text2lines(pt, text, height);
+
+    // === config ===
+    GLCHK(glDisable(GL_DEPTH_TEST));
     GLCHK(glUseProgram(p0));
 
+    // === data ===
     GLCHK(glBindBuffer(GL_ARRAY_BUFFER, vertexBuf));
     GLCHK(glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(v[0]), &v[0], GL_STATIC_DRAW));
 

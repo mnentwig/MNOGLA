@@ -12,6 +12,8 @@ void filledRect::deinit() {
 }
 
 void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::mat3& world2screen) {
+    // === config ===
+    GLCHK(glDisable(GL_DEPTH_TEST));
     GLCHK(glUseProgram(p0));
 
     // === vertices ===

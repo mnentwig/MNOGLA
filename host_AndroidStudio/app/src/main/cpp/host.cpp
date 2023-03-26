@@ -144,12 +144,10 @@ public:
 // =========================================================================================
 extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_init(JNIEnv * /*env*/,
-                                          jclass,
-                                          jint width,
-                                          jint height) {
+                                          jclass) {
     audio::start();
     MNOGLA::coreInit(host_logI, host_logE);
-    MNOGLA_userInit(width, height);
+    MNOGLA_userInit();
 }
 
 extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
@@ -180,5 +178,6 @@ Java_com_android_MNOGLAJNI_MNOGLALIB_midiCb(JNIEnv *, jclass, jint v1, jint v2, 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_initGlContext(JNIEnv *env, jclass clazz) {
+    MNOGLA::coreInitGlContext();
     MNOGLA_initGlContext();
 }

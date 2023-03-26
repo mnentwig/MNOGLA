@@ -121,6 +121,7 @@ void coreInit(logFun_t _logI, logFun_t _logE) {
 
     // clock starts after initialization is done
     appStartTime = std::chrono::high_resolution_clock::now();
+    logI("core init");
 }
 
 void coreInitGlContext() {
