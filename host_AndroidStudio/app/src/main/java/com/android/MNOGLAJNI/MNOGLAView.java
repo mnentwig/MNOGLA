@@ -19,6 +19,7 @@ public class MNOGLAView extends GLSurfaceView {
         setEGLConfigChooser(8, 8, 8, 0, 16, 0);
         setEGLContextClientVersion(3);
         r = new Renderer();
+        setPreserveEGLContextOnPause(true);
         setRenderer(r);
     }
 

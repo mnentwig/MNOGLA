@@ -30,6 +30,7 @@ class myAppState_t {
     int appW;
     int appH;
     ::std::shared_ptr<MNOGLA::guiContainer> pGui = nullptr;
+    size_t frameCount = 0;
 };
 
 #pragma GCC diagnostic push
@@ -120,6 +121,9 @@ void myAppState_t::render() {
     view.outlinedRect(ptC, ptD, w, rgb2);
 
     pGui->render();
+
+    // === frame counter ===
+    view.vectorText(glm::vec2(25, 25), std::to_string(frameCount++), 50, glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
 std::shared_ptr<myAppState_t> myAppState = nullptr;

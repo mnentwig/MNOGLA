@@ -108,10 +108,12 @@ int main(int argc, char** argv) {
     int winWidth;
     int winHeight;
 #if 1
+    // === windowed ===
     winWidth = 640;
     winHeight = 480;
     GLFWwindow* window = glfwCreateWindow(winWidth, winHeight, __FILE__, NULL, NULL);
 #else
+    // === fullscreen ===
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
     glfwWindowHint(GLFW_RED_BITS, mode->redBits);
@@ -124,7 +126,8 @@ int main(int argc, char** argv) {
 #endif
     glfwMakeContextCurrent(window);
     if (1 || glfwExtensionSupported("WGL_EXT_swap_control_tear") || glfwExtensionSupported("GLX_EXT_swap_control_tear")) {
-        glfwSwapInterval(0);
+        // glfwSwapInterval(0); // render full speed
+        glfwSwapInterval(1); // vsync enabled
     }
     glfwSetWindowSizeCallback(window, window_size_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
