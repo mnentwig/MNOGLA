@@ -138,3 +138,4 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
 
 #include "../twoD/code.cpp"           // for now, generate library code here
 #include "../uiEvtListener/code.cpp"  // for now, generate library code here
+#include "../gui/code.cpp"  // for now, generate library code here

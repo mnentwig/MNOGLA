@@ -17,6 +17,12 @@ class guiButton_internal : public guiElem {
     guiButton_internal(int32_t x, int32_t y, int w, int h, const string& text) : x(x), y(y), w(w), h(h), preClickState(false), text(text), clickCb(nullptr) {}
 
    public:
+    bool evtPtr_preClick(const vec2& pt) override;
+    void evtPtr_cancelClick() override;
+
+    void evtPtr_confirmClick(const vec2& pt) override;
+    virtual void executeClickCallback();
+
     void render(MNOGLA::twoDView& v) override {
         const vec3& drawBgCol = preClickState ? bgColPreClick : bgCol;
         const vec3& drawTextCol = preClickState ? textColPreClick : textCol;
