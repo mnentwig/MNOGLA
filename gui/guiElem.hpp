@@ -11,6 +11,7 @@ namespace MNOGLA {
 using ::glm::vec2, ::std::vector;
 
 class guiElem : public guiElem_internal {
+    public:
     virtual vector<vec2> getPts() const = 0;
     virtual bool evtPtr_preClick(const vec2& pt) = 0;
     virtual void evtPtr_cancelClick() = 0;

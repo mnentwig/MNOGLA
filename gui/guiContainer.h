@@ -36,8 +36,9 @@ class guiContainer : public ptrEvtListener {
 
     shared_ptr<guiButton> button(int32_t x, int32_t y, int w, int h, const string& text) {
         if (!isOpen) throw runtime_error("guiContainer child creation in closed state. Must open() first");
-        buttons.push_back(::std::make_shared<guiButton>(x, y, w, h, text));
-        return buttons.back();
+        shared_ptr<guiButton> b = ::std::make_shared<guiButton>(x, y, w, h, text);
+        buttons.push_back(b);
+        return b;
     }
 
     void autoscale() {
@@ -46,8 +47,8 @@ class guiContainer : public ptrEvtListener {
                 minPt = vec2(::std::min(minPt.x, pt.x), ::std::min(minPt.y, pt.y));
                 maxPt = vec2(::std::max(maxPt.x, pt.x), ::std::max(maxPt.y, pt.y));
             }
-            void enterItem(const shared_ptr<guiButton> pItem) {
-                const vector<vec2> pts = pItem->getPts();
+            void enterItem(const shared_ptr<guiElem> pElem) {
+                const vector<vec2> pts = pElem->getPts();
                 for (auto& p : pts)
                     enterPt(p);
             }
@@ -194,7 +195,7 @@ class guiContainer : public ptrEvtListener {
         uint64_t endTime;
     };
 
-    vector<shared_ptr<guiButton>> buttons;
+    vector<shared_ptr<guiElem>> buttons;
     twoDView view;
     // open state allows adding / editing content. Render in closed state.
     bool isOpen = true;

@@ -26,7 +26,7 @@ class rezoomer {
     void enterPt(const glm::vec2& pt_world) {
         points_world.push_back(pt_world);
     }
-    void enterItem(const shared_ptr<guiButton> pItem) {
+    void enterItem(const shared_ptr<guiElem> pItem) {
         vector<vec2> itemPts = pItem->getPts();
         points_world.insert(points_world.end(), itemPts.begin(), itemPts.end());
     }
