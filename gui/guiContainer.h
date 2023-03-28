@@ -70,32 +70,27 @@ class guiContainer : public ptrEvtListener {
         logI("pre-click %f %f", ptNorm.x, ptNorm.y);
         vec2 ptWorld = view.getScreen2world() * vec3(ptNorm, 1.0f);
         bool anyHit = false;
-        for (auto b : buttons) {
-            bool hit = b->ptInside(ptWorld);
-            b->setPreClickState(hit);
-            anyHit |= hit;
-        }
+        for (auto b : buttons)
+            anyHit |= b->evtPtr_preClick(ptWorld);
         return anyHit;
     }
 
     void evtPtr_secondary(const vec2& ptNorm) {
         logI("secondary click %f %f", ptNorm.x, ptNorm.y);
         for (auto b : buttons)
-            b->setPreClickState(false);
+            b->evtPtr_cancelClick();
     };
 
     void evtPtr_confirmClick(const vec2& ptNorm) {
         logI("confirm click %f %f", ptNorm.x, ptNorm.y);
+        vec2 ptWorld = view.getScreen2world() * vec3(ptNorm, 1.0f);
         for (auto b : buttons)
-            if (b->getPreClickState()) {
-                b->setPreClickState(false);
-                b->executeClickCallback();
-            }
+            b->evtPtr_confirmClick(ptWorld);
     };
 
     void evtPtr_cancelClick() {
         for (auto b : buttons)
-            b->setPreClickState(false);
+            b->evtPtr_cancelClick();
     };
 
     void evtPtr_drag(const vec2& deltaNorm) {

@@ -42,8 +42,23 @@ class guiButton {
     vec3 bgColPreClick = vec3(0.8f, 0.8f, 0.8f);
     vec3 textCol = vec3(0.8f, 0.8f, 0.8f);
     vec3 textColPreClick = vec3(0.2f, 0.2f, 0.2f);
-    void setPreClickState(bool state) { preClickState = state; }
-    bool getPreClickState() { return preClickState; }
+
+    bool evtPtr_preClick(const vec2& pt) {
+        bool hit = ptInside(pt);
+        preClickState = hit;
+        return hit;
+    }
+    void evtPtr_cancelClick() {
+        preClickState = false;
+    }
+
+    void evtPtr_confirmClick(const vec2& pt) {
+        if (!preClickState) return;
+        executeClickCallback();
+        preClickState = false;
+    }
+
+   protected:
     bool ptInside(vec2(pt)) {
         return (pt.x < x)        ? false
                : (pt.y < y)      ? false
@@ -52,7 +67,6 @@ class guiButton {
                                  : true;
     }
 
-   protected:
     int32_t x;
     int32_t y;
     int32_t w;
@@ -61,4 +75,4 @@ class guiButton {
     string text;
     ::std::function<void()> clickCb;
 };
-}
+}  // namespace MNOGLA
