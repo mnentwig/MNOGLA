@@ -11,7 +11,7 @@
 #include "../twoD/twoDMatrix.h"
 #include "../twoD/twoDView.h"
 #include "../uiEvtListener/ptrEvtListener.h"
-#include "internal/guiButton.hpp"
+#include "guiButton.hpp"
 #include "internal/rezoomer.hpp"
 
 namespace MNOGLA {
@@ -47,8 +47,9 @@ class guiContainer : public ptrEvtListener {
                 maxPt = vec2(::std::max(maxPt.x, pt.x), ::std::max(maxPt.y, pt.y));
             }
             void enterItem(const shared_ptr<guiButton> pItem) {
-                enterPt(pItem->getTopLeft());
-                enterPt(pItem->getBottomRight());
+                const vector<vec2> pts = pItem->getPts();
+                for (auto& p : pts)
+                    enterPt(p);
             }
             vec2 getCenter() { return (minPt + maxPt) / 2.0f; }
             vec2 getWh() { return (maxPt - minPt); }

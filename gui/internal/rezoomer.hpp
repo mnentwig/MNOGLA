@@ -9,7 +9,6 @@
 
 #include "../../MNOGLA.h"
 #include "../../twoD/twoDMatrix.h"
-#include "guiButton.hpp"
 
 namespace MNOGLA {
 using ::glm::vec2, ::glm::vec3, ::glm::mat3, ::std::vector, ::std::runtime_error, ::std::shared_ptr;
