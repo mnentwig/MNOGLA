@@ -30,14 +30,14 @@ class guiContainer : public guiContainerInternal {
     void autoscale();
     void render();
 
-    virtual bool evtPtr_preClick(const vec2& ptNorm) override;
-    virtual void evtPtr_secondary(const vec2& ptNorm) override;
-    virtual void evtPtr_confirmClick(const vec2& ptNorm) override;
-    virtual void evtPtr_cancelClick() override;
-    virtual void evtPtr_drag(const vec2& deltaNorm) override;
-    virtual void evtMouseRaw_wheel(int32_t deltaX, int32_t deltaY) override;
-    virtual void evtPtr_twoPtrDrag(const vec2& pt1start_NDC, const vec2& pt1stop_NDC,
+    bool evtPtr_preClick(const vec2& ptNorm) override;
+    void evtPtr_secondary(const vec2& ptNorm) override;
+    void evtPtr_confirmClick(const vec2& ptNorm) override;
+    void evtPtr_cancelClick() override;
+    void evtPtr_drag(const vec2& deltaNorm) override;
+    void evtMouseRaw_wheel(int32_t deltaX, int32_t deltaY) override;
+    void evtPtr_twoPtrDrag(const vec2& pt1start_NDC, const vec2& pt1stop_NDC,
                                    const vec2& pt2start_NDC, const vec2& pt2stop_NDC) override;
-    virtual void evtPtr_dragPanZoomEnds() override;
+    void evtPtr_dragPanZoomEnds() override;
 };
 }  // namespace MNOGLA
