@@ -7,6 +7,7 @@
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_util.h"
+#include "../gui/guiButton.hpp"
 #include "../gui/guiContainer.h"
 #include "../twoD/twoDView.h"
 using std::runtime_error;
@@ -17,8 +18,9 @@ class myAppState_t {
     myAppState_t() : view(), appW(-1), appH(-1) {
         pGui = std::make_shared<MNOGLA::guiContainer>();
         for (int ix = 3; ix < 5; ++ix) {
-            auto b = pGui->button(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
+            auto b = ::std::make_shared<MNOGLA::guiButton>(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
             b->setClickCallback([ix]() { MNOGLA::logI("hello I am button %i", ix); });
+            pGui->addElem(b);
         }
         pGui->freeze();
     }

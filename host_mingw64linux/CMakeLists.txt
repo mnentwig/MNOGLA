@@ -8,7 +8,7 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MINGW")
 #  add_compile_definitions(MNOGLA_HASWINMIDI)
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic -Weffc++ -fmax-errors=1")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic -Weffc++ -fmax-errors=1 -Wsuggest-override")
 
 # === MNOGLA_core ===
 # independent of both host and user app to avoid frequent recompilation.

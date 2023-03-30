@@ -108,7 +108,7 @@ class eKeyToHost {
         MOUSE_DOWN = 300,
         MOUSE_UP = 301,
         MOUSE_MOVE = 302,
-        MOUSE_SCROLL = 400,
+        MOUSE_WHEEL = 400,
         WINSIZE = 1000,
         TIMESTAMP = 2000,
         AUDIO_START = 10000,

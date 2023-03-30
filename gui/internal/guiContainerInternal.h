@@ -11,7 +11,7 @@
 #include "../../twoD/twoDMatrix.h"
 #include "../../twoD/twoDView.h"
 #include "../../uiEvtListener/ptrEvtListener.h"
-#include "../guiButton.hpp"
+#include "../guiElem.hpp"
 #include "rezoomer.hpp"
 
 namespace MNOGLA {
@@ -21,7 +21,7 @@ using ::std::shared_ptr, ::std::make_shared, ::std::string, ::std::vector, ::std
 // graphical top-level element that holds child elements e.g. buttons. Manages pan, zoom, rotation receiving ptrEvt input.
 class guiContainerInternal : public ptrEvtListener {
    public:
-    guiContainerInternal() : buttons(), view(), rez(vector<float>{0, 45, 90, 135, 180, 225, 270, 315}), rezCtrl(), dragPanZoomLastRefPtW(0.0f, 0.0f) {}
+    guiContainerInternal();
 
    protected:
 
@@ -61,7 +61,7 @@ class guiContainerInternal : public ptrEvtListener {
         uint64_t endTime;
     };
 
-    vector<shared_ptr<guiElem>> buttons;
+    vector<shared_ptr<guiElem>> elems;
     twoDView view;
     // open state allows adding / editing content. Render in closed state.
     bool isOpen = true;

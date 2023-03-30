@@ -35,11 +35,11 @@ bool rawMouseEvtListener::feedEvtMouse(size_t n, int32_t* buf) {
             evtMouseRaw_move(x, y);
             return true;
         }
-        case MNOGLA::eKeyToHost::MOUSE_SCROLL: {
+        case MNOGLA::eKeyToHost::MOUSE_WHEEL: {
             assert(n == 2 + 1 /*nArgs + key*/);
             int32_t deltaX = buf[1];
             int32_t deltaY = buf[2];
-            evtMouseRaw_scroll(deltaX, deltaY);
+            evtMouseRaw_wheel(deltaX, deltaY);
             return true;
         }
         default:

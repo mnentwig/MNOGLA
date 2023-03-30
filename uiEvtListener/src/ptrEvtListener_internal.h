@@ -11,12 +11,12 @@ namespace MNOGLA {
 class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtListener {
    public:
     ptrEvtListener_internal();
-    void evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) final;
-    void evtTouchRaw_up(int32_t ptrNum, int32_t nRemainingPointers) final;
-    void evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) final;
-    void evtMouseRaw_down(int32_t bnum) final;
-    void evtMouseRaw_up(int32_t bnum) final;
-    void evtMouseRaw_move(int32_t x, int32_t y) final;
+    virtual void evtTouchRaw_down(int32_t ptrNum, int32_t x, int32_t y) final override;
+    virtual void evtTouchRaw_up(int32_t ptrNum, int32_t nRemainingPointers) final override;
+    virtual void evtTouchRaw_move(int32_t ptrNum, int32_t x, int32_t y) final override;
+    virtual void evtMouseRaw_down(int32_t bnum) final override;
+    virtual void evtMouseRaw_up(int32_t bnum) final override;
+    virtual void evtMouseRaw_move(int32_t x, int32_t y) final override;
 
     // return true if hitting something "clickable" (disables drag detection within config.clickRadius_pixels)
     virtual bool evtPtr_preClick(const ::glm::vec2& ptNorm) { return false; };  // implementation overrides ("internal" version needed to call it from here)

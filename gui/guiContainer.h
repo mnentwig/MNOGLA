@@ -11,7 +11,7 @@
 #include "../twoD/twoDMatrix.h"
 #include "../twoD/twoDView.h"
 #include "../uiEvtListener/ptrEvtListener.h"
-#include "guiButton.hpp"
+#include "guiElem.hpp"
 #include "internal/guiContainerInternal.h"
 #include "internal/rezoomer.hpp"
 
@@ -23,22 +23,21 @@ using ::std::shared_ptr, ::std::make_shared, ::std::string, ::std::vector, ::std
 class guiContainer : public guiContainerInternal {
    public:
     guiContainer();
-    void render();
-    shared_ptr<guiButton> button(int32_t x, int32_t y, int w, int h, const string& text);
 
-    void autoscale();
-
-    bool evtPtr_preClick(const vec2& ptNorm);
-    void evtPtr_secondary(const vec2& ptNorm);
-    void evtPtr_confirmClick(const vec2& ptNorm);
-    void evtPtr_cancelClick();
-    void evtPtr_drag(const vec2& deltaNorm);
-    void evtMouseRaw_scroll(int32_t deltaX, int32_t deltaY);
-    void evtPtr_twoPtrDrag(const vec2& pt1start_NDC, const vec2& pt1stop_NDC,
-                           const vec2& pt2start_NDC, const vec2& pt2stop_NDC);
-    void evtPtr_dragPanZoomEnds();
-
+    void addElem(shared_ptr<guiElem> e);
     void unfreeze();
     void freeze();
+    void autoscale();
+    void render();
+
+    virtual bool evtPtr_preClick(const vec2& ptNorm) override;
+    virtual void evtPtr_secondary(const vec2& ptNorm) override;
+    virtual void evtPtr_confirmClick(const vec2& ptNorm) override;
+    virtual void evtPtr_cancelClick() override;
+    virtual void evtPtr_drag(const vec2& deltaNorm) override;
+    virtual void evtMouseRaw_wheel(int32_t deltaX, int32_t deltaY) override;
+    virtual void evtPtr_twoPtrDrag(const vec2& pt1start_NDC, const vec2& pt1stop_NDC,
+                                   const vec2& pt2start_NDC, const vec2& pt2stop_NDC) override;
+    virtual void evtPtr_dragPanZoomEnds() override;
 };
 }  // namespace MNOGLA

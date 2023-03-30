@@ -41,7 +41,7 @@ void guiContainer::unfreeze() {
 void guiContainer::freeze() {
     isOpen = false;
     rez.clearPts();
-    for (const auto& b : buttons)
+    for (const auto& b : elems)
         rez.enterItem(b);
 }
 void guiContainer::render() {
@@ -52,14 +52,11 @@ void guiContainer::render() {
     if (rezCtrl.eval(rescaleInterp))
         view.setWorld2screen(rez.getResult(rescaleInterp));
 
-    for (auto b : buttons)
+    for (auto b : elems)
         b->render(view);
 }
-shared_ptr<guiButton> guiContainer::button(int32_t x, int32_t y, int w, int h, const string& text) {
-    if (!isOpen) throw runtime_error("guiContainer child creation in closed state. Must open() first");
-    shared_ptr<guiButton> b = ::std::make_shared<guiButton>(x, y, w, h, text);
-    buttons.push_back(b);
-    return b;
+void guiContainer::addElem(shared_ptr<guiElem> e) {
+    elems.push_back(e);
 }
 
 void guiContainer::autoscale() {
@@ -81,7 +78,7 @@ void guiContainer::autoscale() {
         vec2 maxPt = vec2(-::std::numeric_limits<float>::infinity(), -::std::numeric_limits<float>::infinity());
 
     } autoscaler;
-    for (auto b : buttons)
+    for (auto b : elems)
         autoscaler.enterItem(b);
 
     const vec2 wh = autoscaler.getWh();
@@ -92,26 +89,26 @@ bool guiContainer::evtPtr_preClick(const vec2& ptNorm) {
     logI("pre-click %f %f", ptNorm.x, ptNorm.y);
     vec2 ptWorld = view.getScreen2world() * vec3(ptNorm, 1.0f);
     bool anyHit = false;
-    for (auto b : buttons)
+    for (auto b : elems)
         anyHit |= b->evtPtr_preClick(ptWorld);
     return anyHit;
 }
 
 void guiContainer::evtPtr_secondary(const vec2& ptNorm) {
     logI("secondary click %f %f", ptNorm.x, ptNorm.y);
-    for (auto b : buttons)
+    for (auto b : elems)
         b->evtPtr_cancelClick();
 }
 
 void guiContainer::evtPtr_confirmClick(const vec2& ptNorm) {
     logI("confirm click %f %f", ptNorm.x, ptNorm.y);
     vec2 ptWorld = view.getScreen2world() * vec3(ptNorm, 1.0f);
-    for (auto b : buttons)
+    for (auto b : elems)
         b->evtPtr_confirmClick(ptWorld);
 }
 
 void guiContainer::evtPtr_cancelClick() {
-    for (auto b : buttons)
+    for (auto b : elems)
         b->evtPtr_cancelClick();
 }
 
@@ -124,7 +121,7 @@ void guiContainer::evtPtr_drag(const vec2& deltaNorm) {
     // no dragPanZoomLastRefPt but it shouldn't matter for translation only
 }
 
-void guiContainer::evtMouseRaw_scroll(int32_t deltaX, int32_t deltaY) {
+void guiContainer::evtMouseRaw_wheel(int32_t deltaX, int32_t deltaY) {
     vec2 mousePosW = view.getScreen2world() * vec3(getLastMouseNormalized(), 1.0f);
     mat3 m = view.getWorld2screen();
     m = m * twoDMatrix::translate(mousePosW);
@@ -168,5 +165,10 @@ void guiContainer::evtPtr_dragPanZoomEnds() {
     // prepare animation zooming towards optimized screen position (if no correction, this is a dummy animation)
     rezCtrl.start(/*nanoseconds*/ (uint64_t)(config.rescaleTime_ms * 1e6));
 };
+
+// =========================================================
+// guiContainerInternal
+// =========================================================
+guiContainerInternal::guiContainerInternal() : elems(), view(), rez(vector<float>{0, 45, 90, 135, 180, 225, 270, 315}), rezCtrl(), dragPanZoomLastRefPtW(0.0f, 0.0f) {}
 
 }  // namespace MNOGLA
