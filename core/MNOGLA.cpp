@@ -17,6 +17,7 @@ static std::mutex m;
 static size_t readPtr = 0;
 logFun_t logI = nullptr;
 logFun_t logE = nullptr;
+fopenAsset_t fopenAsset = nullptr;
 std::chrono::time_point<std::chrono::high_resolution_clock> appStartTime;
 typedef union {
     uint64_t timestamp;
@@ -106,10 +107,11 @@ size_t evtGetHostToApp(int32_t* dest) {
     }
 }
 
-void coreInit(logFun_t _logI, logFun_t _logE) {
+void coreInit(logFun_t _logI, logFun_t _logE, fopenAsset_t _fopenAsset) {
     lastTimestamp_nanosecs = 0;  // delta to appStartTime
     logI = _logI;
     logE = _logE;
+    fopenAsset = _fopenAsset;
 
 #ifdef MNOGLA_WINDOWS
     // Windows version uses GLEW to load openGl libraries but this requires initialization

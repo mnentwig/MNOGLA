@@ -3,6 +3,7 @@ package com.android.MNOGLAJNI;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.media.midi.MidiDevice;
 import android.media.midi.MidiDeviceInfo;
 import android.media.midi.MidiManager;
@@ -35,10 +36,16 @@ public class MNOGLAActivity extends Activity {
 
 
     MNOGLAView mView;
-
+    private AssetManager mgr; // store to prevent garbage collection
     @Override
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+
+        // === initialize asset manager ===
+        mgr = getResources().getAssets();
+        MNOGLALIB.setAssetMgr(mgr);
+
+        // === initialize MIDI ===
         myMidiReceiver r = new myMidiReceiver();
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI)) {
             MidiManager m = (MidiManager) getSystemService(Context.MIDI_SERVICE);

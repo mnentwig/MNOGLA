@@ -77,6 +77,11 @@ void logE_impl(const char* format, ...) {
     va_end(args);
 }
 
+// caller casts return value back to FILE*
+void* fopenAsset_impl(const char* fname, const char* mode) {
+    return (void*)fopen(fname, mode);
+}
+
 #ifdef MNOGLA_HASWINMIDI
 void CALLBACK midiCallback(HMIDIIN handle, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2) {
     if (uMsg == MIM_DATA) {
@@ -127,7 +132,7 @@ int main(int argc, char** argv) {
     glfwMakeContextCurrent(window);
     if (1 || glfwExtensionSupported("WGL_EXT_swap_control_tear") || glfwExtensionSupported("GLX_EXT_swap_control_tear")) {
         // glfwSwapInterval(0); // render full speed
-        glfwSwapInterval(1); // vsync enabled
+        glfwSwapInterval(1);  // vsync enabled
     }
     glfwSetWindowSizeCallback(window, window_size_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
@@ -136,7 +141,7 @@ int main(int argc, char** argv) {
     //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // === host-independent startup ===
-    MNOGLA::coreInit(logI_impl, logE_impl);
+    MNOGLA::coreInit(logI_impl, logE_impl, fopenAsset_impl);
 
     // === application startup (no GL context) ===
     // note: application could signal back startup options for openGl

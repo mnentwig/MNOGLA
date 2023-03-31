@@ -1,9 +1,45 @@
 #include <android/log.h>
 #include <jni.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 #include "../../../../../MNOGLA.h"
 #include <utility> // std::move
+#include <errno.h> // EACCES
+#include <stdexcept>
 
 #define LOG_TAG "MNOGLA_host"
+
+// =========================================================================================
+// === asset manager file access ===
+// =========================================================================================
+AAssetManager *myAssetManager = nullptr;
+
+static int android_read(void *cookie, char *buf, int size) {
+    return AAsset_read((AAsset *) cookie, buf, size);
+}
+
+static int android_write(void *cookie, const char *buf, int size) {
+    return EACCES; // cannot write to apk
+}
+
+static fpos_t android_seek(void *cookie, fpos_t offset, int whence) {
+    return AAsset_seek((AAsset *) cookie, offset, whence);
+}
+
+static int android_close(void *cookie) {
+    AAsset_close((AAsset *) cookie);
+    return 0;
+}
+
+// http://www.50ply.com/blog/2013/01/19/loading-compressed-android-assets-with-file-pointer/
+void *android_fopen(const char *fname, const char *mode) {
+    if (mode[0] == 'w') return NULL;
+    if (!myAssetManager) throw std::runtime_error("assetManager not initialized");
+    AAsset *asset = AAssetManager_open(myAssetManager, fname, 0);
+    if (!asset) return NULL;
+
+    return (void *) funopen(asset, android_read, android_write, android_seek, android_close);
+}
 
 // =========================================================================================
 // RAII execution of (cleanup) code, from GSL
@@ -146,7 +182,7 @@ extern "C" [[maybe_unused]] JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_init(JNIEnv * /*env*/,
                                           jclass) {
     audio::start();
-    MNOGLA::coreInit(host_logI, host_logE);
+    MNOGLA::coreInit(host_logI, host_logE, android_fopen);
     MNOGLA_userInit();
 }
 
@@ -171,13 +207,31 @@ Java_com_android_MNOGLAJNI_MNOGLALIB_evt3(JNIEnv *, jclass, int32_t key, int32_t
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_midiCb(JNIEnv *, jclass, jint v1, jint v2, jint v3) {
-    #ifdef MNOGLA_HASMIDI
+#ifdef MNOGLA_HASMIDI
     MNOGLA_midiCbT2(v1, v2, v3);
-    #endif
+#endif
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_android_MNOGLAJNI_MNOGLALIB_initGlContext(JNIEnv *env, jclass clazz) {
     MNOGLA::coreInitGlContext();
     MNOGLA_initGlContext();
+#if 0
+    FILE* f = (FILE*)android_fopen("myFile.txt", "r");
+    if (!f) MNOGLA::logE("failed to open 6");//throw std::runtime_error("failed to open my file");
+
+    char buf[256];
+    int n = fread(buf, 1, sizeof(buf), f);
+    buf[n + 1] = 0;
+    MNOGLA::logE("%i %s", n, buf);//throw std::runtime_error("failed to open my file");
+
+    return;
+#endif
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_android_MNOGLAJNI_MNOGLALIB_setAssetMgr(JNIEnv *env, jclass clazz, jobject mgr) {
+    myAssetManager = AAssetManager_fromJava(env, mgr);
+    if (!myAssetManager) throw std::runtime_error("failed to initialize assetManager");
 }
