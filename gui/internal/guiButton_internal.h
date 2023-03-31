@@ -49,7 +49,7 @@ class guiButton_internal : public guiElem {
                                  : true;
     }
 
-    int32_t x;
+    int32_t x; // TBD: use vec2 (float)
     int32_t y;
     int32_t w;
     int32_t h;
