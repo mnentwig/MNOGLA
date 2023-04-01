@@ -1,6 +1,11 @@
 #pragma once
 #include <cstddef>  // std::size_t on Android
 #include <cstdint>
+#ifdef MNOGLA_HAS_FREETYPE
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#endif
+
 using std::size_t;
 
 // === user code must implement those: ===
@@ -24,7 +29,11 @@ typedef void (*logFun_t)(const char* format, ...);
 //* host-provided logging functions are accessible in those global variables */
 extern logFun_t logI;
 extern logFun_t logE;
-typedef void* (*fopenAsset_t)(const char* fname, const char* mode); // cast return value to FILE* (not including cstdio here)
+#ifdef MNOGLA_HAS_FREETYPE
+extern FT_Library freetypeLib;
+#endif
+
+typedef void* (*fopenAsset_t)(const char* fname, const char* mode);  // cast return value to FILE* (not including cstdio here)
 extern fopenAsset_t fopenAsset;
 // argv[0] from int main(int argc, const char** argv);
 extern const char* mainArg0;

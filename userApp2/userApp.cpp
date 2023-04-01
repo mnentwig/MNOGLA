@@ -10,6 +10,8 @@
 #include "../gui/guiButton.hpp"
 #include "../gui/guiContainer.h"
 #include "../twoD/twoDView.h"
+// #include "multilineText.hpp"
+
 using std::runtime_error;
 
 const bool trace = false;
@@ -22,6 +24,8 @@ class myAppState_t {
             b->setClickCallback([ix]() { MNOGLA::logI("hello I am button %i", ix); });
             pGui->addElem(b);
         }
+        //auto m = ::std::make_shared<MNOGLA::multilineText>(::glm::vec2(10, 10), 13, "hello bla!");
+        //pGui->addElem(m);
         pGui->freeze();
     }
     void eventDispatcher();

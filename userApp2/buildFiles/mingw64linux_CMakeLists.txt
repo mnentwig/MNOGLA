@@ -8,6 +8,8 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MINGW")
 #  add_compile_definitions(MNOGLA_HASWINMIDI)
 endif()
 
+set(MNOGLA_HAS_FREETYPE true)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic -Weffc++ -fmax-errors=1")
 
 # === MNOGLA_core ===
@@ -36,15 +38,59 @@ else()
 )
 endif()
 
+# === MNOGLA_freetype ===
+if (MNOGLA_HAS_FREETYPE)
+  add_compile_definitions(MNOGLA_HAS_FREETYPE)
+  include_directories(SYSTEM PRIVATE ../freetype-VER-2-13-0/include)
+  # independent of both host and user app to avoid frequent recompilation.
+  add_library(MNOGLA_freetype STATIC
+    ../freetype-VER-2-13-0/src/base/ftsystem.c
+        ../freetype-VER-2-13-0/src/base/ftinit.c
+        ../freetype-VER-2-13-0/src/base/ftdebug.c
+        ../freetype-VER-2-13-0/src/base/ftbase.c
+        ../freetype-VER-2-13-0/src/base/ftbbox.c
+        ../freetype-VER-2-13-0/src/base/ftglyph.c
+        ../freetype-VER-2-13-0/src/base/ftbdf.c
+        ../freetype-VER-2-13-0/src/base/ftbitmap.c
+        ../freetype-VER-2-13-0/src/base/ftcid.c
+        ../freetype-VER-2-13-0/src/base/ftfstype.c
+        ../freetype-VER-2-13-0/src/base/ftgasp.c
+        ../freetype-VER-2-13-0/src/base/ftgxval.c
+        ../freetype-VER-2-13-0/src/base/ftmm.c
+        ../freetype-VER-2-13-0/src/base/ftotval.c
+        ../freetype-VER-2-13-0/src/base/ftpatent.c
+        ../freetype-VER-2-13-0/src/base/ftpfr.c
+        ../freetype-VER-2-13-0/src/base/ftstroke.c
+        ../freetype-VER-2-13-0/src/base/ftsynth.c
+        ../freetype-VER-2-13-0/src/base/fttype1.c
+        ../freetype-VER-2-13-0/src/base/ftwinfnt.c
+        ../freetype-VER-2-13-0/src/sfnt/sfnt.c
+        ../freetype-VER-2-13-0/src/truetype/truetype.c
+        ../freetype-VER-2-13-0/src/raster/raster.c
+        ../freetype-VER-2-13-0/src/autofit/autofit.c
+        ../freetype-VER-2-13-0/src/gzip/ftgzip.c
+      )
+
+  target_include_directories(MNOGLA_freetype SYSTEM PRIVATE ../freetype-VER-2-13-0/include)
+  target_compile_definitions(MNOGLA_freetype PUBLIC FT2_BUILD_LIBRARY)
+  target_link_libraries(MNOGLA_freetype
+    -static
+    stdc++
+  )
+endif()
+
+
 # === user application ===
 # links to above MNOGLA_core
 add_library(userApp STATIC
             ../userApp2/userApp.cpp
 )
+target_include_directories(userApp SYSTEM PRIVATE ../freetype-VER-2-13-0/include)
 
 target_link_libraries(userApp
       -static
       MNOGLA_core
+      MNOGLA_freetype
 )
 
 # === host ===

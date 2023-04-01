@@ -10,13 +10,19 @@
 #include "../core/MNOGLA_includeGl.h"
 #include "MNOGLA_util.h"
 using std::runtime_error;
+#include <cstdio>  // FILE
 #include <iostream>
+
 namespace MNOGLA {
 static std::vector<int32_t> evtQueue;
 static std::mutex m;
 static size_t readPtr = 0;
 logFun_t logI = nullptr;
 logFun_t logE = nullptr;
+#ifdef MNOGLA_HAS_FREETYPE
+FT_Library freetypeLib;
+#endif
+
 fopenAsset_t fopenAsset = nullptr;
 std::chrono::time_point<std::chrono::high_resolution_clock> appStartTime;
 typedef union {
@@ -107,11 +113,43 @@ size_t evtGetHostToApp(int32_t* dest) {
     }
 }
 
+static bool loadAsset(const char* fname, char** data, size_t* nBytes) {
+    FILE* h = (FILE*)fopenAsset(fname, "rb");
+    if (!h) return false;
+    char buf[65536];
+    *data = nullptr;
+    *nBytes = 0;
+    while (true) {
+        size_t nChunk = fread(buf, 1, sizeof(buf), h);
+        *data = (char*)realloc(*data, *nBytes + ::std::max(nChunk, (size_t)1));  // empty file returns 1 byte dummy buffer (realloc does not permit zero size)
+        memcpy(*data + *nBytes, buf, nChunk);
+        *nBytes += nChunk;
+        if (!nChunk) return true;
+    }
+}
+
+#ifdef MNOGLA_HAS_FREETYPE
+static void loadFreetypeDefaultFont() {
+    char* fontdata;
+    size_t nFontBytes;
+    if (!loadAsset("NotoSans-Regular.ttf", &fontdata, &nFontBytes))
+        throw runtime_error("failed to load default font");
+//                if (FT_New_Memory_Face(
+
+    free(fontdata);
+}
+#endif
+
 void coreInit(logFun_t _logI, logFun_t _logE, fopenAsset_t _fopenAsset) {
     lastTimestamp_nanosecs = 0;  // delta to appStartTime
     logI = _logI;
     logE = _logE;
     fopenAsset = _fopenAsset;
+
+#ifdef MNOGLA_HAS_FREETYPE
+    if (FT_Init_FreeType(&freetypeLib)) throw runtime_error("FT_Init_FreeType failed");
+    loadFreetypeDefaultFont();
+#endif
 
 #ifdef MNOGLA_WINDOWS
     // Windows version uses GLEW to load openGl libraries but this requires initialization

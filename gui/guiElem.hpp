@@ -11,11 +11,11 @@ namespace MNOGLA {
 using ::glm::vec2, ::std::vector;
 
 class guiElem : public guiElem_internal {
-    public:
+   public:
     virtual vector<vec2> getPts() const = 0;
-    virtual bool evtPtr_preClick(const vec2& pt) = 0;
-    virtual void evtPtr_cancelClick() = 0;
-    virtual void evtPtr_confirmClick(const vec2& pt) = 0;
+    virtual bool evtPtr_preClick(const vec2& pt) { return false; };
+    virtual void evtPtr_cancelClick(){};
+    virtual void evtPtr_confirmClick(const vec2& pt){};
     virtual void render(MNOGLA::twoDView& v) = 0;
 };
 }  // namespace MNOGLA
