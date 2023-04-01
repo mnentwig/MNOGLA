@@ -11,8 +11,8 @@
 #include "MNOGLA_util.h"
 using std::runtime_error;
 #include <cstdio>  // FILE
+#include <filesystem>
 #include <iostream>
-
 namespace MNOGLA {
 static std::vector<int32_t> evtQueue;
 static std::mutex m;
@@ -114,7 +114,14 @@ size_t evtGetHostToApp(int32_t* dest) {
 }
 
 static bool loadAsset(const char* fname, char** data, size_t* nBytes) {
-    FILE* h = (FILE*)fopenAsset(fname, "rb");
+    if (MNOGLA::mainArg0 == nullptr)
+        throw runtime_error("need executable location for resource file path");
+
+    // resource files are expected to be copied into build folder, where the executable resides
+    // e.g. use cmake "configure_file(../../mySourceFolder/mySource.ods myDest.ods COPYONLY)"
+    ::std::filesystem::path p(MNOGLA::mainArg0);
+    p.replace_filename(fname);
+    FILE* h = (FILE*)fopenAsset(p.string().c_str(), "rb");
     if (!h) return false;
     char buf[65536];
     *data = nullptr;
@@ -134,7 +141,7 @@ static void loadFreetypeDefaultFont() {
     size_t nFontBytes;
     if (!loadAsset("NotoSans-Regular.ttf", &fontdata, &nFontBytes))
         throw runtime_error("failed to load default font");
-//                if (FT_New_Memory_Face(
+    //                if (FT_New_Memory_Face(
 
     free(fontdata);
 }

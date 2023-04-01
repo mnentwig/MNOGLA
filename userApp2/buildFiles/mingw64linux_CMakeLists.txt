@@ -78,6 +78,8 @@ if (MNOGLA_HAS_FREETYPE)
     -static
     stdc++
   )
+  file(COPY "../3rdPartyLicense/Noto_Sans/NotoSans-Regular.ttf"
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 
