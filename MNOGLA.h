@@ -66,6 +66,9 @@ size_t evtGetHostToApp(int32_t* dest);
 // - render callback sends an own timestamp, which becomes visible after running the event loop empty
 extern uint64_t lastTimestamp_nanosecs;
 
+// returns contents of asset file (true = success). Caller free()s *data.
+bool loadAsset(const char* fname, char** data, size_t* nBytes);
+
 // ############################################################
 // host-to-app events
 // ############################################################

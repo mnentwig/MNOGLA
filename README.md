@@ -41,9 +41,9 @@ See "unpack.sh" in 3rdPartyLicense folder. Note that to some extent libraries ar
 Library sources are unpacked in 3rdPartyLicense, and include paths should be set to point here.
 
 ### switching userApp
-The build system supports multiple applications by switching out the CMakeLists.txt file in the respective host folder. See userApp2/switchToApp.sh.
+Multiple applications can be built by switching out the CMakeLists.txt file in the respective host folder. See userApp2/switchToApp.sh.
 
-Long-term, CMakeLists.txt should be rewritten to build more conventionally from a userApp folder.
+This allows maintaining a single Android-studio project for any number of userApps.
 
 ### Architecture diagram
 ![architecture diagram](doc/architecture.png)

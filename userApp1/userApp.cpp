@@ -7,6 +7,7 @@
 
 #include "../MNOGLA.h"
 #include "../core/MNOGLA_util.h"
+#include "../gui/guiButton.hpp"
 #include "../gui/guiContainer.h"
 #include "../twoD/twoDView.h"
 #include "synth/audiobook.hpp"
@@ -16,25 +17,11 @@ const bool trace = false;
 class myAppState_t {
    public:
     myAppState_t() : view(), appW(-1), appH(-1) {
-        auto gVertexShader =
-            "attribute vec4 vPosition;\n"
-            "void main() {\n"
-            "  gl_Position = vPosition;\n"
-            "}\n";
-
-        auto gFragmentShader =
-            "precision mediump float;\n"
-            "void main() {\n"
-            "  gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n"
-            "}\n";
-        gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
-        gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
-        MNOGLA::checkGlError("glGetAttribLocation");
-
         pGui = std::make_shared<MNOGLA::guiContainer>();
         for (int ix = 3; ix < 13; ++ix) {
-            auto b = pGui->button(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
+            auto b = ::std::make_shared<MNOGLA::guiButton>(10, 50 * ix, 500, 45, "hello" + std::to_string(ix));
             b->setClickCallback([ix]() { MNOGLA::logI("hello I am button %i", ix); });
+            pGui->addElem(b);
         }
         pGui->freeze();
 
@@ -52,6 +39,24 @@ class myAppState_t {
             steps.push_back(12 * oct + basenote + 7);
             steps.push_back(12 * oct + basenote + 3);
         }
+    }
+
+    // runs on startup and when glContext is re-acquired e.g. Android wakes from sleep and GPU mem was wiped
+    void initGlContext() {
+        auto gVertexShader =
+            "attribute vec4 vPosition;\n"
+            "void main() {\n"
+            "  gl_Position = vPosition;\n"
+            "}\n";
+
+        auto gFragmentShader =
+            "precision mediump float;\n"
+            "void main() {\n"
+            "  gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);\n"
+            "}\n";
+        gProgram = MNOGLA::createProgram(gVertexShader, gFragmentShader);
+        gvPositionHandle = glGetAttribLocation(gProgram, "vPosition");
+        MNOGLA::checkGlError("glGetAttribLocation");
     }
     void eventDispatcher();
     void render();
@@ -188,20 +193,21 @@ void myAppState_t::render() {
     pGui->render();
 }
 
-std::shared_ptr<myAppState_t> myAppState;
-void MNOGLA_userInit(int w, int h) {
+std::shared_ptr<myAppState_t> myAppState = nullptr;
+void MNOGLA_userInit() {
     myAppState = std::make_shared<myAppState_t>();
     MNOGLA::logI("user init");
+}
 
-    // defer handling the initial size to the resize handler by creating an event
-    MNOGLA::evtSubmitHostToApp(MNOGLA::eKeyToHost::WINSIZE, 2, (int32_t)w, (int32_t)h);
-
+void MNOGLA_initGlContext() {
     glEnable(GL_DEPTH_TEST);
     MNOGLA::checkGlError("gldepthtest");
     glEnable(GL_BLEND);
     MNOGLA::checkGlError("glblend");
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     MNOGLA::checkGlError("glblendfun");
+    if (!myAppState) throw runtime_error("initGlContext before userInit");
+    myAppState->initGlContext();
 }
 
 static const GLfloat gTriangleVertices[] = {0.0f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f};

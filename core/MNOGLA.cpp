@@ -113,7 +113,7 @@ size_t evtGetHostToApp(int32_t* dest) {
     }
 }
 
-static bool loadAsset(const char* fname, char** data, size_t* nBytes) {
+bool loadAsset(const char* fname, char** data, size_t* nBytes) {
     if (MNOGLA::mainArg0 == nullptr)
         throw runtime_error("need executable location for resource file path");
 
