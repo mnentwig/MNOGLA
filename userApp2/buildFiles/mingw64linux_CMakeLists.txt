@@ -39,36 +39,37 @@ else()
 endif()
 
 # === MNOGLA_freetype ===
+# 3rd party library
 if (MNOGLA_HAS_FREETYPE)
+  set(FT "../3rdPartyLicense/freetype-VER-2-13-0/")
   add_compile_definitions(MNOGLA_HAS_FREETYPE)
-  include_directories(SYSTEM PRIVATE ../freetype-VER-2-13-0/include)
-  # independent of both host and user app to avoid frequent recompilation.
+  include_directories(SYSTEM PRIVATE ${FT}/include)
   add_library(MNOGLA_freetype STATIC
-    ../freetype-VER-2-13-0/src/base/ftsystem.c
-        ../freetype-VER-2-13-0/src/base/ftinit.c
-        ../freetype-VER-2-13-0/src/base/ftdebug.c
-        ../freetype-VER-2-13-0/src/base/ftbase.c
-        ../freetype-VER-2-13-0/src/base/ftbbox.c
-        ../freetype-VER-2-13-0/src/base/ftglyph.c
-        ../freetype-VER-2-13-0/src/base/ftbdf.c
-        ../freetype-VER-2-13-0/src/base/ftbitmap.c
-        ../freetype-VER-2-13-0/src/base/ftcid.c
-        ../freetype-VER-2-13-0/src/base/ftfstype.c
-        ../freetype-VER-2-13-0/src/base/ftgasp.c
-        ../freetype-VER-2-13-0/src/base/ftgxval.c
-        ../freetype-VER-2-13-0/src/base/ftmm.c
-        ../freetype-VER-2-13-0/src/base/ftotval.c
-        ../freetype-VER-2-13-0/src/base/ftpatent.c
-        ../freetype-VER-2-13-0/src/base/ftpfr.c
-        ../freetype-VER-2-13-0/src/base/ftstroke.c
-        ../freetype-VER-2-13-0/src/base/ftsynth.c
-        ../freetype-VER-2-13-0/src/base/fttype1.c
-        ../freetype-VER-2-13-0/src/base/ftwinfnt.c
-        ../freetype-VER-2-13-0/src/sfnt/sfnt.c
-        ../freetype-VER-2-13-0/src/truetype/truetype.c
-        ../freetype-VER-2-13-0/src/raster/raster.c
-        ../freetype-VER-2-13-0/src/autofit/autofit.c
-        ../freetype-VER-2-13-0/src/gzip/ftgzip.c
+    ${FT}/src/base/ftsystem.c
+    ${FT}/src/base/ftinit.c
+    ${FT}/src/base/ftdebug.c
+    ${FT}/src/base/ftbase.c
+    ${FT}/src/base/ftbbox.c
+    ${FT}/src/base/ftglyph.c
+    ${FT}/src/base/ftbdf.c
+    ${FT}/src/base/ftbitmap.c
+    ${FT}/src/base/ftcid.c
+    ${FT}/src/base/ftfstype.c
+    ${FT}/src/base/ftgasp.c
+    ${FT}/src/base/ftgxval.c
+    ${FT}/src/base/ftmm.c
+    ${FT}/src/base/ftotval.c
+    ${FT}/src/base/ftpatent.c
+    ${FT}/src/base/ftpfr.c
+    ${FT}/src/base/ftstroke.c
+    ${FT}/src/base/ftsynth.c
+    ${FT}/src/base/fttype1.c
+    ${FT}/src/base/ftwinfnt.c
+    ${FT}/src/sfnt/sfnt.c
+    ${FT}/src/truetype/truetype.c
+    ${FT}/src/raster/raster.c
+    ${FT}/src/autofit/autofit.c
+    ${FT}/src/gzip/ftgzip.c
       )
 
   target_include_directories(MNOGLA_freetype SYSTEM PRIVATE ../freetype-VER-2-13-0/include)
