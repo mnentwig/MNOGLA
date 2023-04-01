@@ -9,3 +9,4 @@ host_mingw64linux/build/
 *.a
 *.so
 host_AndroidStudio/app/src/main/cpp/glm/
+host_AndroidStudio/app/src/main/assets/NotoSans-Regular.ttf

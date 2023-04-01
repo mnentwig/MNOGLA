@@ -37,7 +37,7 @@ class ptrEvtListener_internal : public rawMouseEvtListener, public rawTouchEvtLi
     float aspectRatio;
 
     class multitouchPtr;
-    typedef std::shared_ptr<multitouchPtr> pMultitouchPtr_t;
+    typedef ::std::shared_ptr<multitouchPtr> pMultitouchPtr_t;
 
     // multitouch pointers by arbitrary (host-assigned) index
     ::std::map<int32_t, pMultitouchPtr_t> pointers;

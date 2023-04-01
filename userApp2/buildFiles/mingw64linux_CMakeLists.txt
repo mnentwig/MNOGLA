@@ -8,9 +8,12 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MINGW")
 #  add_compile_definitions(MNOGLA_HASWINMIDI)
 endif()
 
-set(MNOGLA_HAS_FREETYPE true)
+set(MNOGLA_HAS_FREETYPE true) # enable optional freetype support 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -pedantic -Weffc++ -fmax-errors=1")
+
+# === GLM include ===
+include_directories(SYSTEM PRIVATE 3rdPartyLicense/glm-master/include)
 
 # === MNOGLA_core ===
 # independent of both host and user app to avoid frequent recompilation.
@@ -27,7 +30,7 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "^MINGW")
     gdi32       # for glfw3
     opengl32 
     stdc++
-    )
+  )
   add_compile_definitions(MNOGLA_WINDOWS)
 else()
   target_link_libraries(MNOGLA_core
@@ -35,6 +38,13 @@ else()
     GL
     glfw
     stdc++
+  )
+endif()
+
+if (MNOGLA_HAS_FREETYPE)
+  target_link_libraries(MNOGLA_core
+    -static
+    MNOGLA_freetype
 )
 endif()
 
@@ -78,6 +88,7 @@ if (MNOGLA_HAS_FREETYPE)
     -static
     stdc++
   )
+
   file(COPY "../3rdPartyLicense/Noto_Sans/NotoSans-Regular.ttf"
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()
@@ -93,7 +104,6 @@ target_include_directories(userApp SYSTEM PRIVATE ../freetype-VER-2-13-0/include
 target_link_libraries(userApp
       -static
       MNOGLA_core
-      MNOGLA_freetype
 )
 
 # === host ===

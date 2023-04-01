@@ -114,14 +114,16 @@ size_t evtGetHostToApp(int32_t* dest) {
 }
 
 bool loadAsset(const char* fname, char** data, size_t* nBytes) {
-    if (MNOGLA::mainArg0 == nullptr)
-        throw runtime_error("need executable location for resource file path");
-
-    // resource files are expected to be copied into build folder, where the executable resides
-    // e.g. use cmake "configure_file(../../mySourceFolder/mySource.ods myDest.ods COPYONLY)"
-    ::std::filesystem::path p(MNOGLA::mainArg0);
-    p.replace_filename(fname);
-    FILE* h = (FILE*)fopenAsset(p.string().c_str(), "rb");
+    FILE* h;
+    if (MNOGLA::mainArg0 == nullptr) {
+        h = (FILE*)fopenAsset(fname, "rb");  // android
+    } else {
+        // resource files are expected to be copied into build folder, where the executable resides
+        // e.g. use cmake "configure_file(../../mySourceFolder/mySource.ods myDest.ods COPYONLY)"
+        ::std::filesystem::path p(MNOGLA::mainArg0);
+        p.replace_filename(fname);
+        h = (FILE*)fopenAsset(p.string().c_str(), "rb");
+    }
     if (!h) return false;
     char buf[65536];
     *data = nullptr;

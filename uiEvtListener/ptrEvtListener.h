@@ -15,16 +15,16 @@ class ptrEvtListener : protected ptrEvtListener_internal {
     // feed MNOGA events. True if implemented (app may choose to skip further processing)
     bool feedEvtPtr(size_t n, int32_t* buf);
     // ptr went down. Return true if it hit something clickable.
-    virtual bool evtPtr_preClick(::glm::vec2 xy) { return false; };  // implementation overrides
+    bool evtPtr_preClick(const ::glm::vec2& ptNorm) override { return false; };  // implementation overrides
     // ptr went up without dragging too far
-    virtual void evtPtr_confirmClick(::glm::vec2 xy){};  // implementation overrides
+    void evtPtr_confirmClick(const ::glm::vec2& ptNorm) override{};  // implementation overrides
     // ptr moved too far from down location
     void evtPtr_cancelClick() override{};  // implementation overrides
     // RMB or long press (TBD)
-    virtual void evtPtr_secondary(::glm::vec2 xy){};                    // implementation overrides
+    void evtPtr_secondary(const ::glm::vec2& xy) override{};    // implementation overrides
     void evtPtr_drag(const ::glm::vec2& deltaNorm) override{};  // implementation overrides
     void evtPtr_twoPtrDrag(const ::glm::vec2& pt1start, const ::glm::vec2& pt1stop,
-                                   const ::glm::vec2& pt2start, const ::glm::vec2& pt2stop) override{};  // implementation overrides
+                           const ::glm::vec2& pt2start, const ::glm::vec2& pt2stop) override{};  // implementation overrides
     void evtPtr_dragPanZoomEnds() override{};                                                    // implementation overrides
 
    private:
