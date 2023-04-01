@@ -7,8 +7,9 @@ A smallest-common-denominator framework for an OS-independent openGL app. Runs o
 - Android. Use Android Studio (tested: 2022.1.1)
 
 ### Windows (minGW) build
+see host_mingw64linux/mingwInstallPackages.sh. Essentially:
 ```pacman -S --needed base-devel mingw-w64-x86_64-toolchain
-pacman -S mingw-w64-x86_64-glm
+# pacman -S mingw-w64-x86_64-glm TBD moving GLM to prepackaged libraries
 pacman -S mingw-w64-x86_64-glfw
 pacman -S mingw-w64-x86_64-glew
 cd host_mingw64linux
@@ -30,7 +31,27 @@ to be updated (use CMakeLists.txt, replace glew32, glfw3, opengl32 library depen
 
 On Android, see https://github.com/android/ndk-samples/blob/main/gles3jni/app/src/main/cpp/CMakeLists.txt for possible improvements e.g. support lower versions (code is based on older gles2ini sample)
 
+### Prepackaged libraries
+Intended as "batteries-included" platform, therefore compatible versions of common, free libraries are included as archives. This 
+
+Generally, the library build (if necessary) should be implemented in the platform's CMakeLists.txt (that is, no .a/.so/.dll files are brought in externally)
+
+See "unpack.sh" in 3rdPartyLicense folder. Note that to some extent libraries are patched as needed (feature selection in freetype).
+
+Library sources are unpacked in 3rdPartyLicense, and include paths should be set to point here.
+
+### switching userApp
+The build system supports multiple applications by switching out the CMakeLists.txt file in the respective host folder. See userApp2/switchToApp.sh.
+
+Long-term, CMakeLists.txt should be rewritten to build more conventionally from a userApp folder.
+
+### Architecture diagram
 ![architecture diagram](doc/architecture.png)
+
+### Assets (readonly files)
+On Android, assets are packaged into the .apk file, using Android's package manager, via a "resources" folder. 
+
+On Windows/Linux, assets are expected at the application's location, as provided as argument 0 in main().
 
 ### Time stamps
 A time stamp is delivered for selected events (Mouse / pointer / keyboard, screen redraw. NOT audio / midi callback functions. 
