@@ -4,7 +4,7 @@
 #include <android/asset_manager_jni.h>
 #include "../../../../../MNOGLA.h"
 #include <utility> // std::move
-#include <errno.h> // EACCES
+#include <cerrno> // EACCES
 #include <stdexcept>
 
 #define LOG_TAG "MNOGLA_host"
@@ -18,7 +18,7 @@ static int android_read(void *cookie, char *buf, int size) {
     return AAsset_read((AAsset *) cookie, buf, size);
 }
 
-static int android_write(void *cookie, const char *buf, int size) {
+static int android_write(void */*cookie*/, const char */*buf*/, int /*size*/) {
     return EACCES; // cannot write to apk
 }
 
@@ -33,10 +33,10 @@ static int android_close(void *cookie) {
 
 // http://www.50ply.com/blog/2013/01/19/loading-compressed-android-assets-with-file-pointer/
 void *android_fopen(const char *fname, const char *mode) {
-    if (mode[0] == 'w') return NULL;
+    if (mode[0] == 'w') return nullptr;
     if (!myAssetManager) throw std::runtime_error("assetManager not initialized");
     AAsset *asset = AAssetManager_open(myAssetManager, fname, 0);
-    if (!asset) return NULL;
+    if (!asset) return nullptr;
 
     return (void *) funopen(asset, android_read, android_write, android_seek, android_close);
 }
