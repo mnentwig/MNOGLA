@@ -23,6 +23,7 @@ logFun_t logE = nullptr;
 #ifdef MNOGLA_HAS_FREETYPE
 FT_Library freetypeLib;
 FT_Face freetypeDefaultFace;
+static char* freetypeDefaultFontdata;
 #endif
 
 fopenAsset_t fopenAsset = nullptr;
@@ -139,24 +140,6 @@ bool loadAsset(const char* fname, char** data, size_t* nBytes) {
     }
 }
 
-#ifdef MNOGLA_HAS_FREETYPE
-static void loadFreetypeDefaultFont() {
-    char* fontdata;
-    size_t nFontBytes;
-    if (!loadAsset("NotoSans-Regular.ttf", &fontdata, &nFontBytes))
-        throw runtime_error("failed to load default font file");
-   // if (FT_New_Memory_Face(freetypeLib, (FT_Byte*)fontdata, nFontBytes, 0, &freetypeDefaultFace))
- if (FT_New_Face(freetypeLib, "build/NotoSans-Regular.ttf", 0, &freetypeDefaultFace))
-        throw runtime_error("failed to load default font face");
-    logI("freetype init done");
-        FT_Set_Pixel_Sizes(freetypeDefaultFace, 0, 90);
-        logI("b %d", nFontBytes);
-        if (FT_Load_Char(freetypeDefaultFace, 64, FT_LOAD_RENDER)) throw runtime_error("loadchar failed");
-
- //   free(fontdata);
-}
-#endif
-
 void coreInit(logFun_t _logI, logFun_t _logE, fopenAsset_t _fopenAsset) {
     lastTimestamp_nanosecs = 0;  // delta to appStartTime
     logI = _logI;
@@ -166,7 +149,13 @@ void coreInit(logFun_t _logI, logFun_t _logE, fopenAsset_t _fopenAsset) {
 
 #ifdef MNOGLA_HAS_FREETYPE
     if (FT_Init_FreeType(&freetypeLib)) throw runtime_error("FT_Init_FreeType failed");
-    loadFreetypeDefaultFont();
+    size_t nFontBytes;
+    if (!loadAsset("NotoSans-Regular.ttf", &freetypeDefaultFontdata, &nFontBytes))
+        throw runtime_error("failed to load default font file");
+    // "You must not deallocate the memory before calling FT_Done_Face."
+    if (FT_New_Memory_Face(freetypeLib, (FT_Byte*)freetypeDefaultFontdata, nFontBytes, 0, &freetypeDefaultFace))
+        throw runtime_error("failed to load default font face");
+        // if (FT_New_Face(freetypeLib, "build/NotoSans-Regular.ttf", 0, &freetypeDefaultFace))
 #endif
 
 #ifdef MNOGLA_WINDOWS
@@ -195,6 +184,11 @@ void coreDeinit() {
     for (const auto& f : glDeinitFuns)
         f();
     util_deinit();
+#ifdef MNOGLA_HAS_FREETYPE
+    FT_Done_Face(freetypeDefaultFace);
+    FT_Done_FreeType(freetypeLib);
+    free(freetypeDefaultFontdata);
+#endif
 }
 
 uint64_t lastTimestamp_nanosecs;
