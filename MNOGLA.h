@@ -52,10 +52,10 @@ void coreInitGlContext();
 void coreDeinit();
 
 // registered functions will be called by coreInitGlContext (to load/reload Gl resources)
-void registerGlInit(::std::function<void()> fun);
+void registerGlInit(void (*fun)());
 
 // registered functions will be called on application exit (to unload Gl resources)
-void registerGlDeinit(::std::function<void()> fun);
+void registerGlDeinit(void (*fun)());
 
 // host signals an event
 void evtSubmitHostToApp(int32_t key, size_t nArgs, ...);

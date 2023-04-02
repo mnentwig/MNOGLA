@@ -52,9 +52,16 @@ if (MNOGLA_HAS_FREETYPE)
                 ${FT_ROOT}/src/sfnt/sfnt.c
                 ${FT_ROOT}/src/truetype/truetype.c
                 ${FT_ROOT}/src/raster/raster.c
+                ${FT_ROOT}/src/smooth/smooth.c
+                ${FT_ROOT}/src/sdf/sdf.c
                 ${FT_ROOT}/src/autofit/autofit.c
                 ${FT_ROOT}/src/gzip/ftgzip.c
-        )
+                ${FT_ROOT}/src/gxvalid/gxvalid.c
+                ${FT_ROOT}/src/otvalid/otvalid.c
+                ${FT_ROOT}/src/psaux/psaux.c
+                ${FT_ROOT}/src/pshinter/pshinter.c
+                ${FT_ROOT}/src/psnames/psnames.c        
+)
 
         # required symbol for building freetype library
         target_compile_definitions(MNOGLA_freetype PUBLIC FT2_BUILD_LIBRARY)

@@ -145,9 +145,15 @@ static void loadFreetypeDefaultFont() {
     size_t nFontBytes;
     if (!loadAsset("NotoSans-Regular.ttf", &fontdata, &nFontBytes))
         throw runtime_error("failed to load default font file");
-    if (FT_New_Memory_Face(freetypeLib, (FT_Byte*)fontdata, nFontBytes, 0, &freetypeDefaultFace))
+   // if (FT_New_Memory_Face(freetypeLib, (FT_Byte*)fontdata, nFontBytes, 0, &freetypeDefaultFace))
+ if (FT_New_Face(freetypeLib, "build/NotoSans-Regular.ttf", 0, &freetypeDefaultFace))
         throw runtime_error("failed to load default font face");
-    free(fontdata);
+    logI("freetype init done");
+        FT_Set_Pixel_Sizes(freetypeDefaultFace, 0, 90);
+        logI("b %d", nFontBytes);
+        if (FT_Load_Char(freetypeDefaultFace, 64, FT_LOAD_RENDER)) throw runtime_error("loadchar failed");
+
+ //   free(fontdata);
 }
 #endif
 
@@ -176,8 +182,8 @@ void coreInit(logFun_t _logI, logFun_t _logE, fopenAsset_t _fopenAsset) {
     util_init();
 }
 
-static ::std::vector<::std::function<void()>> glInitFuns;
-static ::std::vector<::std::function<void()>> glDeinitFuns;
+static ::std::vector<void (*)()> glInitFuns;
+static ::std::vector<void (*)()> glDeinitFuns;
 
 void coreInitGlContext() {
     // Note: In case of GL context loss, this will be called repeatedly. No need to glDelete() anything.
@@ -196,12 +202,16 @@ uint64_t lastTimestamp_nanosecs;
 const char* mainArg0;
 
 // registered functions will be called on coreInitGlContext (to load Gl resources)
-void registerGlInit(::std::function<void()> fun) {
+void registerGlInit(void (*fun)()) {
+    for (const auto f : glInitFuns)
+        if (f == fun) throw runtime_error("registerGlInit: function already registered (duplicate)!");
     glInitFuns.push_back(fun);
 }
 
 // registered functions will be called on application exit (to unload Gl resources)
-void registerGlDeinit(::std::function<void()> fun) {
+void registerGlDeinit(void (*fun)()) {
+    for (const auto f : glDeinitFuns)
+        if (f == fun) throw runtime_error("registerGlDeinit: function already registered (duplicate)!");
     glDeinitFuns.push_back(fun);
 }
 

@@ -78,9 +78,16 @@ if (MNOGLA_HAS_FREETYPE)
     ${FT}/src/sfnt/sfnt.c
     ${FT}/src/truetype/truetype.c
     ${FT}/src/raster/raster.c
+    ${FT}/src/smooth/smooth.c
+    ${FT}/src/sdf/sdf.c
     ${FT}/src/autofit/autofit.c
     ${FT}/src/gzip/ftgzip.c
-      )
+    ${FT}/src/gxvalid/gxvalid.c
+    ${FT}/src/otvalid/otvalid.c
+    ${FT}/src/psaux/psaux.c
+    ${FT}/src/pshinter/pshinter.c
+    ${FT}/src/psnames/psnames.c
+ )
 
   target_include_directories(MNOGLA_freetype SYSTEM PRIVATE ../freetype-VER-2-13-0/include)
   target_compile_definitions(MNOGLA_freetype PUBLIC FT2_BUILD_LIBRARY)

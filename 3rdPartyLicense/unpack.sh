@@ -15,9 +15,9 @@ sed -e '/bdf_driver_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/co
 sed -e '/psaux_module_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/config/ftmodule.h
 sed -e '/psnames_module_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/config/ftmodule.h
 sed -e '/pshinter_module_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/config/ftmodule.h
-sed -e '/ft_smooth_renderer_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/config/ftmodule.h
+# sed -e '/ft_smooth_renderer_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/config/ftmodule.h
 sed -e '/ft_sdf_renderer_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/config/ftmodule.h
-sed -e '/ft_bitmap_sdf_renderer_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/config/ftmodule.h
+# sed -e '/ft_bitmap_sdf_renderer_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/config/ftmodule.h
 sed -e '/ft_svg_renderer_class/ s/^/\/\//' -i freetype-VER-2-13-0/include/freetype/config/ftmodule.h
 
 rm -Rf glm-master
