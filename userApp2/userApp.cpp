@@ -135,6 +135,7 @@ void myAppState_t::render() {
 std::shared_ptr<myAppState_t> myAppState = nullptr;
 void MNOGLA_userInit() {
     if (myAppState == nullptr) {
+        MNOGLA::registerGlInit(MNOGLA::multilineText::initGlContext);
         myAppState = std::make_shared<myAppState_t>();
         MNOGLA::logI("user init (startup)");
     } else {

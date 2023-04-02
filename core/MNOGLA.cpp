@@ -152,10 +152,8 @@ void coreInit(logFun_t _logI, logFun_t _logE, fopenAsset_t _fopenAsset) {
     size_t nFontBytes;
     if (!loadAsset("NotoSans-Regular.ttf", &freetypeDefaultFontdata, &nFontBytes))
         throw runtime_error("failed to load default font file");
-    // "You must not deallocate the memory before calling FT_Done_Face."
     if (FT_New_Memory_Face(freetypeLib, (FT_Byte*)freetypeDefaultFontdata, nFontBytes, 0, &freetypeDefaultFace))
         throw runtime_error("failed to load default font face");
-        // if (FT_New_Face(freetypeLib, "build/NotoSans-Regular.ttf", 0, &freetypeDefaultFace))
 #endif
 
 #ifdef MNOGLA_WINDOWS
@@ -186,8 +184,8 @@ void coreDeinit() {
     util_deinit();
 #ifdef MNOGLA_HAS_FREETYPE
     FT_Done_Face(freetypeDefaultFace);
+    free(freetypeDefaultFontdata); // permitted only after FT_Done_Face
     FT_Done_FreeType(freetypeLib);
-    free(freetypeDefaultFontdata);
 #endif
 }
 

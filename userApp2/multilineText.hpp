@@ -4,7 +4,7 @@
 #include "../MNOGLA.h"  // freetype
 #include "../gui/guiElem.hpp"
 namespace MNOGLA {
-using ::std::string, ::glm::vec3;
+using ::std::string, ::glm::vec2, ::glm::vec3;
 class multilineText : public guiElem {
    public:
     static void initGlContext() {
@@ -23,13 +23,12 @@ class multilineText : public guiElem {
         const char* fragShader =
             "#version 300 es\n"
             "precision mediump float;\n"
-            "   in vec2 texCoords;\n"
-            "   out vec4 color;\n"
-            "   uniform sampler2D text;\n"
-            "   uniform vec3 rgb;\n"
+            "in vec2 texCoords;\n"
+            "out vec4 color;\n"
+            "uniform sampler2D text;\n"
+            "uniform vec3 rgb;\n"
             "void main(){\n"
-            "   vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, texCoords).r);\n"
-            "   color = vec4(rgb, 1.0) * sampled; // ??? simplify ???\n"
+            "   color = vec4(rgb, texture(text, texCoords).r);\n"
             "}\n";
 
         p0 = createProgram(vShader, fragShader);
@@ -42,11 +41,12 @@ class multilineText : public guiElem {
     multilineText(const glm::vec2& topLeft, float fontsize, const string& text, const glm::vec3& rgb) : rgb(rgb), topLeft(topLeft), fontsize(fontsize) {
     }
     void render(MNOGLA::twoDView& v) override {
-        logI("a");
-        FT_Set_Pixel_Sizes(MNOGLA::freetypeDefaultFace, 0, 90);
-        logI("b");
+        FT_Set_Pixel_Sizes(MNOGLA::freetypeDefaultFace, 0, 900);
         if (FT_Load_Char(MNOGLA::freetypeDefaultFace, 'A', FT_LOAD_RENDER)) throw runtime_error("loadchar failed");
-        logI("c");
+
+        // === config ===
+        GLCHK(glDisable(GL_DEPTH_TEST));
+        GLCHK(glUseProgram(p0));
 
         GLuint texture;
         GLCHK(glGenTextures(1, &texture));
@@ -86,19 +86,32 @@ class multilineText : public guiElem {
         GLCHK(glActiveTexture(GL_TEXTURE0));
         GLCHK(glBindVertexArray(VAO));
 
-        float vertices[6][4] = {
-            {0, 0, 0.0f, 0.0f},
-            {0, 1, 0.0f, 1.0f},
-            {1, 1, 1.0f, 1.0f},
+        // a--d
+        // |\ |
+        // | \|
+        // b--c
+        const vec2 a_tex(0.0f, 0.0f);
+        const vec2 b_tex(0.0f, 1.0f);
+        const vec2 c_tex(1.0f, 1.0f);
+        const vec2 d_tex(1.0f, 0.0f);
 
-            {0, 0, 0.0f, 0.0f},
-            {1, 1, 1.0f, 1.0f},
-            {1, 0, 1.0f, 0.0f}};
+        float scale = 300;
+        const vec2 a_NDC = a_tex * scale;
+        const vec2 b_NDC = b_tex * scale;
+        const vec2 c_NDC = c_tex * scale;
+        const vec2 d_NDC = d_tex * scale;
+
+        vec2 buf[] = {a_NDC, a_tex,
+                      b_NDC, b_tex,
+                      c_NDC, c_tex,
+                      c_NDC, c_tex,
+                      d_NDC, d_tex,
+                      a_NDC, a_tex};
 
         GLCHK(glBindTexture(GL_TEXTURE_2D, texture));
         // update content of VBO memory
         GLCHK(glBindBuffer(GL_ARRAY_BUFFER, VBO));
-        GLCHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
+        GLCHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(buf), buf));
         GLCHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
         GLCHK(glUniformMatrix3fv(p0_world2NDC, /*num matrices*/ 1, /*transpose*/ false, &v.getWorld2screen()[0][0]));
@@ -108,6 +121,7 @@ class multilineText : public guiElem {
 
         GLCHK(glBindVertexArray(0));
         GLCHK(glBindTexture(GL_TEXTURE_2D, 0));
+        GLCHK(glUseProgram(0));
     }
 
     void setCol(const vec3& rgb) {
@@ -132,5 +146,6 @@ GLuint multilineText::p0;
 GLuint multilineText::p0_rgb;
 GLuint multilineText::p0_vertex;
 GLuint multilineText::p0_world2NDC;
+bool multilineText::canClean;
 
 }  // namespace MNOGLA
