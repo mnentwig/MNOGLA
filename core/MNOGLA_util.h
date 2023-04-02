@@ -9,7 +9,7 @@
     }
 
 namespace MNOGLA {
-void util_initGlContext();
+void util_init();
 void util_deinit();
 
 void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourceline);

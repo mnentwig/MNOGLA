@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>  // std::size_t on Android
 #include <cstdint>
+#include <functional>
 #ifdef MNOGLA_HAS_FREETYPE
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -31,6 +32,7 @@ extern logFun_t logI;
 extern logFun_t logE;
 #ifdef MNOGLA_HAS_FREETYPE
 extern FT_Library freetypeLib;
+extern FT_Face freetypeDefaultFace;
 #endif
 
 typedef void* (*fopenAsset_t)(const char* fname, const char* mode);  // cast return value to FILE* (not including cstdio here)
@@ -48,6 +50,12 @@ void coreInitGlContext();
 
 // host calls on application exit
 void coreDeinit();
+
+// registered functions will be called by coreInitGlContext (to load/reload Gl resources)
+void registerGlInit(::std::function<void()> fun);
+
+// registered functions will be called on application exit (to unload Gl resources)
+void registerGlDeinit(::std::function<void()> fun);
 
 // host signals an event
 void evtSubmitHostToApp(int32_t key, size_t nArgs, ...);

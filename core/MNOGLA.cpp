@@ -1,3 +1,4 @@
+// #define MNOGLA_HAS_FREETYPE
 #include "../MNOGLA.h"
 
 #include <cassert>
@@ -21,6 +22,7 @@ logFun_t logI = nullptr;
 logFun_t logE = nullptr;
 #ifdef MNOGLA_HAS_FREETYPE
 FT_Library freetypeLib;
+FT_Face freetypeDefaultFace;
 #endif
 
 fopenAsset_t fopenAsset = nullptr;
@@ -142,9 +144,9 @@ static void loadFreetypeDefaultFont() {
     char* fontdata;
     size_t nFontBytes;
     if (!loadAsset("NotoSans-Regular.ttf", &fontdata, &nFontBytes))
-        throw runtime_error("failed to load default font");
-    //                if (FT_New_Memory_Face(
-
+        throw runtime_error("failed to load default font file");
+    if (FT_New_Memory_Face(freetypeLib, (FT_Byte*)fontdata, nFontBytes, 0, &freetypeDefaultFace))
+        throw runtime_error("failed to load default font face");
     free(fontdata);
 }
 #endif
@@ -154,6 +156,7 @@ void coreInit(logFun_t _logI, logFun_t _logE, fopenAsset_t _fopenAsset) {
     logI = _logI;
     logE = _logE;
     fopenAsset = _fopenAsset;
+    logI("core init");
 
 #ifdef MNOGLA_HAS_FREETYPE
     if (FT_Init_FreeType(&freetypeLib)) throw runtime_error("FT_Init_FreeType failed");
@@ -170,20 +173,36 @@ void coreInit(logFun_t _logI, logFun_t _logE, fopenAsset_t _fopenAsset) {
 
     // clock starts after initialization is done
     appStartTime = std::chrono::high_resolution_clock::now();
-    logI("core init");
+    util_init();
 }
+
+static ::std::vector<::std::function<void()>> glInitFuns;
+static ::std::vector<::std::function<void()>> glDeinitFuns;
 
 void coreInitGlContext() {
     // Note: In case of GL context loss, this will be called repeatedly. No need to glDelete() anything.
-    util_initGlContext();
+    for (const auto& f : glInitFuns)
+        f();
 }
 
 void coreDeinit() {
+    for (const auto& f : glDeinitFuns)
+        f();
     util_deinit();
 }
 
 uint64_t lastTimestamp_nanosecs;
 
 const char* mainArg0;
+
+// registered functions will be called on coreInitGlContext (to load Gl resources)
+void registerGlInit(::std::function<void()> fun) {
+    glInitFuns.push_back(fun);
+}
+
+// registered functions will be called on application exit (to unload Gl resources)
+void registerGlDeinit(::std::function<void()> fun) {
+    glDeinitFuns.push_back(fun);
+}
 
 }  // namespace MNOGLA

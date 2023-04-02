@@ -104,12 +104,16 @@ void deinit_outlinedRect();
 void init_vectorText();
 void deinit_vectorText();
 
-void util_initGlContext() {
-    // Note: In case of GL context loss, init() will be called without deinit(). No need to glDelete() anything.
-    init_filledRect();
-    init_vectorText();
-    init_outlinedRect();
+void util_init() {
+    registerGlInit(init_filledRect);
+    registerGlInit(init_outlinedRect);
+    registerGlInit(init_vectorText);
+    
+    registerGlDeinit(init_filledRect);
+    registerGlDeinit(init_outlinedRect);
+    registerGlDeinit(init_vectorText);
 }
+
 void util_deinit() {
     deinit_outlinedRect();
     deinit_vectorText();
