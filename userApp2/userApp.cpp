@@ -11,7 +11,6 @@
 #include "../gui/guiContainer.h"
 #include "../twoD/twoDView.h"
 #include "multilineText.hpp"
-
 using std::runtime_error;
 
 const bool trace = false;

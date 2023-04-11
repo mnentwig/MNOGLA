@@ -1,8 +1,10 @@
 #include <glm/vec2.hpp>
+#include <iostream>
 #include <string>
 
 #include "../MNOGLA.h"  // freetype
 #include "../gui/guiElem.hpp"
+#include "../twoD/internal/fontAtlas.h"
 namespace MNOGLA {
 using ::std::string, ::glm::vec2, ::glm::vec3;
 class multilineText : public guiElem {
@@ -36,12 +38,22 @@ class multilineText : public guiElem {
         p0_rgb = getUniformLoc(p0, "rgb");
         p0_world2NDC = getUniformLoc(p0, "world2NDC");
         canClean = true;
+
+        FT_Set_Pixel_Sizes(MNOGLA::freetypeDefaultFace, 0, 900);
+        auto a = MNOGLA::fontAtlas(MNOGLA::freetypeDefaultFace);
     }
 
     multilineText(const glm::vec2& topLeft, float fontsize, const string& text, const glm::vec3& rgb) : rgb(rgb), topLeft(topLeft), fontsize(fontsize) {
     }
     void render(MNOGLA::twoDView& v) override {
+        // https://gist.github.com/baines/b0f9e4be04ba4e6f56cab82eef5008ff
         FT_Set_Pixel_Sizes(MNOGLA::freetypeDefaultFace, 0, 900);
+        for (unsigned char c = 32; c < 128; ++c) {
+            if (!FT_Load_Char(MNOGLA::freetypeDefaultFace, c, FT_LOAD_RENDER)) {
+                ::std::cout << MNOGLA::freetypeDefaultFace->glyph->bitmap.rows << "\t" << MNOGLA::freetypeDefaultFace->glyph->bitmap.width << "\n";
+                auto s = std::make_shared<FT_GlyphSlot>(MNOGLA::freetypeDefaultFace->glyph);
+            }
+        }
         if (FT_Load_Char(MNOGLA::freetypeDefaultFace, 'A', FT_LOAD_RENDER)) throw runtime_error("loadchar failed");
 
         // === config ===
