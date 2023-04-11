@@ -4,18 +4,63 @@
 #include <memory>
 #include <vector>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "../../3rdPartyLicense/stb_image_write.h"
 #include "../../MNOGLA.h"  // freetype
 namespace MNOGLA {
+using ::std::vector, ::std::shared_ptr, ::std::make_shared, ::std::runtime_error;
 class fontAtlas {
    public:
-    fontAtlas(FT_Face& face);
+    fontAtlas(FT_Face& face) : width(0), height(0) {
+        vector<shared_ptr<glyph>> glyphs;
+        for (uint8_t c = 32; c < 128; ++c)
+            glyphs.push_back(make_shared<glyph>(face, c));
+        std::sort(glyphs.begin(), glyphs.end(), [](const auto& a, const auto& b) { return a->getAtlasHeight() > b->getAtlasHeight(); });
+
+        size_t nHorGlyphsOpt = 0;
+        size_t nHorGlyphsOptArea = 0;
+
+        // === try all bitmap widths for nHorGlyphs contiguous horizontal glyphs in first row ===
+        for (size_t nHorGlyphs = 1; nHorGlyphs < glyphs.size(); ++nHorGlyphs) {
+            size_t area = tryPlaceGlyphs(glyphs, nHorGlyphs, nullptr, nullptr);
+            if (!nHorGlyphsOpt || (area < nHorGlyphsOptArea)) {
+                nHorGlyphsOpt = nHorGlyphs;
+                nHorGlyphsOptArea = area;
+            }
+        }
+
+        // === apply the best result ===
+        // fills in atlas location for each glyph
+        size_t area = tryPlaceGlyphs(glyphs, nHorGlyphsOpt, &width, &height);
+        std::cout << "final area: " << area << " with " << nHorGlyphsOpt << " glyphs in first row" << std::endl;
+        std::cout << "Atlas size " << width << " x " << height << std::endl;
+
+        // === allocate atlas bitmap ===
+        bitmap = new uint8_t[width * height];
+        memset((void*)bitmap, /*val*/ 0, width * height * sizeof(uint8_t));
+        for (const auto& g : glyphs) {
+            copyGlyphToAtlas(g);
+            g->freeBitmapTmp();
+        }
+
+        stbi_write_png("fontatlas.png", width, height, /*channels*/ 1, (void*)bitmap, /*stride_bytes*/ 0);
+        exit(0);
+    }
 
    protected:
     // one glyph in the font atlas
     class glyph {
        public:
-        glyph(FT_Face& face, uint8_t ASCII_charNum);
-        // void getX1X2(size_t& x1, size_t& x2) const;
+        glyph(FT_Face& face, uint8_t ASCII_charNum) : ASCII_charNum(ASCII_charNum) {
+            if (FT_Load_Char(face, ASCII_charNum, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT | FT_LOAD_TARGET_LIGHT)) throw runtime_error("missing glyph");
+            atlasWidth = face->glyph->bitmap.width;
+            atlasHeight = face->glyph->bitmap.rows;
+            xAdvance = ((float)face->glyph->advance.x) / 64.0f;
+            bitmapTmp = new uint8_t[atlasWidth * atlasHeight];
+            for (size_t c = 0; c < atlasWidth * atlasHeight; ++c)
+                *(bitmapTmp + c) = *(face->glyph->bitmap.buffer + c);
+        }
+
         size_t getAtlasX1() const { return atlasPosX; }
         size_t getAtlasX2() const { return atlasPosX + atlasWidth; }
         size_t getAtlasWidth() const { return atlasWidth; }
@@ -23,10 +68,15 @@ class fontAtlas {
         size_t getAtlasY2() const { return atlasPosY + atlasHeight; }
         size_t getAtlasHeight() const { return atlasHeight; }
         void setAtlasPosX(size_t atlasPosX) { this->atlasPosX = atlasPosX; }
-        //        void setAtlasWidth(size_t atlasWidth) { this->atlasWidth = atlasWidth; }
         void setAtlasPosY(size_t atlasPosY) { this->atlasPosY = atlasPosY; }
-        uint8_t* getBitmapTmp() { return bitmapTmp; }
-        void freeBitmapTmp();
+        const uint8_t* getBitmapTmp() { return bitmapTmp; }
+        void freeBitmapTmp() {
+            assert(bitmapTmp);
+            delete[] bitmapTmp;
+            bitmapTmp = nullptr;
+        }
+
+        bool done = false;
 
        protected:
         size_t ASCII_charNum;
@@ -39,62 +89,121 @@ class fontAtlas {
     // used during construction of font atlas
     class glyphRow {
        public:
-        // rightToLeft reverts packing order.
-        // Non-zero nGlyphs sets max. number of glyphs.
-        // Non-zero bitmapWidth limits/defines combined width.
-        glyphRow(::std::shared_ptr<glyphRow> prevRow, bool rightToLeft, size_t nGlyphs, size_t minBitmapWidth);
-        bool addGlyph(::std::shared_ptr<glyph> g);
-        size_t getMinY(size_t ixBegin, size_t ixEnd) const;
-        size_t getMaxY() const;
-        size_t getNGlyphs() const;
-        size_t getBitmapWidth() const;
-        bool getRightToLeft() const { return rightToLeft; }
+        glyphRow(::std::shared_ptr<glyphRow> prevRow)
+            : prevRow(prevRow), glyphs() {}
+
+        bool addGlyph(::std::shared_ptr<glyph> g, bool rightToLeft, size_t fixedBitmapWidth) {
+            size_t xStart;
+            size_t xEnd;
+            if (!rightToLeft) {
+                xStart = glyphs.size() ? glyphs.back()->getAtlasX2() : 0;
+                xEnd = xStart + g->getAtlasWidth();
+                if ((fixedBitmapWidth > 0) && (xEnd > fixedBitmapWidth)) return false;  // no space
+            } else {
+                assert(fixedBitmapWidth && "fixedBitmapWidth is required for right-to-left glyph packing order");
+                xEnd = glyphs.size() ? glyphs.back()->getAtlasX1() : fixedBitmapWidth;
+                if (xEnd < g->getAtlasWidth()) return false;  // no space
+                xStart = xEnd - g->getAtlasWidth();
+            }
+            // === insert glyph in row ===
+            glyphs.push_back(g);
+            g->setAtlasPosX(xStart);
+
+            // === move up as far as possible ===
+            size_t posY = !prevRow ? 0 : prevRow->getMinY(xStart, xEnd);
+            g->setAtlasPosY(posY);
+            return true;
+        }
+
+        // atlas is free between xBegin and xEnd starting at returned value
+        size_t getMinY(size_t xBegin, size_t xEnd) const {
+            size_t minY = 0;  // start of texture
+            for (const auto& g : glyphs)
+                if ((g->getAtlasX1() < xEnd) && (g->getAtlasX2() > xBegin))
+                    minY = std::max(minY, g->getAtlasY2());
+            if ((minY == 0) && (prevRow != nullptr))
+                minY = prevRow->getMinY(xBegin, xEnd);
+            return minY;
+        }
+        size_t getNGlyphs() const { return glyphs.size(); }
 
        protected:
         ::std::shared_ptr<glyphRow> prevRow;
-        bool rightToLeft;
-        size_t nGlyphs;
-        size_t bitmapWidth;
         ::std::vector<::std::shared_ptr<glyph>> glyphs;
     };
 
     // places glyphs sorted by height in an atlas with nHorGlyphs in the first row. Returns area in pixels.
     static size_t tryPlaceGlyphs(const ::std::vector<::std::shared_ptr<glyph>>& glyphs, size_t nHorGlyphs, size_t* pWidth, size_t* pHeight) {
-        std::cout << "tryPlaceGlyphs " << nHorGlyphs << "\n";
         assert(nHorGlyphs > 0);
-        auto itGlyph = glyphs.begin();
-        bool getNextGlyph = true;
         size_t minBitmapWidth = 0;
 
-        // === determine minimum bitmap width ===
-        // (bitmap can't be smaller than the largest glyph)
+        // Algorithm (heuristic in many ways, as the bin-packing problem is NP-hard)
+        // [1] In the first row, place a given number of glyphs in order of descending height.
+        // [2] The first row determines the width of the bitmap
+        // [3] Following rows are filled alternating right-to-left and left-to-right to somewhat compensate the diagonal-ish shape of rows from sorting
+        // [4] Glyphs are filled in order of descending height as far as possible
+        // [5] If the next-highest glyph does not fit, all smaller glyphs are tried
+        // [6] If no glyph fits into the gap, a new row is created.
+        // [7] For an new row, placement continues with the next-largest unplaced glyph.
+        // [8] For simplicity, bitmap width and height are constantly tracked with every placed glyph. This implies [2].
+        // [9] The algorithm finishes, once the known number of glyphs has been placed.
+
         size_t bitmapWidth = 0;
         size_t bitmapHeight = 0;
-        for (const auto& g : glyphs) {
-            minBitmapWidth = std::max(minBitmapWidth, g->getAtlasHeight());
-            bitmapHeight = std::max(bitmapHeight, (*itGlyph)->getAtlasHeight());
+        for (auto& g : glyphs) {
+            minBitmapWidth = std::max(minBitmapWidth, g->getAtlasHeight());  // [2]
+            bitmapHeight = std::max(bitmapHeight, g->getAtlasHeight());
+            g->done = false;  // reset all glyphs, as the algorithm may be run repeatedly
         }
         bitmapWidth = minBitmapWidth;
-        std::shared_ptr<glyphRow> row = std::make_shared<glyphRow>(/*prevRow*/ nullptr, /*rightToLeft*/ false, nHorGlyphs, minBitmapWidth);
-        while (true) {
-            if (getNextGlyph) {
-                ++itGlyph;
-                if (itGlyph == glyphs.end())
+        bool rightToLeft = false;
+        std::shared_ptr<glyphRow> row = std::make_shared<glyphRow>(/*prevRow*/ nullptr);
+        size_t nGlyphsRemaining = glyphs.size();
+        bool newRow = false;
+        auto itGlyph = glyphs.begin();
+        bool restartAtLargestGlyph = false;
+        while (nGlyphsRemaining) {  // [9]
+            if (/* [7] */ restartAtLargestGlyph || /* [5] */ (itGlyph == glyphs.end()))
+                itGlyph = glyphs.begin();
+            while (true) {
+                if (!(*itGlyph)->done)
                     break;
+                ++itGlyph;
+                if (itGlyph == glyphs.end()) {  // [6]
+                    itGlyph = glyphs.begin();
+                    // note: The following condition is guaranteed because of [7]
+                    if (!row->getNGlyphs()) throw runtime_error("font atlas generator internal error: failed to place glyph into empty row. " + std::to_string(nGlyphsRemaining) + " glyphs remaining.");
+                    newRow = true;
+                }
+            }  // while searching for new glyph
+
+            if (nHorGlyphs && (nHorGlyphs == row->getNGlyphs())) {  // [1]
+                newRow = true;
+                nHorGlyphs = 0;
             }
 
-            bool success = row->addGlyph(*itGlyph);
-            getNextGlyph = success;  // added successfully => continue with next glyph
+            if (newRow) {
+                rightToLeft = !rightToLeft;  // [2]
+                row = std::make_shared<glyphRow>(row);
+                newRow = false;
+            }
+
+            bool success = row->addGlyph(*itGlyph, rightToLeft, nHorGlyphs ? 0 : bitmapWidth);
             if (success) {
-                bitmapWidth = std::max(bitmapWidth, (*itGlyph)->getAtlasX2());
-                bitmapHeight = std::max(bitmapHeight, (*itGlyph)->getAtlasY2());
-                std::cout << bitmapWidth << " " << bitmapHeight << std::endl;
+                bitmapWidth = std::max(bitmapWidth, (*itGlyph)->getAtlasX2());    // [8]
+                bitmapHeight = std::max(bitmapHeight, (*itGlyph)->getAtlasY2());  // [8]
+                --nGlyphsRemaining;
+                (*itGlyph)->done = true;
             } else {
-                // failed to add => create new row
-                row = std::make_shared<glyphRow>(row, /*reverse direction*/ !row->getRightToLeft(), /*nGlyphs limit (none)*/ 0, /*fixed width*/ bitmapWidth);
+                newRow = true;
+                restartAtLargestGlyph = true;  // [7]
             }
         }
 
+        std::cout << "area: " << (bitmapWidth * bitmapHeight) << std::endl;
+        std::cout << "Atlas size " << bitmapWidth << " x " << bitmapHeight << std::endl;
+
+        // === return result ===
         if (pWidth) *pWidth = bitmapWidth;
         if (pHeight) *pHeight = bitmapHeight;
         return bitmapWidth * bitmapHeight;
@@ -102,9 +211,9 @@ class fontAtlas {
 
     // copies one glyph to its location in the fontAtlas
     void copyGlyphToAtlas(const ::std::shared_ptr<glyph> g) {
-        std::cout << "copying " << g->getAtlasWidth() << " x " << g->getAtlasHeight() << " to " << g->getAtlasX1() << " / " << g->getAtlasY1() << " of atlas " << width << " x " << height << std::endl;
-        uint8_t* pAtlasTopLeft = bitmap + g->getAtlasY1() * width + g->getAtlasX1();
-        uint8_t* pGlyph = g->getBitmapTmp();
+        //        std::cout << "copying " << g->getAtlasWidth() << " x " << g->getAtlasHeight() << " to " << g->getAtlasX1() << " / " << g->getAtlasY1() << " of atlas " << width << " x " << height << std::endl;
+        uint8_t* const pAtlasTopLeft = bitmap + g->getAtlasY1() * width + g->getAtlasX1();
+        const uint8_t* pGlyph = g->getBitmapTmp();
         const size_t cAtlasWidth = width;
         const size_t glyphWidth = g->getAtlasWidth();
         const size_t glyphHeight = g->getAtlasHeight();
@@ -114,8 +223,11 @@ class fontAtlas {
     }
 
     // === data ===
-    uint8_t* bitmap = nullptr;  // atlas bitmap data
+    // atlas bitmap data
+    uint8_t* bitmap = nullptr;
+    // atlas bitmap width
     size_t width;
+    // atlas bitmap height
     size_t height;
 };
 }  // namespace MNOGLA
