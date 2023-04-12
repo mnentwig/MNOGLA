@@ -7,16 +7,16 @@
 #include "../../core/MNOGLA_util.h"
 namespace MNOGLA {
 using ::std::vector;
-void vectorText::init() {
+void vectorText::glInit() {
     // Note: In case of GL context loss, init() will be called without deinit(). No need to glDelete() anything.
-    twoDShape::init();
+    twoDShape::glInit();
 
     // === buffers ===
     GLCHK(glGenBuffers(1, &vertexBuf));
 }
 
-void vectorText::deinit() {
-    twoDShape::deinit();
+void vectorText::glDeinit() {
+    twoDShape::glDeinit();
     GLCHK(glDeleteBuffers(1, &vertexBuf));
 }
 
@@ -83,12 +83,12 @@ GLuint vectorText::vertexBuf;
 }
 
 // === API ===
-void init_vectorText() {
-    vectorText::init();
+void glInit_vectorText() {
+    vectorText::glInit();
 }
 
-void deinit_vectorText() {
-    vectorText::deinit();
+void glDeinit_vectorText() {
+    vectorText::glDeinit();
 }
 
 }  // namespace MNOGLA

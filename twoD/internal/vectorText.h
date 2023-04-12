@@ -8,8 +8,8 @@
 namespace MNOGLA {
 class vectorText : protected twoDShape {
    public:
-    static void init();
-    static void deinit();
+    static void glInit();
+    static void glDeinit();
     static void draw(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb, const ::glm::mat3& world2screen);
 
    protected:

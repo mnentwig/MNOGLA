@@ -4,14 +4,15 @@
 #include <memory>
 #include <vector>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "../../3rdPartyLicense/stb_image_write.h"
+// #define STB_IMAGE_WRITE_IMPLEMENTATION
+// #include "../../3rdPartyLicense/stb_image_write.h"
 #include "../../MNOGLA.h"  // freetype
 namespace MNOGLA {
 using ::std::vector, ::std::shared_ptr, ::std::make_shared, ::std::runtime_error;
 class fontAtlas {
    public:
-    fontAtlas(FT_Face& face) : width(0), height(0) {
+    fontAtlas(FT_Face& face, size_t fontHeightRes) : width(0), height(0) {
+        FT_Set_Pixel_Sizes(face, 0, fontHeightRes);
         vector<shared_ptr<glyph>> glyphs;
         for (uint8_t c = 32; c < 128; ++c)
             glyphs.push_back(make_shared<glyph>(face, c));
@@ -43,8 +44,13 @@ class fontAtlas {
             g->freeBitmapTmp();
         }
 
-        stbi_write_png("fontatlas.png", width, height, /*channels*/ 1, (void*)bitmap, /*stride_bytes*/ 0);
-        exit(0);
+        // stbi_write_png("fontatlas.png", width, height, /*channels*/ 1, (void*)bitmap, /*stride_bytes*/ 0);
+    }
+
+    void getBitmap(uint8_t** pBitmap, size_t* pWidth, size_t* pHeight) {
+        *pBitmap = bitmap;
+        *pWidth = width;
+        *pHeight = height;
     }
 
    protected:

@@ -7,8 +7,8 @@
 namespace MNOGLA {
 class outlinedRect : protected twoDShape {
    public:
-    static void init();
-    static void deinit();
+    static void glInit();
+    static void glDeinit();
     static void draw(const ::glm::vec2& a, const ::glm::vec2& b, float w, const ::glm::vec3& rgb, const ::glm::mat3& world2screen);
 
    protected:

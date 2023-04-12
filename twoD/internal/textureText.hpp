@@ -1,19 +1,22 @@
-// moved to textureText.hpp
-#if false
+#pragma once
 #include <glm/vec2.hpp>
-
 #include <iostream>
 #include <string>
 
-#include "../MNOGLA.h"  // freetype
-#include "../gui/guiElem.hpp"
-#include "../twoD/internal/fontAtlas.h"
+#include "../../MNOGLA.h"  // freetype
+#include "../../core/MNOGLA_util.h"
+#include "fontAtlas.h"
+#include "twoDShape.h"
 namespace MNOGLA {
-using ::std::string, ::glm::vec2, ::glm::vec3, ::std::unique_ptr, ::std::make_unique;
-class multilineText : public guiElem {
+using ::std::string, ::glm::vec2, ::glm::vec3, ::glm::mat3, ::std::unique_ptr, ::std::make_unique;
+class textureText : public twoDShape {
    public:
-    static void initGlContext() {
-        // Note: In case of GL context loss, initGlContext() will be called repeatedly. If so, there is no need to glDelete() anything.
+    static void glInit() {
+        // Note: In case of GL context loss, this function glInit() will be called repeatedly.
+        // If so, there is no need to glDelete() anything as the GPU memory got wiped completely.
+        if (!pAtlas)
+            pAtlas = make_unique<MNOGLA::fontAtlas>(MNOGLA::freetypeDefaultFace, 900);
+
         const char* vShader =
             "#version 300 es\n"
             "in vec4 vertex; // <vec2 pos, vec2 tex>\n"
@@ -24,7 +27,6 @@ class multilineText : public guiElem {
             "   texCoords = vertex.zw;\n"
             "}\n";
 
-        // RGB as uniform here?
         const char* fragShader =
             "#version 300 es\n"
             "precision mediump float;\n"
@@ -48,11 +50,11 @@ class multilineText : public guiElem {
         uint8_t* bm;
     }
 
-    multilineText(const glm::vec2& topLeft, float fontsize, const string& text, const glm::vec3& rgb) : rgb(rgb), topLeft(topLeft), fontsize(fontsize) {
-        pAtlas = make_unique<MNOGLA::fontAtlas>(MNOGLA::freetypeDefaultFace, 900);
+    static void glDeinit() {
+        pAtlas = nullptr;
     }
 
-    void render(MNOGLA::twoDView& v) override {
+    void draw(const mat3& world2screen, const vec3& rgb) {
         // https://gist.github.com/baines/b0f9e4be04ba4e6f56cab82eef5008ff
         FT_Set_Pixel_Sizes(MNOGLA::freetypeDefaultFace, 0, 900);
         for (unsigned char c = 32; c < 128; ++c) {
@@ -131,9 +133,9 @@ class multilineText : public guiElem {
         // update content of VBO memory
         GLCHK(glBindBuffer(GL_ARRAY_BUFFER, VBO));
         GLCHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(buf), buf));
-        GLCHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+        GLCHK(glBindBuffer(GL_ARRAY_BUFFER, 0));  // TODO: world2screen becomes world2NDC
 
-        GLCHK(glUniformMatrix3fv(p0_world2NDC, /*num matrices*/ 1, /*transpose*/ false, &v.getWorld2screen()[0][0]));
+        GLCHK(glUniformMatrix3fv(p0_world2NDC, /*num matrices*/ 1, /*transpose*/ false, &world2screen[0][0]));
 
         // render quad
         GLCHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -141,13 +143,6 @@ class multilineText : public guiElem {
         GLCHK(glBindVertexArray(0));
         GLCHK(glBindTexture(GL_TEXTURE_2D, 0));
         GLCHK(glUseProgram(0));
-    }
-
-    void setCol(const vec3& rgb) {
-        this->rgb = rgb;
-    }
-    vector<vec2> getPts() const override {
-        return vector<vec2>{topLeft, topLeft + vec2(100.0, 100.0)};  // TBD
     }
 
    protected:
@@ -158,16 +153,20 @@ class multilineText : public guiElem {
 
     static bool canClean;
     static unique_ptr<MNOGLA::fontAtlas> pAtlas;
-    vec3 rgb;
-    vec2 topLeft;
     float fontsize;
 };
-GLuint multilineText::p0;
-GLuint multilineText::p0_rgb;
-GLuint multilineText::p0_vertex;
-GLuint multilineText::p0_world2NDC;
-bool multilineText::canClean;
-unique_ptr<MNOGLA::fontAtlas> pAtlas = nullptr;
+GLuint textureText::p0;
+GLuint textureText::p0_rgb;
+GLuint textureText::p0_vertex;
+GLuint textureText::p0_world2NDC;
+bool textureText::canClean;
+unique_ptr<MNOGLA::fontAtlas> textureText::pAtlas = nullptr;
+
+void glInit_textureText() {
+    textureText::glInit();
+}
+void glDeinit_textureText() {
+    textureText::glDeinit();
+}
 
 }  // namespace MNOGLA
-#endif

@@ -7,8 +7,8 @@
 namespace MNOGLA {
 class filledRect : protected twoDShape {
    public:
-    static void init();
-    static void deinit();
+    static void glInit();
+    static void glDeinit();
     static void draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::mat3& world2screen);
 };
 }  // namespace MNOGLA

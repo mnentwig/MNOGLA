@@ -3,9 +3,9 @@
 #include "../../core/MNOGLA_util.h"
 namespace MNOGLA {
 /*static!*/ void
-outlinedRect::init() {
+outlinedRect::glInit() {
     // Note: In case of GL context loss, init() will be called without deinit(). No need to glDelete() anything.
-    twoDShape::init();
+    twoDShape::glInit();
 
     // === buffers ===
     GLCHK(glGenBuffers(1, &vertexBuf));
@@ -19,7 +19,7 @@ outlinedRect::init() {
     GLCHK(glBufferData(GL_ELEMENT_ARRAY_BUFFER, /*nBytes*/ sizeof(vertexIndex), /*ptr*/ &vertexIndex[0], GL_STATIC_DRAW));
 }
 
-/*static!*/ void outlinedRect::deinit() {
+/*static!*/ void outlinedRect::glDeinit() {
     GLCHK(glDeleteBuffers(1, &vertexBuf));
     GLCHK(glDeleteBuffers(1, &indexBuf));
 }
@@ -77,10 +77,10 @@ GLuint outlinedRect::vertexBuf;
 GLuint outlinedRect::indexBuf;
 size_t outlinedRect::nVertexIndices;
 
-void init_outlinedRect() {
-    outlinedRect::init();
+void glInit_outlinedRect() {
+    outlinedRect::glInit();
 }
-void deinit_outlinedRect() {
-    outlinedRect::deinit();
+void glDeinit_outlinedRect() {
+    outlinedRect::glDeinit();
 }
 }  // namespace MNOGLA

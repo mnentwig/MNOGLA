@@ -95,30 +95,31 @@ GLint getUniformLoc(GLuint prog, const char* argName) {
 }
 
 // (function implementations scattered across multiple internal files)
-void init_filledRect();
-void deinit_filledRect();
+void glInit_filledRect();
+void glDeinit_filledRect();
 
-void init_outlinedRect();
-void deinit_outlinedRect();
+void glInit_outlinedRect();
+void glDeinit_outlinedRect();
 
-void init_vectorText();
-void deinit_vectorText();
+void glInit_vectorText();
+void glDeinit_vectorText();
+
+void glInit_textureText();
+void glDeinit_textureText();
 
 void util_init() {
-    registerGlInit(init_filledRect);
-    registerGlInit(init_outlinedRect);
-    registerGlInit(init_vectorText);
-    
-    registerGlDeinit(init_filledRect);
-    registerGlDeinit(init_outlinedRect);
-    registerGlDeinit(init_vectorText);
+    registerGlInit(glInit_filledRect);
+    registerGlInit(glInit_outlinedRect);
+    registerGlInit(glInit_vectorText);
+    registerGlInit(glInit_textureText);
+
+    registerGlDeinit(glDeinit_filledRect);
+    registerGlDeinit(glDeinit_outlinedRect);
+    registerGlDeinit(glDeinit_vectorText);
+    registerGlDeinit(glDeinit_textureText);
 }
 
-void util_deinit() {
-    deinit_outlinedRect();
-    deinit_vectorText();
-    deinit_filledRect();
-}
+void util_deinit() {}
 
 void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourceline) {
     GLenum err = glGetError();
@@ -140,6 +141,6 @@ void haltIfGlError(const char* sourceExpr, const char* sourcefile, int sourcelin
 }
 }  // namespace MNOGLA
 
+#include "../gui/code.cpp"            // for now, generate library code here
 #include "../twoD/code.cpp"           // for now, generate library code here
 #include "../uiEvtListener/code.cpp"  // for now, generate library code here
-#include "../gui/code.cpp"  // for now, generate library code here

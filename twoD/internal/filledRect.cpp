@@ -2,13 +2,13 @@
 
 #include "../../core/MNOGLA_util.h"
 namespace MNOGLA {
-void filledRect::init() {
+void filledRect::glInit() {
     // Note: In case of GL context loss, init() will be called without deinit(). No need to glDelete() anything.
-    twoDShape::init();
+    twoDShape::glInit();
 }
 
-void filledRect::deinit() {
-    twoDShape::deinit();
+void filledRect::glDeinit() {
+    twoDShape::glDeinit();
 }
 
 void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::glm::vec3& rgb, const ::glm::mat3& world2screen) {
@@ -31,11 +31,11 @@ void filledRect::draw(const ::glm::vec2& pt1, const ::glm::vec2& pt2, const ::gl
     GLCHK(glDrawArrays(GL_TRIANGLE_STRIP, /*first vertex*/ 0, /*vertex count*/ 4));
 }
 
-void init_filledRect() {
-    filledRect::init();
+void glInit_filledRect() {
+    filledRect::glInit();
 }
-void deinit_filledRect() {
-    filledRect::deinit();
+void glDeinit_filledRect() {
+    filledRect::glDeinit();
 }
 
 }  // namespace MNOGLA

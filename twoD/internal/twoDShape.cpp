@@ -5,7 +5,7 @@
 #include "../../core/MNOGLA_util.h"
 
 namespace MNOGLA {
-void twoDShape::init() {
+void twoDShape::glInit() {
     // Note: In case of GL context loss, init() will be called without deinit(). No need to glDelete() anything.
     const char* vShader =
         "#version 300 es\n"
@@ -39,7 +39,7 @@ void twoDShape::setWorld2screen(const ::glm::mat3& world2screen) {
     GLCHK(glUniformMatrix3fv(p0_world2screen, /*num matrices*/ 1, /*transpose*/ false, &world2screen[0][0]));
 }
 
-void twoDShape::deinit() {
+void twoDShape::glDeinit() {
     // note: First deinit affects all derived classes. Use only on shutdown
     if (!canClean) return;
     canClean = false;
