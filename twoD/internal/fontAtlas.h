@@ -4,37 +4,40 @@
 #include <memory>
 #include <vector>
 
-// #define STB_IMAGE_WRITE_IMPLEMENTATION
-// #include "../../3rdPartyLicense/stb_image_write.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "../../3rdPartyLicense/stb_image_write.h"
 #include "../../MNOGLA.h"  // freetype
 namespace MNOGLA {
 using ::std::vector, ::std::shared_ptr, ::std::make_shared, ::std::runtime_error;
 class fontAtlas {
    public:
     fontAtlas(FT_Face& face, size_t fontHeightRes) : width(0), height(0) {
+        const ::std::string charsToLoad_UTF8(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ää§§©«»®°±¹²³µ€äöüÄÖÜßमतलब हिंदी में");
         FT_Set_Pixel_Sizes(face, 0, fontHeightRes);
         vector<shared_ptr<glyph>> glyphs;
-        for (uint8_t c = 32; c < 128; ++c)
+        vector<uint32_t> charsToLoad_UTF32 = utf8_to_utf32(charsToLoad_UTF8);
+        for (auto c : charsToLoad_UTF32)
             glyphs.push_back(make_shared<glyph>(face, c));
         std::sort(glyphs.begin(), glyphs.end(), [](const auto& a, const auto& b) { return a->getAtlasHeight() > b->getAtlasHeight(); });
 
         size_t nHorGlyphsOpt = 0;
-        size_t nHorGlyphsOptArea = 0;
+        size_t nHorGlyphsOptVal = 0;
 
         // === try all bitmap widths for nHorGlyphs contiguous horizontal glyphs in first row ===
         for (size_t nHorGlyphs = 1; nHorGlyphs < glyphs.size(); ++nHorGlyphs) {
-            size_t area = tryPlaceGlyphs(glyphs, nHorGlyphs, nullptr, nullptr);
-            if (!nHorGlyphsOpt || (area < nHorGlyphsOptArea)) {
+            size_t optVal = tryPlaceGlyphs(glyphs, nHorGlyphs, nullptr, nullptr);
+            if (!nHorGlyphsOpt || (optVal < nHorGlyphsOptVal)) {
                 nHorGlyphsOpt = nHorGlyphs;
-                nHorGlyphsOptArea = area;
+                nHorGlyphsOptVal = optVal;
             }
         }
 
         // === apply the best result ===
         // fills in atlas location for each glyph
-        size_t area = tryPlaceGlyphs(glyphs, nHorGlyphsOpt, &width, &height);
-        std::cout << "final area: " << area << " with " << nHorGlyphsOpt << " glyphs in first row" << std::endl;
-        std::cout << "Atlas size " << width << " x " << height << std::endl;
+        // size_t area =
+        tryPlaceGlyphs(glyphs, nHorGlyphsOpt, &width, &height);
+        // std::cout << "final area: " << area << " with " << nHorGlyphsOpt << " glyphs in first row" << std::endl;
+        // std::cout << "Atlas size " << width << " x " << height << std::endl;
 
         // === allocate atlas bitmap ===
         bitmap = new uint8_t[width * height];
@@ -43,10 +46,12 @@ class fontAtlas {
             copyGlyphToAtlas(g);
             g->freeBitmapTmp();
         }
-
-        // stbi_write_png("fontatlas.png", width, height, /*channels*/ 1, (void*)bitmap, /*stride_bytes*/ 0);
+        //stbi_write_png("fontatlas.png", width, height, /*channels*/ 1, (void*)bitmap, /*stride_bytes*/ 0);
     }
-
+    ~fontAtlas() {
+        delete[] bitmap;
+        bitmap = nullptr;
+    }
     void getBitmap(uint8_t** pBitmap, size_t* pWidth, size_t* pHeight) {
         *pBitmap = bitmap;
         *pWidth = width;
@@ -54,11 +59,16 @@ class fontAtlas {
     }
 
    protected:
+    fontAtlas(const fontAtlas&) = delete;
+    int operator=(const fontAtlas&) = delete;
+
     // one glyph in the font atlas
     class glyph {
        public:
-        glyph(FT_Face& face, uint8_t ASCII_charNum) : ASCII_charNum(ASCII_charNum) {
-            if (FT_Load_Char(face, ASCII_charNum, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT | FT_LOAD_TARGET_LIGHT)) throw runtime_error("missing glyph");
+        glyph(FT_Face& face, uint32_t charcode) : charcode(charcode) {
+            FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
+            if (!glyph_index) throw runtime_error("missing glyph number " + std::to_string(charcode));
+            if (FT_Load_Char(face, charcode, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT | FT_LOAD_TARGET_LIGHT)) throw runtime_error("failed to load glyph");
             atlasWidth = face->glyph->bitmap.width;
             atlasHeight = face->glyph->bitmap.rows;
             xAdvance = ((float)face->glyph->advance.x) / 64.0f;
@@ -85,7 +95,7 @@ class fontAtlas {
         bool done = false;
 
        protected:
-        size_t ASCII_charNum;
+        uint32_t charcode;
         size_t atlasPosX = 0, atlasPosY = 0, atlasWidth = 0, atlasHeight = 0;  // position in atlas
         size_t offsetX = 0, offsetY = 0;                                       // location of bitmap relative to origin
         float xAdvance = 0;
@@ -206,26 +216,55 @@ class fontAtlas {
             }
         }
 
-        std::cout << "area: " << (bitmapWidth * bitmapHeight) << std::endl;
-        std::cout << "Atlas size " << bitmapWidth << " x " << bitmapHeight << std::endl;
+        // std::cout << "Atlas size " << bitmapWidth << " x " << bitmapHeight << std::endl;
 
         // === return result ===
         if (pWidth) *pWidth = bitmapWidth;
         if (pHeight) *pHeight = bitmapHeight;
-        return bitmapWidth * bitmapHeight;
+        // return bitmapWidth * bitmapHeight; // optimize for area
+        return std::max(bitmapWidth, bitmapHeight); // optimize largest dimension (for GL_MAX_TEXTURE_SIZE limit)
     }
 
     // copies one glyph to its location in the fontAtlas
     void copyGlyphToAtlas(const ::std::shared_ptr<glyph> g) {
-        //        std::cout << "copying " << g->getAtlasWidth() << " x " << g->getAtlasHeight() << " to " << g->getAtlasX1() << " / " << g->getAtlasY1() << " of atlas " << width << " x " << height << std::endl;
         uint8_t* const pAtlasTopLeft = bitmap + g->getAtlasY1() * width + g->getAtlasX1();
         const uint8_t* pGlyph = g->getBitmapTmp();
         const size_t cAtlasWidth = width;
         const size_t glyphWidth = g->getAtlasWidth();
         const size_t glyphHeight = g->getAtlasHeight();
+        assert(g->getAtlasX2() <= width);
+        assert(g->getAtlasY2() <= height);
         for (size_t row = 0; row < glyphHeight; ++row)
             for (size_t col = 0; col < glyphWidth; ++col)
                 *(pAtlasTopLeft + row * cAtlasWidth + col) = *(pGlyph++);
+    }
+
+    static vector<uint32_t> utf8_to_utf32(const string& text) {
+        vector<uint32_t> r;
+        const size_t s = text.size();
+        for (size_t ix = 0; ix < s;) {
+            if ((text[ix] & 0b10000000) == 0) {
+                // ASCII
+                r.push_back(text[ix]);
+                ix += 1;
+            } else if ((ix + 1 < s) && (text[ix] & 0b11100000) == 0b11000000) {
+                // 2 byte code point
+                r.push_back((uint32_t)(text[ix] & 0b00011111) << 6 | (text[ix + 1] & 0b00111111));
+                ix += 2;
+            } else if ((ix + 2 < s) && (text[ix] & 0b11110000) == 0b11100000) {
+                // 3 byte code point
+                r.push_back((uint32_t)(text[ix] & 0b00001111) << 12 | (text[ix + 1] & 0b00111111) << 6 | (text[ix + 2] & 0b00111111));
+                ix += 3;
+            } else if (ix + 3 < s) {
+                // 4 byte code point
+                r.push_back((uint32_t)(text[ix] & 0b00000111) << 18 | (text[ix + 1] & 0b00111111) << 12 | (text[ix + 2] & 0b00111111) << 6 | (text[ix + 3] & 0b00111111));
+                ix += 4;
+            } else {
+                break;  // incomplete code, ignore and quit
+            }
+        }
+
+        return r;
     }
 
     // === data ===

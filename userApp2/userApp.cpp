@@ -2,6 +2,7 @@
 #include <functional>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 
@@ -23,8 +24,8 @@ class myAppState_t {
             b->setClickCallback([ix]() { MNOGLA::logI("hello I am button %i", ix); });
             pGui->addElem(b);
         }
-//        auto m = ::std::make_shared<MNOGLA::multilineText>(::glm::vec2(10, 10), 13, "hello bla!", glm::vec3(0.0f, 1.0f, 0.0f));
- //       pGui->addElem(m);
+        //        auto m = ::std::make_shared<MNOGLA::multilineText>(::glm::vec2(10, 10), 13, "hello bla!", glm::vec3(0.0f, 1.0f, 0.0f));
+        //       pGui->addElem(m);
         pGui->freeze();
     }
     void eventDispatcher();
@@ -133,8 +134,15 @@ void myAppState_t::render() {
 
 std::shared_ptr<myAppState_t> myAppState = nullptr;
 void MNOGLA_userInit() {
+    //::std::wstring x(L"Bärenhünger");
+    //std::wcout << x << std::endl;
+    //for (wchar_t c : x)
+    //    std::wcout << c << std::endl;
+    //std::wcout << x << std::endl;
+    //exit(0);
+
     if (myAppState == nullptr) {
-//        MNOGLA::registerGlInit(MNOGLA::multilineText::initGlContext);
+        //        MNOGLA::registerGlInit(MNOGLA::multilineText::initGlContext);
         myAppState = std::make_shared<myAppState_t>();
         MNOGLA::logI("user init (startup)");
     } else {

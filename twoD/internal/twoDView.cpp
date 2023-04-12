@@ -4,6 +4,7 @@
 #include "filledRect.h"
 #include "outlinedRect.h"
 #include "vectorText.h"
+#include "textureText.hpp"
 namespace MNOGLA {
 
 const glm::mat3& twoDView::getWorld2screen() const {
@@ -41,6 +42,10 @@ void twoDView::outlinedRect(const ::glm::vec2& pt1, const ::glm::vec2& pt2, floa
 }
 void twoDView::vectorText(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb) {
     vectorText::draw(pt, text, height, rgb, world2screen);
+}
+
+void twoDView::textureText(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb) {
+    textureText::draw(world2screen, rgb);
 }
 
 }  // namespace MNOGLA

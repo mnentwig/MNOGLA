@@ -6,16 +6,15 @@
 #include "../../MNOGLA.h"  // freetype
 #include "../../core/MNOGLA_util.h"
 #include "fontAtlas.h"
-#include "twoDShape.h"
 namespace MNOGLA {
 using ::std::string, ::glm::vec2, ::glm::vec3, ::glm::mat3, ::std::unique_ptr, ::std::make_unique;
-class textureText : public twoDShape {
+class textureText {
    public:
     static void glInit() {
         // Note: In case of GL context loss, this function glInit() will be called repeatedly.
         // If so, there is no need to glDelete() anything as the GPU memory got wiped completely.
         if (!pAtlas)
-            pAtlas = make_unique<MNOGLA::fontAtlas>(MNOGLA::freetypeDefaultFace, 900);
+            pAtlas = make_unique<MNOGLA::fontAtlas>(MNOGLA::freetypeDefaultFace, 200);
 
         const char* vShader =
             "#version 300 es\n"
@@ -48,13 +47,37 @@ class textureText : public twoDShape {
         size_t bmWidth;
         size_t bmHeight;
         uint8_t* bm;
+        pAtlas->getBitmap(&bm, &bmWidth, &bmHeight);
+        if ((bmWidth > GL_MAX_TEXTURE_SIZE) || (bmHeight > GL_MAX_TEXTURE_SIZE))
+            throw runtime_error("font texture too large. GL_MAX_TEXTURE_SIZE is " + std::to_string(GL_MAX_TEXTURE_SIZE));
+
+        GLCHK(glGenTextures(1, &charmapTexture));
+        GLCHK(glBindTexture(GL_TEXTURE_2D, charmapTexture));
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);    // data is byte aligned (8 bit data)
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);   // 0: use "pixel routine" (glTexImage2d) width argument
+        glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);  // use bm pointer without offset
+        glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);    // use bm pointer without offset
+        glPixelStorei(GL_UNPACK_SKIP_IMAGES, 0);  // use bm pointer without offset
+
+        GLCHK(glTexImage2D(
+            GL_TEXTURE_2D,
+            0,      // base image level
+            GL_R8,  // internal format for 8 bit data into RED channel
+            bmWidth,
+            bmHeight,
+            0,                 // no border
+            GL_RED,            // pad to rgba=[data, 0, 0, 1]
+            GL_UNSIGNED_BYTE,  // number format
+            bm));
+        GLCHK(glBindTexture(GL_TEXTURE_2D, 0));
     }
 
     static void glDeinit() {
         pAtlas = nullptr;
     }
 
-    void draw(const mat3& world2screen, const vec3& rgb) {
+    static void draw(const mat3& world2screen, const vec3& rgb) {
         // https://gist.github.com/baines/b0f9e4be04ba4e6f56cab82eef5008ff
         FT_Set_Pixel_Sizes(MNOGLA::freetypeDefaultFace, 0, 900);
         for (unsigned char c = 32; c < 128; ++c) {
@@ -150,6 +173,7 @@ class textureText : public twoDShape {
     static GLuint p0_vertex;
     static GLuint p0_rgb;
     static GLuint p0_world2NDC;
+    static GLuint charmapTexture;
 
     static bool canClean;
     static unique_ptr<MNOGLA::fontAtlas> pAtlas;
@@ -160,6 +184,7 @@ GLuint textureText::p0_rgb;
 GLuint textureText::p0_vertex;
 GLuint textureText::p0_world2NDC;
 bool textureText::canClean;
+GLuint textureText::charmapTexture;
 unique_ptr<MNOGLA::fontAtlas> textureText::pAtlas = nullptr;
 
 void glInit_textureText() {
