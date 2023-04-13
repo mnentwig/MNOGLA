@@ -130,16 +130,17 @@ void myAppState_t::render() {
 
     // === frame counter ===
     view.vectorText(glm::vec2(25, 25), std::to_string(frameCount++), 50, glm::vec3(1.0f, 1.0f, 1.0f));
+    view.textureText(glm::vec2(25, 25), "Hello", 20, glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
 std::shared_ptr<myAppState_t> myAppState = nullptr;
 void MNOGLA_userInit() {
     //::std::wstring x(L"Bärenhünger");
-    //std::wcout << x << std::endl;
-    //for (wchar_t c : x)
-    //    std::wcout << c << std::endl;
-    //std::wcout << x << std::endl;
-    //exit(0);
+    // std::wcout << x << std::endl;
+    // for (wchar_t c : x)
+    //     std::wcout << c << std::endl;
+    // std::wcout << x << std::endl;
+    // exit(0);
 
     if (myAppState == nullptr) {
         //        MNOGLA::registerGlInit(MNOGLA::multilineText::initGlContext);
