@@ -1,17 +1,34 @@
 #pragma once
 #include <cassert>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <vector>
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../../3rdPartyLicense/stb_image_write.h"
 #include "../../MNOGLA.h"  // freetype
 namespace MNOGLA {
-using ::std::vector, ::std::shared_ptr, ::std::make_shared, ::std::runtime_error;
+using ::std::vector, ::std::shared_ptr, ::std::make_shared, ::std::runtime_error, ::std::map;
+
+class eglyph {
+   public:
+    eglyph(size_t X1, size_t Y1, size_t X2, size_t Y2, size_t atlasBitmapWidth, size_t atlasBitmapHeight)
+        : textureX1((float)X1 / (float)atlasBitmapWidth),
+          textureY1((float)Y1 / (float)atlasBitmapHeight),
+          textureX2((float)X2 / (float)atlasBitmapWidth),
+          textureY2((float)Y2 / (float)atlasBitmapHeight) {}
+    float getTextureX1() const { return textureX1; }
+    float getTextureY1() const { return textureY1; }
+    float getTextureX2() const { return textureX2; }
+    float getTextureY2() const { return textureY2; }
+
+   protected:
+    float textureX1, textureY1, textureX2, textureY2;
+};
+
 class fontAtlas {
    public:
-    fontAtlas(FT_Face& face, size_t fontHeightRes) : width(0), height(0) {
+    fontAtlas(FT_Face& face, size_t fontHeightRes) : width(0), height(0), glyphsByUTF32() {
         const ::std::string charsToLoad_UTF8(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ää§§©«»®°±¹²³µ€äöüÄÖÜßमतलब हिंदी में");
         FT_Set_Pixel_Sizes(face, 0, fontHeightRes);
         vector<shared_ptr<glyph>> glyphs;
@@ -44,9 +61,9 @@ class fontAtlas {
         memset((void*)bitmap, /*val*/ 0, width * height * sizeof(uint8_t));
         for (const auto& g : glyphs) {
             copyGlyphToAtlas(g);
-            g->freeBitmapTmp();
+            glyphsByUTF32[g->getCharcode()] = make_shared<eglyph>(g->getAtlasX1(), g->getAtlasY1(), g->getAtlasX2(), g->getAtlasY2(), width, height);
         }
-        //stbi_write_png("fontatlas.png", width, height, /*channels*/ 1, (void*)bitmap, /*stride_bytes*/ 0);
+        // stbi_write_png("fontatlas.png", width, height, /*channels*/ 1, (void*)bitmap, /*stride_bytes*/ 0);
     }
     ~fontAtlas() {
         delete[] bitmap;
@@ -57,12 +74,18 @@ class fontAtlas {
         *pWidth = width;
         *pHeight = height;
     }
+    const ::std::shared_ptr<eglyph> getGlyphByUTF32(uint32_t UTF32) {
+        const auto& it = glyphsByUTF32.find(UTF32);
+        if (it == glyphsByUTF32.end())
+            return nullptr;
+        return it->second;
+    }
 
    protected:
     fontAtlas(const fontAtlas&) = delete;
     int operator=(const fontAtlas&) = delete;
 
-    // one glyph in the font atlas
+    // one glyph in the font atlas during construction
     class glyph {
        public:
         glyph(FT_Face& face, uint32_t charcode) : charcode(charcode) {
@@ -86,12 +109,7 @@ class fontAtlas {
         void setAtlasPosX(size_t atlasPosX) { this->atlasPosX = atlasPosX; }
         void setAtlasPosY(size_t atlasPosY) { this->atlasPosY = atlasPosY; }
         const uint8_t* getBitmapTmp() { return bitmapTmp; }
-        void freeBitmapTmp() {
-            assert(bitmapTmp);
-            delete[] bitmapTmp;
-            bitmapTmp = nullptr;
-        }
-
+        uint32_t getCharcode() const { return charcode; }
         bool done = false;
 
        protected:
@@ -100,6 +118,7 @@ class fontAtlas {
         size_t offsetX = 0, offsetY = 0;                                       // location of bitmap relative to origin
         float xAdvance = 0;
         uint8_t* bitmapTmp = nullptr;  // bitmap data, to be free()d once placed in atlas
+        friend class eglyph;
     };
 
     // used during construction of font atlas
@@ -222,7 +241,7 @@ class fontAtlas {
         if (pWidth) *pWidth = bitmapWidth;
         if (pHeight) *pHeight = bitmapHeight;
         // return bitmapWidth * bitmapHeight; // optimize for area
-        return std::max(bitmapWidth, bitmapHeight); // optimize largest dimension (for GL_MAX_TEXTURE_SIZE limit)
+        return std::max(bitmapWidth, bitmapHeight);  // optimize largest dimension (for GL_MAX_TEXTURE_SIZE limit)
     }
 
     // copies one glyph to its location in the fontAtlas
@@ -239,7 +258,7 @@ class fontAtlas {
                 *(pAtlasTopLeft + row * cAtlasWidth + col) = *(pGlyph++);
     }
 
-    static vector<uint32_t> utf8_to_utf32(const string& text) {
+    static vector<uint32_t> utf8_to_utf32(const string& text) {  // todo use equiv from misc folder
         vector<uint32_t> r;
         const size_t s = text.size();
         for (size_t ix = 0; ix < s;) {
@@ -274,5 +293,6 @@ class fontAtlas {
     size_t width;
     // atlas bitmap height
     size_t height;
+    map<uint32_t, shared_ptr<eglyph>> glyphsByUTF32;
 };
 }  // namespace MNOGLA

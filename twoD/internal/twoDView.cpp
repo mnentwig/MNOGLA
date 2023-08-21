@@ -45,7 +45,7 @@ void twoDView::vectorText(const ::glm::vec2& pt, const ::std::string& text, floa
 }
 
 void twoDView::textureText(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb) {
-    textureText::draw(world2screen, rgb);
+    textureText::draw(pt, text, world2screen, rgb);
 }
 
 }  // namespace MNOGLA

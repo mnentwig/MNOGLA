@@ -77,7 +77,10 @@ class textureText {
         pAtlas = nullptr;
     }
 
-    static void draw(const mat3& world2screen, const vec3& rgb) {
+    static void draw(const glm::vec2& pt, const string& text, const mat3& world2screen, const vec3& rgb) {
+        std::string::const_iterator iText = text.begin();
+        const std::string::const_iterator iTextEnd = text.end();
+
         // https://gist.github.com/baines/b0f9e4be04ba4e6f56cab82eef5008ff
         FT_Set_Pixel_Sizes(MNOGLA::freetypeDefaultFace, 0, 900);
         for (unsigned char c = 32; c < 128; ++c) {
@@ -178,6 +181,36 @@ class textureText {
     static bool canClean;
     static unique_ptr<MNOGLA::fontAtlas> pAtlas;
     float fontsize;
+    static bool nextChar(std::string::const_iterator& iBegin, const std::string::const_iterator iEnd, uint32_t& outUTF32) {
+        if (iBegin == iEnd) return false;
+        uint32_t c0 = *(iBegin++);
+        if ((c0 & uint32_t(0b10000000)) == 0) {
+            outUTF32 = c0;
+            return true;
+        }
+
+        if (iBegin == iEnd) return false;
+        uint32_t c1 = *(iBegin++);
+        if ((c1 & 0b11100000) == 0b11000000) {
+            // 2 byte code point
+            outUTF32 = (c0 & 0b00011111) << 6 | (c1 & 0b00111111);
+            return true;
+        }
+
+        if (iBegin == iEnd) return false;
+        uint32_t c2 = *(iBegin++);
+        if ((c2 & 0b11110000) == 0b11100000) {
+            // 3 byte code point
+            outUTF32 = (c0 & 0b00001111) << 12 | (c1 & 0b00111111) << 6 | (c2 & 0b00111111);
+            return true;
+        }
+
+        if (iBegin == iEnd) return false;
+        uint32_t c3 = *(iBegin++);
+        // 4 byte code point
+        outUTF32 = (c0 & 0b00000111) << 18 | (c1 & 0b00111111) << 12 | (c2 & 0b00111111) << 6 | (c3 & 0b00111111);
+        return true;
+    }
 };
 GLuint textureText::p0;
 GLuint textureText::p0_rgb;
