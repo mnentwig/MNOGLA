@@ -4,7 +4,7 @@
 #include "filledRect.h"
 #include "outlinedRect.h"
 #include "vectorText.h"
-#include "textureText.hpp"
+#include "textureText.h"
 namespace MNOGLA {
 
 const glm::mat3& twoDView::getWorld2screen() const {

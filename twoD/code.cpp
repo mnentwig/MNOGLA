@@ -7,5 +7,5 @@
 #include "internal/filledRect.cpp"
 #include "internal/outlinedRect.cpp"
 #include "internal/vectorText.cpp"
-#include "internal/textureText.hpp"
+#include "internal/textureText.cpp"
 #include "internal/twoDMatrix.cpp"
