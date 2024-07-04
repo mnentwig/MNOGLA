@@ -1,4 +1,5 @@
 #pragma once
+#define GLM_ENABLE_EXPERIMENTAL
 extern "C" {
 #ifdef MNOGLA_WINDOWS
 // Windows version uses glew as it comes with its own copy of relevant headers

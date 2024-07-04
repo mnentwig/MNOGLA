@@ -7,7 +7,9 @@ A smallest-common-denominator framework for an OS-independent openGL app. Runs o
 - Android. Use Android Studio (tested: 2022.1.1)
 
 ### Windows (minGW) build
-see host_mingw64linux/mingwInstallPackages.sh. Essentially:
+see (and run) unpack.sh in 3rdPartyLicense!
+see host_mingw64linux/mingwInstallPackages.sh! 
+Essentially:
 ```pacman -S --needed base-devel mingw-w64-x86_64-toolchain
 # pacman -S mingw-w64-x86_64-glm TBD moving GLM to prepackaged libraries
 pacman -S mingw-w64-x86_64-glfw
