@@ -4,7 +4,9 @@
 #include "filledRect.h"
 #include "outlinedRect.h"
 #include "vectorText.h"
+#ifdef MNOGLA_HAS_FREETYPE
 #include "textureText.h"
+#endif
 namespace MNOGLA {
 
 const glm::mat3& twoDView::getWorld2screen() const {
@@ -44,8 +46,9 @@ void twoDView::vectorText(const ::glm::vec2& pt, const ::std::string& text, floa
     vectorText::draw(pt, text, height, rgb, world2screen);
 }
 
+#ifdef MNOGLA_HAS_FREETYPE
 void twoDView::textureText(const ::glm::vec2& pt, const ::std::string& text, float height, const ::glm::vec3& rgb) {
     textureText::draw(pt, text, world2screen, rgb);
 }
-
+#endif
 }  // namespace MNOGLA

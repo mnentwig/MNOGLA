@@ -7,5 +7,7 @@
 #include "internal/filledRect.cpp"
 #include "internal/outlinedRect.cpp"
 #include "internal/vectorText.cpp"
+#ifdef MNOGLA_HAS_FREETYPE
 #include "internal/textureText.cpp"
+#endif
 #include "internal/twoDMatrix.cpp"
